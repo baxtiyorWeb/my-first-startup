@@ -36,9 +36,9 @@ interface AuthContextType {
   isLoaded: boolean;
   pendingPhone: string;
   setPendingPhone: (phone: string) => void;
-  loginWithPhone: (phone: string) => Promise<boolean>;
+  loginWithPhone: (phone: string) => Promise<{ success: boolean; code?: string }>;
   verifyOtp: (code: string) => Promise<{ success: boolean; isOnboarded?: boolean; error?: string }>;
-  resendOtp: () => Promise<boolean>;
+  resendOtp: () => Promise<{ success: boolean; code?: string }>;
   completeOnboarding: (data: OnboardingData) => Promise<void>;
   logout: () => Promise<void>;
   updateCurrentUser: (updates: Partial<UserProfile>) => Promise<void>;
@@ -102,10 +102,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const loginWithPhone = useCallback(async (phone: string): Promise<boolean> => {
+  const loginWithPhone = useCallback(async (phone: string): Promise<{ success: boolean; code?: string }> => {
     setPendingPhone(phone);
-    await api.auth.requestOtp(phone);
-    return true;
+    const res = await api.auth.requestOtp(phone);
+    return { success: true, code: res?.code };
   }, []);
 
   const verifyOtp = useCallback(
@@ -143,10 +143,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [pendingPhone]
   );
 
-  const resendOtp = useCallback(async (): Promise<boolean> => {
-    if (!pendingPhone) return false;
-    await api.auth.requestOtp(pendingPhone);
-    return true;
+  const resendOtp = useCallback(async (): Promise<{ success: boolean; code?: string }> => {
+    if (!pendingPhone) return { success: false };
+    const res = await api.auth.requestOtp(pendingPhone);
+    return { success: true, code: res?.code };
   }, [pendingPhone]);
 
   const completeOnboarding = useCallback(

@@ -18,8 +18,14 @@ export interface OnboardingPayload {
   bio?: string;
 }
 
-export async function requestOtp(phone: string) {
-  const res = await apiClient<{ message: string }>("/api/auth/otp", {
+export interface RequestOtpResponse {
+  success: boolean;
+  message: string;
+  code?: string;
+}
+
+export async function requestOtp(phone: string): Promise<RequestOtpResponse> {
+  const res = await apiClient<RequestOtpResponse>("/api/auth/otp", {
     method: "POST",
     body: JSON.stringify({ phone }),
   });

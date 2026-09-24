@@ -82,11 +82,15 @@ export function AuthForm({ mode }: AuthFormProps) {
     setError(null);
 
     try {
-      await loginWithPhone(fullPhoneNumber);
+      const res = await loginWithPhone(fullPhoneNumber);
       setStep("otp");
       setCountdown(60);
       setCanResend(false);
-      toast.info(`${fullPhoneNumber} ${t("auth.codeSentNotice")}`);
+      if (res?.code) {
+        toast.success(`Tasdiqlash kodi: ${res.code}`, 10000);
+      } else {
+        toast.info(`${fullPhoneNumber} ${t("auth.codeSentNotice")}`);
+      }
     } catch {
       setError(t("common.errorOccurred"));
     } finally {
@@ -129,11 +133,15 @@ export function AuthForm({ mode }: AuthFormProps) {
     setIsLoading(true);
     setError(null);
     try {
-      await resendOtp();
+      const res = await resendOtp();
       setCountdown(60);
       setCanResend(false);
       setOtpValue("");
-      toast.info(`${fullPhoneNumber} ${t("auth.codeSentNotice")}`);
+      if (res?.code) {
+        toast.success(`Yangi tasdiqlash kodi: ${res.code}`, 10000);
+      } else {
+        toast.info(`${fullPhoneNumber} ${t("auth.codeSentNotice")}`);
+      }
     } catch {
       setError(t("common.errorOccurred"));
     } finally {
