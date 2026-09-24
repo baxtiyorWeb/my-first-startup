@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { Post } from "@/types/social";
+import type { Post, PostType, ProjectStage, ProjectLookingFor, UserIntent } from "@/types/social";
 
 export interface PostResponse {
   id: string;
@@ -10,9 +10,15 @@ export interface PostResponse {
     role: string;
     avatarUrl?: string | null;
     verified: boolean;
+    intent?: UserIntent;
   };
   title?: string | null;
   content: string;
+  postType?: PostType;
+  projectUrl?: string | null;
+  projectStage?: ProjectStage | null;
+  lookingFor?: ProjectLookingFor | null;
+  mediaUrls?: string[];
   readingTimeMinutes: number;
   createdAt: string;
   likesCount: number;
@@ -26,6 +32,7 @@ export interface PostResponse {
 export interface GetFeedParams {
   cursor?: string;
   limit?: number;
+  postType?: PostType;
 }
 
 /**
@@ -41,9 +48,15 @@ export function mapPostResponseToPost(p: PostResponse): Post {
       role: p.author.role,
       avatarUrl: p.author.avatarUrl || undefined,
       verified: p.author.verified,
+      intent: p.author.intent || "none",
     },
     title: p.title || undefined,
     content: p.content,
+    postType: p.postType || "thought",
+    projectUrl: p.projectUrl || undefined,
+    projectStage: p.projectStage || undefined,
+    lookingFor: p.lookingFor || undefined,
+    mediaUrls: p.mediaUrls || [],
     topic: "Umumiy",
     category: p.title ? "analytical" : "discussion",
     readingTimeMinutes: p.readingTimeMinutes,
@@ -61,6 +74,7 @@ export async function getFeed(params: GetFeedParams = {}) {
   const query = new URLSearchParams();
   if (params.cursor) query.set("cursor", params.cursor);
   if (params.limit) query.set("limit", String(params.limit));
+  if (params.postType) query.set("type", params.postType);
 
   const qs = query.toString() ? `?${query.toString()}` : "";
   const res = await apiClient<PostResponse[]>(`/api/posts${qs}`);
@@ -87,7 +101,17 @@ export async function recordPostView(id: string) {
   return res.data;
 }
 
-export async function createPost(payload: { title?: string; content: string }) {
+export interface CreatePostPayload {
+  title?: string;
+  content: string;
+  postType?: PostType;
+  projectUrl?: string | null;
+  projectStage?: ProjectStage | null;
+  lookingFor?: ProjectLookingFor | null;
+  mediaUrls?: string[];
+}
+
+export async function createPost(payload: CreatePostPayload) {
   const res = await apiClient<PostResponse>("/api/posts", {
     method: "POST",
     body: JSON.stringify(payload),

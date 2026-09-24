@@ -162,6 +162,13 @@ async function main() {
     // Apply incremental alterations if table already existed
     await client.query(`
       ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "views_count" integer DEFAULT 0 NOT NULL;
+      ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "intent" varchar(50) DEFAULT 'none' NOT NULL;
+      ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "post_type" varchar(30) DEFAULT 'thought' NOT NULL;
+      ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "project_url" varchar(500);
+      ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "project_stage" varchar(50);
+      ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "looking_for" varchar(50);
+      ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "media_urls" jsonb DEFAULT '[]'::jsonb NOT NULL;
+      CREATE INDEX IF NOT EXISTS "idx_posts_post_type" ON "posts" USING btree ("post_type");
       
       -- Reset fake counts to real count of post_likes and comments
       UPDATE "posts" p 

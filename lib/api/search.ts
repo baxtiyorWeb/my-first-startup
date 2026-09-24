@@ -19,3 +19,13 @@ export async function searchContent(
 
   return res.data;
 }
+
+export async function query(params: {
+  q: string;
+  limit?: number;
+  category?: SearchCategory;
+  signal?: AbortSignal;
+}): Promise<SearchResponse> {
+  return searchContent(params.q, params.limit, params.category, params.signal);
+}
+

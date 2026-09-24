@@ -9,6 +9,7 @@ interface OtpInputProps {
   onComplete?: (otp: string) => void;
   error?: string | null;
   disabled?: boolean;
+  autoFocus?: boolean;
 }
 
 export function OtpInput({
@@ -18,8 +19,15 @@ export function OtpInput({
   onComplete,
   error,
   disabled = false,
+  autoFocus = false,
 }: OtpInputProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  React.useEffect(() => {
+    if (autoFocus && inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+  }, [autoFocus]);
 
   // Purely derived digits from controlled prop
   const digits = React.useMemo(() => {

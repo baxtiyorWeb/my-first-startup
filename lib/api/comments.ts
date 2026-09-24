@@ -66,3 +66,6 @@ export async function toggleCommentLike(commentId: string) {
   );
   return res.data;
 }
+
+export const toggleLike = toggleCommentLike;
+

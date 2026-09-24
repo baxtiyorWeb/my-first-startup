@@ -17,6 +17,11 @@ export async function GET(req: NextRequest) {
           id: posts.id,
           title: posts.title,
           content: posts.content,
+          postType: posts.postType,
+          projectUrl: posts.projectUrl,
+          projectStage: posts.projectStage,
+          lookingFor: posts.lookingFor,
+          mediaUrls: posts.mediaUrls,
           readingTimeMinutes: posts.readingTimeMinutes,
           createdAt: posts.createdAt,
           likesCount: posts.likesCount,
@@ -29,6 +34,7 @@ export async function GET(req: NextRequest) {
           authorRole: users.role,
           authorAvatarUrl: users.avatarUrl,
           authorVerified: users.verified,
+          authorIntent: users.intent,
         })
         .from(bookmarks)
         .innerJoin(posts, eq(bookmarks.postId, posts.id))
@@ -40,6 +46,11 @@ export async function GET(req: NextRequest) {
         id: r.id,
         title: r.title,
         content: r.content,
+        postType: r.postType || "thought",
+        projectUrl: r.projectUrl || null,
+        projectStage: r.projectStage || null,
+        lookingFor: r.lookingFor || null,
+        mediaUrls: (r.mediaUrls as string[]) || [],
         readingTimeMinutes: r.readingTimeMinutes,
         createdAt: r.createdAt.toISOString(),
         likesCount: r.likesCount,
@@ -55,6 +66,7 @@ export async function GET(req: NextRequest) {
           role: r.authorRole,
           avatarUrl: r.authorAvatarUrl,
           verified: r.authorVerified,
+          intent: r.authorIntent || "none",
         },
       }));
 

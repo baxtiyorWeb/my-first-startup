@@ -1,7 +1,8 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, or, sql, desc, isNull } from "drizzle-orm";
 import { db } from "@/server/db";
-import { users, posts, comments, follows } from "@/server/db/schema";
+import { users, posts, comments, follows, postLikes, bookmarks } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
+import type { PostResponse } from "@/server/modules/posts/posts.service";
 
 export interface UserProfileResponse {
   id: string;
@@ -12,6 +13,7 @@ export interface UserProfileResponse {
   location?: string | null;
   website?: string | null;
   avatarUrl?: string | null;
+  intent?: string;
   verified: boolean;
   isOnboarded: boolean;
   joinedDate: string;
@@ -21,19 +23,23 @@ export interface UserProfileResponse {
     postsCount: number;
     discussionsCount: number;
     repliesCount: number;
+    totalDiscussionsEngaged: number;
     followersCount: number;
     followingCount: number;
   };
+  posts: PostResponse[];
+  discussions: PostResponse[];
 }
 
 /**
- * Get full author profile by handle with consolidated live aggregated statistics in a single SQL query
+ * Get full author profile by handle with consolidated live aggregated statistics and posts
  */
 export async function getProfileByHandle(
   rawHandle: string,
   currentUserId?: string
 ): Promise<UserProfileResponse> {
   const cleanHandle = rawHandle.startsWith("@") ? rawHandle : `@${rawHandle.trim()}`;
+  const unadornedHandle = rawHandle.replace(/^@/, "").trim();
 
   try {
     const [row] = await db
@@ -46,12 +52,15 @@ export async function getProfileByHandle(
         location: users.location,
         website: users.website,
         avatarUrl: users.avatarUrl,
+        intent: users.intent,
         verified: users.verified,
         isOnboarded: users.isOnboarded,
         createdAt: users.createdAt,
-        postsCount: sql<number>`COALESCE((SELECT COUNT(*)::int FROM ${posts} WHERE ${posts.authorId} = ${users.id} AND ${posts.deletedAt} IS NULL), 0)`,
-        discussionsCount: sql<number>`COALESCE((SELECT COUNT(*)::int FROM ${posts} WHERE ${posts.authorId} = ${users.id} AND ${posts.deletedAt} IS NULL AND ${posts.commentsCount} >= 10), 0)`,
-        repliesCount: sql<number>`COALESCE((SELECT COUNT(*)::int FROM ${comments} WHERE ${comments.authorId} = ${users.id} AND ${comments.deletedAt} IS NULL), 0)`,
+        postsCount: sql<number>`COALESCE((SELECT COUNT(*)::int FROM ${posts} WHERE ${posts.authorId} = "users"."id" AND ${posts.deletedAt} IS NULL), 0)`,
+        commentsReceivedCount: sql<number>`COALESCE((SELECT SUM(${posts.commentsCount})::int FROM ${posts} WHERE ${posts.authorId} = "users"."id" AND ${posts.deletedAt} IS NULL), 0)`,
+        discussionsActiveCount: sql<number>`COALESCE((SELECT COUNT(*)::int FROM ${posts} WHERE ${posts.authorId} = "users"."id" AND ${posts.deletedAt} IS NULL AND ${posts.commentsCount} >= 1), 0)`,
+        repliesCount: sql<number>`COALESCE((SELECT COUNT(*)::int FROM ${comments} WHERE ${comments.authorId} = "users"."id" AND ${comments.deletedAt} IS NULL), 0)`,
+        totalDiscussionsEngaged: sql<number>`COALESCE((SELECT COUNT(DISTINCT ${comments.postId})::int FROM ${comments} WHERE ${comments.authorId} = "users"."id" AND ${comments.deletedAt} IS NULL), 0)`,
         followersCount: sql<number>`COALESCE((SELECT COUNT(*)::int FROM ${follows} WHERE ${follows.followingId} = ${users.id}), 0)`,
         followingCount: sql<number>`COALESCE((SELECT COUNT(*)::int FROM ${follows} WHERE ${follows.followerId} = ${users.id}), 0)`,
         isFollowing: currentUserId
@@ -59,7 +68,7 @@ export async function getProfileByHandle(
           : sql<boolean>`false`,
       })
       .from(users)
-      .where(eq(users.handle, cleanHandle))
+      .where(or(eq(users.handle, cleanHandle), eq(users.handle, unadornedHandle)))
       .limit(1);
 
     if (!row) {
@@ -75,6 +84,150 @@ export async function getProfileByHandle(
     ];
     const joined = `${row.createdAt.getFullYear()}-yil ${monthNames[row.createdAt.getMonth()]}`;
 
+    // 1. Fetch user's own published posts
+    const userPostsRows = await db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        content: posts.content,
+        postType: posts.postType,
+        projectUrl: posts.projectUrl,
+        projectStage: posts.projectStage,
+        lookingFor: posts.lookingFor,
+        mediaUrls: posts.mediaUrls,
+        readingTimeMinutes: posts.readingTimeMinutes,
+        likesCount: posts.likesCount,
+        commentsCount: posts.commentsCount,
+        sharesCount: posts.sharesCount,
+        viewsCount: posts.viewsCount,
+        createdAt: posts.createdAt,
+        authorId: users.id,
+        authorName: users.name,
+        authorHandle: users.handle,
+        authorRole: users.role,
+        authorAvatarUrl: users.avatarUrl,
+        authorVerified: users.verified,
+        authorIntent: users.intent,
+        isLiked: currentUserId
+          ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
+          : sql<boolean>`false`,
+        isSaved: currentUserId
+          ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
+          : sql<boolean>`false`,
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .where(and(eq(posts.authorId, row.id), isNull(posts.deletedAt)))
+      .orderBy(desc(posts.createdAt));
+
+    const formattedPosts: PostResponse[] = userPostsRows.map((p) => ({
+      id: p.id,
+      title: p.title,
+      content: p.content,
+      postType: (p.postType as any) || "thought",
+      projectUrl: p.projectUrl || null,
+      projectStage: (p.projectStage as any) || null,
+      lookingFor: (p.lookingFor as any) || null,
+      mediaUrls: (p.mediaUrls as string[]) || [],
+      readingTimeMinutes: p.readingTimeMinutes,
+      likesCount: p.likesCount,
+      commentsCount: p.commentsCount,
+      sharesCount: p.sharesCount,
+      viewsCount: p.viewsCount,
+      createdAt: p.createdAt.toISOString(),
+      isLiked: Boolean(p.isLiked),
+      isSaved: Boolean(p.isSaved),
+      author: {
+        id: p.authorId,
+        name: p.authorName,
+        handle: p.authorHandle,
+        role: p.authorRole,
+        avatarUrl: p.authorAvatarUrl,
+        verified: p.authorVerified,
+        intent: (p.authorIntent as any) || "none",
+      },
+    }));
+
+    // 2. Fetch posts with active discussions that user authored or participated in
+    const discussionRows = await db
+      .selectDistinctOn([posts.id], {
+        id: posts.id,
+        title: posts.title,
+        content: posts.content,
+        postType: posts.postType,
+        projectUrl: posts.projectUrl,
+        projectStage: posts.projectStage,
+        lookingFor: posts.lookingFor,
+        mediaUrls: posts.mediaUrls,
+        readingTimeMinutes: posts.readingTimeMinutes,
+        likesCount: posts.likesCount,
+        commentsCount: posts.commentsCount,
+        sharesCount: posts.sharesCount,
+        viewsCount: posts.viewsCount,
+        createdAt: posts.createdAt,
+        authorId: users.id,
+        authorName: users.name,
+        authorHandle: users.handle,
+        authorRole: users.role,
+        authorAvatarUrl: users.avatarUrl,
+        authorVerified: users.verified,
+        authorIntent: users.intent,
+        isLiked: currentUserId
+          ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
+          : sql<boolean>`false`,
+        isSaved: currentUserId
+          ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
+          : sql<boolean>`false`,
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(comments, eq(comments.postId, posts.id))
+      .where(
+        and(
+          or(
+            eq(posts.authorId, row.id),
+            eq(comments.authorId, row.id)
+          ),
+          sql`${posts.commentsCount} >= 1`,
+          isNull(posts.deletedAt)
+        )
+      )
+      .orderBy(posts.id, desc(posts.createdAt));
+
+    const formattedDiscussions: PostResponse[] = discussionRows.map((p) => ({
+      id: p.id,
+      title: p.title,
+      content: p.content,
+      postType: (p.postType as any) || "thought",
+      projectUrl: p.projectUrl || null,
+      projectStage: (p.projectStage as any) || null,
+      lookingFor: (p.lookingFor as any) || null,
+      mediaUrls: (p.mediaUrls as string[]) || [],
+      readingTimeMinutes: p.readingTimeMinutes,
+      likesCount: p.likesCount,
+      commentsCount: p.commentsCount,
+      sharesCount: p.sharesCount,
+      viewsCount: p.viewsCount,
+      createdAt: p.createdAt.toISOString(),
+      isLiked: Boolean(p.isLiked),
+      isSaved: Boolean(p.isSaved),
+      author: {
+        id: p.authorId,
+        name: p.authorName,
+        handle: p.authorHandle,
+        role: p.authorRole,
+        avatarUrl: p.authorAvatarUrl,
+        verified: p.authorVerified,
+        intent: (p.authorIntent as any) || "none",
+      },
+    }));
+
+    const totalDiscussionsCount = Math.max(
+      Number(row.commentsReceivedCount || 0),
+      Number(row.repliesCount || 0),
+      formattedDiscussions.length
+    );
+
     return {
       id: row.id,
       name: row.name,
@@ -84,6 +237,7 @@ export async function getProfileByHandle(
       location: row.location,
       website: row.website,
       avatarUrl: row.avatarUrl,
+      intent: row.intent || "none",
       verified: row.verified,
       isOnboarded: Boolean(row.isOnboarded),
       joinedDate: joined,
@@ -91,11 +245,14 @@ export async function getProfileByHandle(
       isFollowing,
       stats: {
         postsCount: Number(row.postsCount),
-        discussionsCount: Number(row.discussionsCount),
+        discussionsCount: totalDiscussionsCount,
         repliesCount: Number(row.repliesCount),
+        totalDiscussionsEngaged: Number(row.totalDiscussionsEngaged),
         followersCount: Number(row.followersCount),
         followingCount: Number(row.followingCount),
       },
+      posts: formattedPosts,
+      discussions: formattedDiscussions,
     };
   } catch (err) {
     if (err instanceof AppError) throw err;
@@ -177,6 +334,7 @@ export async function updateProfile(
     location?: string;
     website?: string;
     avatarUrl?: string | null;
+    intent?: string;
   }
 ): Promise<void> {
   const cleanUpdates: Record<string, unknown> = { updatedAt: new Date() };
@@ -187,6 +345,7 @@ export async function updateProfile(
   if (updates.location !== undefined) cleanUpdates.location = updates.location.trim() || null;
   if (updates.website !== undefined) cleanUpdates.website = updates.website.trim() || null;
   if (updates.avatarUrl !== undefined) cleanUpdates.avatarUrl = updates.avatarUrl?.trim() || null;
+  if (updates.intent !== undefined) cleanUpdates.intent = updates.intent;
 
   try {
     await db.update(users).set(cleanUpdates).where(eq(users.id, userId));

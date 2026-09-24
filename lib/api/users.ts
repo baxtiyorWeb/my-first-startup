@@ -1,6 +1,6 @@
 import { apiClient } from "./client";
 import { type PostResponse, mapPostResponseToPost } from "./posts";
-import type { UserProfile, Post } from "@/types/social";
+import type { UserProfile, Post, UserIntent } from "@/types/social";
 
 export interface BackendUserProfile {
   id: string;
@@ -12,6 +12,7 @@ export interface BackendUserProfile {
   website?: string | null;
   avatarUrl?: string | null;
   verified: boolean;
+  intent?: UserIntent;
   joinedDate: string;
   isSelf: boolean;
   isFollowing: boolean;
@@ -24,11 +25,13 @@ export interface BackendUserProfile {
     followingCount: number;
   };
   posts: PostResponse[];
+  discussions?: PostResponse[];
 }
 
 export function mapBackendProfileToUserProfile(p: BackendUserProfile): {
   profile: UserProfile;
   posts: Post[];
+  discussions: Post[];
 } {
   const profile: UserProfile = {
     id: p.id,
@@ -40,6 +43,7 @@ export function mapBackendProfileToUserProfile(p: BackendUserProfile): {
     website: p.website || undefined,
     avatarUrl: p.avatarUrl || undefined,
     verified: p.verified,
+    intent: p.intent || "none",
     joinedDate: p.joinedDate,
     isSelf: p.isSelf,
     isFollowing: p.isFollowing,
@@ -47,8 +51,9 @@ export function mapBackendProfileToUserProfile(p: BackendUserProfile): {
   };
 
   const posts = (p.posts || []).map(mapPostResponseToPost);
+  const discussions = (p.discussions || []).map(mapPostResponseToPost);
 
-  return { profile, posts };
+  return { profile, posts, discussions };
 }
 
 export async function getProfile(handle: string) {
@@ -64,6 +69,7 @@ export async function updateProfile(payload: {
   location?: string;
   website?: string;
   avatarUrl?: string;
+  intent?: UserIntent;
 }) {
   const res = await apiClient<BackendUserProfile>("/api/users/me", {
     method: "PATCH",
@@ -82,3 +88,6 @@ export async function toggleFollow(handle: string) {
   );
   return res.data;
 }
+
+export const updateMe = updateProfile;
+

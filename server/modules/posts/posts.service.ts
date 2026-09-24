@@ -13,9 +13,15 @@ export interface PostResponse {
     role: string;
     avatarUrl?: string | null;
     verified: boolean;
+    intent?: string;
   };
   title?: string | null;
   content: string;
+  postType: string;
+  projectUrl?: string | null;
+  projectStage?: string | null;
+  lookingFor?: string | null;
+  mediaUrls: string[];
   readingTimeMinutes: number;
   createdAt: string;
   likesCount: number;
@@ -32,14 +38,20 @@ export interface PostResponse {
 export async function getFeed(
   cursor?: string,
   limit = 20,
-  currentUserId?: string
+  currentUserId?: string,
+  postType?: string
 ): Promise<{ posts: PostResponse[]; nextCursor: string | null }> {
   try {
     const queryLimit = Math.min(Math.max(limit, 1), 50);
 
     const conditions = [isNull(posts.deletedAt)];
+
     if (cursor) {
       conditions.push(lt(posts.createdAt, new Date(cursor)));
+    }
+
+    if (postType) {
+      conditions.push(eq(posts.postType, postType));
     }
 
     const rows = await db
@@ -47,6 +59,11 @@ export async function getFeed(
         id: posts.id,
         title: posts.title,
         content: posts.content,
+        postType: posts.postType,
+        projectUrl: posts.projectUrl,
+        projectStage: posts.projectStage,
+        lookingFor: posts.lookingFor,
+        mediaUrls: posts.mediaUrls,
         readingTimeMinutes: posts.readingTimeMinutes,
         likesCount: posts.likesCount,
         commentsCount: posts.commentsCount,
@@ -59,6 +76,7 @@ export async function getFeed(
         authorRole: users.role,
         authorAvatarUrl: users.avatarUrl,
         authorVerified: users.verified,
+        authorIntent: users.intent,
         isLiked: currentUserId
           ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
           : sql<boolean>`false`,
@@ -80,6 +98,11 @@ export async function getFeed(
       id: r.id,
       title: r.title,
       content: r.content,
+      postType: r.postType || "thought",
+      projectUrl: r.projectUrl || null,
+      projectStage: r.projectStage || null,
+      lookingFor: r.lookingFor || null,
+      mediaUrls: (r.mediaUrls as string[]) || [],
       readingTimeMinutes: r.readingTimeMinutes,
       likesCount: r.likesCount,
       commentsCount: r.commentsCount,
@@ -95,6 +118,7 @@ export async function getFeed(
         role: r.authorRole,
         avatarUrl: r.authorAvatarUrl,
         verified: r.authorVerified,
+        intent: r.authorIntent || "none",
       },
     }));
 
@@ -107,11 +131,19 @@ export async function getFeed(
 }
 
 /**
- * Create a new thoughtful post
+ * Create a new thoughtful post or project showcase
  */
 export async function createPost(
   userId: string,
-  input: { title?: string; content: string }
+  input: {
+    title?: string;
+    content: string;
+    postType?: string;
+    projectUrl?: string | null;
+    projectStage?: string | null;
+    lookingFor?: string | null;
+    mediaUrls?: string[];
+  }
 ): Promise<PostResponse> {
   const plainText = stripHtmlToPlainText(input.content);
   if (plainText.length < 5) {
@@ -123,6 +155,15 @@ export async function createPost(
   const words = plainText.split(/\s+/).filter(Boolean).length;
   const readingTimeMinutes = Math.max(1, Math.ceil(words / 180));
   const sanitizedTitle = input.title ? input.title.trim().slice(0, 300) : null;
+  const sanitizedProjectUrl = input.projectUrl ? input.projectUrl.trim().slice(0, 500) : null;
+  const sanitizedProjectStage = input.projectStage ? input.projectStage.trim().slice(0, 50) : null;
+  const sanitizedLookingFor = input.lookingFor ? input.lookingFor.trim().slice(0, 50) : null;
+  const sanitizedMediaUrls = Array.isArray(input.mediaUrls)
+    ? input.mediaUrls
+        .filter((u) => typeof u === "string" && (u.startsWith("http://") || u.startsWith("https://")))
+        .slice(0, 3)
+    : [];
+  const postType = input.postType === "project" ? "project" : "thought";
 
   try {
     const [inserted] = await db
@@ -131,6 +172,11 @@ export async function createPost(
         authorId: userId,
         title: sanitizedTitle,
         content: sanitizedContent,
+        postType,
+        projectUrl: sanitizedProjectUrl,
+        projectStage: sanitizedProjectStage,
+        lookingFor: sanitizedLookingFor,
+        mediaUrls: sanitizedMediaUrls,
         readingTimeMinutes,
         likesCount: 0,
         commentsCount: 0,
@@ -146,6 +192,11 @@ export async function createPost(
       id: inserted.id,
       title: inserted.title,
       content: inserted.content,
+      postType: inserted.postType || "thought",
+      projectUrl: inserted.projectUrl || null,
+      projectStage: inserted.projectStage || null,
+      lookingFor: inserted.lookingFor || null,
+      mediaUrls: (inserted.mediaUrls as string[]) || [],
       readingTimeMinutes: inserted.readingTimeMinutes,
       likesCount: 0,
       commentsCount: 0,
@@ -161,6 +212,7 @@ export async function createPost(
         role: author.role,
         avatarUrl: author.avatarUrl,
         verified: author.verified,
+        intent: author.intent || "none",
       },
     };
   } catch (err) {
@@ -215,6 +267,11 @@ export async function getPostById(
         id: posts.id,
         title: posts.title,
         content: posts.content,
+        postType: posts.postType,
+        projectUrl: posts.projectUrl,
+        projectStage: posts.projectStage,
+        lookingFor: posts.lookingFor,
+        mediaUrls: posts.mediaUrls,
         readingTimeMinutes: posts.readingTimeMinutes,
         likesCount: posts.likesCount,
         commentsCount: posts.commentsCount,
@@ -227,6 +284,7 @@ export async function getPostById(
         authorRole: users.role,
         authorAvatarUrl: users.avatarUrl,
         authorVerified: users.verified,
+        authorIntent: users.intent,
         isLiked: currentUserId
           ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
           : sql<boolean>`false`,
@@ -247,6 +305,11 @@ export async function getPostById(
       id: row.id,
       title: row.title,
       content: row.content,
+      postType: row.postType || "thought",
+      projectUrl: row.projectUrl || null,
+      projectStage: row.projectStage || null,
+      lookingFor: row.lookingFor || null,
+      mediaUrls: (row.mediaUrls as string[]) || [],
       readingTimeMinutes: row.readingTimeMinutes,
       likesCount: row.likesCount,
       commentsCount: row.commentsCount,
@@ -262,6 +325,7 @@ export async function getPostById(
         role: row.authorRole,
         avatarUrl: row.authorAvatarUrl,
         verified: row.authorVerified,
+        intent: row.authorIntent || "none",
       },
     };
   } catch (err) {

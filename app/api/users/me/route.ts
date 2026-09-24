@@ -12,6 +12,15 @@ const UpdateProfileSchema = z.object({
   location: z.string().max(100).optional(),
   website: z.string().max(200).optional(),
   avatarUrl: z.string().url("Noto‘g‘ri rasm havolasi").or(z.literal("")).optional(),
+  intent: z
+    .enum([
+      "none",
+      "looking_for_cofounder",
+      "open_to_work",
+      "raising_funds",
+      "open_to_advisory",
+    ])
+    .optional(),
 });
 
 export async function PATCH(req: NextRequest) {

@@ -9,15 +9,21 @@ import {
   BookmarkIcon,
   SettingsIcon,
   CloseIcon,
+  PlusIcon,
 } from "@/components/icons";
 import { LogOut } from "lucide-react";
 import { useShell } from "./shell-context";
 import { useAuth } from "@/components/auth/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
+import { useI18n } from "@/lib/i18n/context";
+import { LanguageSwitcher } from "./language-switcher";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { t, localePath } = useI18n();
+
+  const normalizedPath = pathname.replace(/^\/(uz|ru|en)(\/|$)/, "/$2").replace(/\/+/g, "/") || "/dashboard";
 
   return (
     <nav
@@ -26,10 +32,10 @@ export function MobileBottomNav() {
     >
       {/* 1. Home */}
       <Link
-        href="/dashboard"
-        aria-label="Bosh sahifa"
+        href={localePath("/dashboard")}
+        aria-label={t("nav.home")}
         className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          pathname === "/dashboard"
+          normalizedPath === "/dashboard" || normalizedPath === "/"
             ? "text-slate-950 dark:text-white"
             : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
         }`}
@@ -39,10 +45,10 @@ export function MobileBottomNav() {
 
       {/* 2. Bookmarks */}
       <Link
-        href="/dashboard/bookmarks"
-        aria-label="Saqlanganlar"
+        href={localePath("/dashboard/bookmarks")}
+        aria-label={t("nav.bookmarks")}
         className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          pathname === "/dashboard/bookmarks"
+          normalizedPath.startsWith("/dashboard/bookmarks")
             ? "text-slate-950 dark:text-white"
             : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
         }`}
@@ -50,12 +56,25 @@ export function MobileBottomNav() {
         <BookmarkIcon size={20} />
       </Link>
 
-      {/* 3. Profile */}
+      {/* 3. Create Thought Floating */}
       <Link
-        href="/dashboard/profile"
-        aria-label="Profil"
+        href={localePath("/dashboard/create")}
+        aria-label={t("nav.createThought")}
         className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          pathname === "/dashboard/profile"
+          normalizedPath.startsWith("/dashboard/create")
+            ? "text-slate-950 dark:text-white"
+            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+        }`}
+      >
+        <PlusIcon size={20} />
+      </Link>
+
+      {/* 4. Profile */}
+      <Link
+        href={localePath("/dashboard/profile")}
+        aria-label={t("nav.profile")}
+        className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
+          normalizedPath.startsWith("/dashboard/profile")
             ? "text-slate-950 dark:text-white"
             : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
         }`}
@@ -63,12 +82,12 @@ export function MobileBottomNav() {
         <UserIcon size={20} />
       </Link>
 
-      {/* 4. Settings */}
+      {/* 5. Settings */}
       <Link
-        href="/dashboard/settings"
-        aria-label="Sozlamalar"
+        href={localePath("/dashboard/settings")}
+        aria-label={t("nav.settings")}
         className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          pathname === "/dashboard/settings"
+          normalizedPath.startsWith("/dashboard/settings")
             ? "text-slate-950 dark:text-white"
             : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
         }`}
@@ -84,74 +103,98 @@ export function MobileDrawer() {
   const { isMobileOpen, closeMobileNav } = useShell();
   const pathname = usePathname();
   const { session, logout } = useAuth();
+  const { t, localePath } = useI18n();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   if (!isMobileOpen) return null;
 
+  const normalizedPath = pathname.replace(/^\/(uz|ru|en)(\/|$)/, "/$2").replace(/\/+/g, "/") || "/dashboard";
+
   const handleConfirmLogout = () => {
     setIsLogoutDialogOpen(false);
     closeMobileNav();
     logout();
-    toast.info("Tizimdan chiqdingiz. Xavfsiz sessiyangiz yakunlandi.");
-    router.push("/auth/login");
+    toast.info(t("auth.logoutDialog.successMessage"));
+    router.push(localePath("/auth/login"));
   };
 
   const navLinks = [
-    { href: "/dashboard", label: "Bosh sahifa", icon: HomeIcon },
-    { href: "/dashboard/bookmarks", label: "Saqlanganlar", icon: BookmarkIcon },
-    { href: "/dashboard/profile", label: "Profilim", icon: UserIcon },
-    { href: "/dashboard/settings", label: "Sozlamalar", icon: SettingsIcon },
+    { label: t("nav.home"), rawHref: "/dashboard", icon: HomeIcon },
+    { label: t("nav.createThought"), rawHref: "/dashboard/create", icon: PlusIcon },
+    { label: t("nav.bookmarks"), rawHref: "/dashboard/bookmarks", icon: BookmarkIcon },
+    { label: t("nav.profile"), rawHref: "/dashboard/profile", icon: UserIcon },
+    { label: t("nav.settings"), rawHref: "/dashboard/settings", icon: SettingsIcon },
   ];
 
   return (
     <>
-      <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-slate-950/60 transition-opacity"
-          onClick={closeMobileNav}
-          aria-hidden="true"
-        />
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity md:hidden"
+        onClick={closeMobileNav}
+        aria-hidden="true"
+      />
 
-        {/* Drawer Panel */}
-        <div className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-5 flex flex-col shadow-xl select-none animate-in slide-in-from-left duration-200">
+      {/* Drawer */}
+      <div
+        className="fixed inset-y-0 left-0 z-50 w-72 max-w-[80vw] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out md:hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobil navigatsiya menyusi"
+      >
+        <div className="space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center font-bold text-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+            <Link
+              href={localePath("/dashboard")}
+              onClick={closeMobileNav}
+              className="flex items-center gap-2.5"
+            >
+              <div className="w-7 h-7 rounded-md bg-slate-900 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900 font-bold text-sm">
                 F
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Fikr</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">O‘zbekiston tarmog‘i</p>
-              </div>
-            </div>
+              <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                {t("common.brandName")}
+              </span>
+            </Link>
 
             <button
               type="button"
               onClick={closeMobileNav}
-              aria-label="Menyuni yopish"
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+              aria-label={t("common.close")}
+              className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
             >
-              <CloseIcon size={20} />
+              <CloseIcon size={18} />
             </button>
           </div>
 
-          {/* Navigation list */}
-          <nav className="flex-1 overflow-y-auto py-3 space-y-1">
+          {/* Language Switcher Segment in Drawer */}
+          <div className="space-y-1.5 pt-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
+              Til / Язык / Language
+            </span>
+            <LanguageSwitcher variant="segmented" />
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="space-y-1 pt-2">
             {navLinks.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive =
+                item.rawHref === "/dashboard"
+                  ? normalizedPath === "/dashboard" || normalizedPath === "/"
+                  : normalizedPath.startsWith(item.rawHref);
               const IconComponent = item.icon;
+
               return (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={item.rawHref}
+                  href={localePath(item.rawHref)}
                   onClick={closeMobileNav}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
                     isActive
                       ? "bg-slate-100 dark:bg-slate-800 text-slate-950 dark:text-white font-semibold"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
                   <IconComponent size={18} />
@@ -160,54 +203,54 @@ export function MobileDrawer() {
               );
             })}
           </nav>
+        </div>
 
-          {/* User profile footer in drawer with logout trigger OR Guest sign in */}
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-            {session.isAuthenticated ? (
-              <div className="flex items-center justify-between gap-3">
-                <Link
-                  href="/dashboard/profile"
-                  onClick={closeMobileNav}
-                  className="flex items-center gap-3 min-w-0 flex-1 hover:opacity-85"
-                >
-                  <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center font-bold text-xs shrink-0 select-none">
-                    {session.user.name
-                      ? session.user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .slice(0, 2)
-                          .join("")
-                      : "F"}
-                  </div>
-                  <div className="flex flex-col min-w-0 flex-1">
-                    <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                      {session.user.name || "Foydalanuvchi"}
-                    </span>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                      {session.user.handle || "@foydalanuvchi"}
-                    </span>
-                  </div>
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={() => setIsLogoutDialogOpen(true)}
-                  title="Chiqish"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
+        {/* Bottom User Area */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+          {session.isAuthenticated ? (
+            <div className="space-y-2">
               <Link
-                href="/auth/login"
+                href={localePath("/dashboard/profile")}
                 onClick={closeMobileNav}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-950 text-white dark:bg-white dark:text-slate-950 text-xs font-semibold shadow-xs"
+                className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
               >
-                <span>Tizimga kirish</span>
+                <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center font-bold text-xs">
+                  {session.user.name
+                    ? session.user.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join("")
+                    : "F"}
+                </div>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                    {session.user.name || t("nav.guestUser")}
+                  </span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                    {session.user.handle}
+                  </span>
+                </div>
               </Link>
-            )}
-          </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLogoutDialogOpen(true)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>{t("nav.logout")}</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href={localePath("/auth/login")}
+              onClick={closeMobileNav}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 text-xs font-semibold transition-all shadow-xs"
+            >
+              <span>{t("nav.login")}</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -216,10 +259,10 @@ export function MobileDrawer() {
         isOpen={isLogoutDialogOpen}
         onClose={() => setIsLogoutDialogOpen(false)}
         onConfirm={handleConfirmLogout}
-        title="Tizimdan chiqmoqchimisiz?"
-        description="Joriy sessiyangiz yakunlanadi. Qayta kirish uchun telefon raqamingiz orqali tasdiqlash talab etiladi."
-        confirmText="Chiqish"
-        cancelText="Qolish"
+        title={t("auth.logoutDialog.title")}
+        description={t("auth.logoutDialog.description")}
+        confirmText={t("auth.logoutDialog.confirm")}
+        cancelText={t("auth.logoutDialog.cancel")}
         variant="warning"
       />
     </>

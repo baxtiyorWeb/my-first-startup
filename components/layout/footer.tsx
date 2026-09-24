@@ -1,7 +1,11 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n/context";
 
 export function Footer() {
+  const { t, localePath } = useI18n();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -14,35 +18,35 @@ export function Footer() {
         style={{ maxWidth: "var(--content-max-width, 940px)" }}
       >
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-800 dark:text-slate-200">Fikr</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-200">{t("common.brandName")}</span>
           <span>•</span>
-          <span>© {currentYear} Barcha huquqlar himoyalangan</span>
+          <span>© {currentYear} {t("footer.allRightsReserved")}</span>
         </div>
 
         <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5" aria-label="Footer havolalari">
           <Link
-            href="/privacy"
+            href={localePath("/privacy")}
             className="hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer transition-colors"
           >
-            Maxfiylik
+            {t("footer.privacy")}
           </Link>
           <Link
-            href="/terms"
+            href={localePath("/terms")}
             className="hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer transition-colors"
           >
-            Foydalanish shartlari
+            {t("footer.terms")}
           </Link>
           <Link
-            href="/guidelines"
+            href={localePath("/guidelines")}
             className="hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer transition-colors"
           >
-            Qoidalar
+            {t("footer.guidelines")}
           </Link>
           <Link
-            href="/help"
+            href={localePath("/help")}
             className="hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer transition-colors"
           >
-            Yordam
+            {t("footer.help")}
           </Link>
         </nav>
       </div>

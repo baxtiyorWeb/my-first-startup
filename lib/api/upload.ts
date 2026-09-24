@@ -35,3 +35,8 @@ export async function uploadFile(
 
   return json.data as UploadResult;
 }
+
+export async function uploadAvatar(file: File): Promise<UploadResult> {
+  return uploadFile(file, "avatars");
+}
+

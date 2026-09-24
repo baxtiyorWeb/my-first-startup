@@ -15,7 +15,8 @@ import type { Post, CommentThreadItem } from "@/types/social";
 import { useAuth } from "@/components/auth/auth-context";
 import { toast } from "@/components/ui/toast";
 import { RichContent } from "@/components/feed/rich-content";
-import { formatRelativeTime } from "@/lib/format-date";
+import { api, ApiError } from "@/lib/api";
+import { useI18n } from "@/lib/i18n/context";
 
 interface DiscussionDrawerProps {
   isOpen: boolean;
@@ -25,8 +26,6 @@ interface DiscussionDrawerProps {
   onCommentAdded?: () => void;
 }
 
-import { api, ApiError } from "@/lib/api";
-
 export function DiscussionDrawer({
   isOpen,
   onClose,
@@ -35,6 +34,7 @@ export function DiscussionDrawer({
   onCommentAdded,
 }: DiscussionDrawerProps) {
   const { session } = useAuth();
+  const { t, localePath, formatRelativeTime } = useI18n();
 
   const [commentText, setCommentText] = useState("");
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export function DiscussionDrawer({
         })
         .catch(() => {
           if (isMounted) {
-            toast.error("Izohlarni yuklashda xatolik yuz berdi");
+            toast.error(t("discussion.loadError"));
           }
         });
 
@@ -67,7 +67,7 @@ export function DiscussionDrawer({
         isMounted = false;
       };
     }
-  }, [post?.id, isOpen]);
+  }, [post?.id, isOpen, t]);
 
   const drawerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -103,7 +103,7 @@ export function DiscussionDrawer({
     if (!commentText.trim()) return;
 
     if (!session.isAuthenticated) {
-      toast.info("Munozarada qatnashish uchun avval tizimga kiring");
+      toast.info(t("discussion.authRequired"));
       return;
     }
 
@@ -114,10 +114,10 @@ export function DiscussionDrawer({
       setComments((prev) => [created, ...prev]);
       setCommentText("");
       onCommentAdded?.();
-      toast.success("Fikringiz muvaffaqiyatli chop etildi.");
+      toast.success(t("discussion.publishSuccess"));
     } catch (err) {
       const msg =
-        err instanceof ApiError ? err.message : "Izohni yuborishda xatolik yuz berdi";
+        err instanceof ApiError ? err.message : t("discussion.sendError");
       toast.error(msg);
     }
   };
@@ -126,7 +126,7 @@ export function DiscussionDrawer({
     if (!replyText.trim()) return;
 
     if (!session.isAuthenticated) {
-      toast.info("Javob yozish uchun avval tizimga kiring");
+      toast.info(t("discussion.authRequired"));
       return;
     }
 
@@ -144,10 +144,10 @@ export function DiscussionDrawer({
       );
       setReplyingToId(null);
       setReplyText("");
-      toast.success("Javobingiz qoldirildi.");
+      toast.success(t("discussion.publishSuccess"));
     } catch (err) {
       const msg =
-        err instanceof ApiError ? err.message : "Javobni yuborishda xatolik yuz berdi";
+        err instanceof ApiError ? err.message : t("discussion.sendError");
       toast.error(msg);
     }
   };
@@ -158,7 +158,7 @@ export function DiscussionDrawer({
         if (isNested && parentId && c.id === parentId) {
           return {
             ...c,
-            replies: (c.replies || []).map((r) =>
+            replies: c.replies?.map((r) =>
               r.id === commentId
                 ? {
                     ...r,
@@ -181,14 +181,14 @@ export function DiscussionDrawer({
     );
 
     try {
-      await api.comments.toggleCommentLike(commentId);
+      await api.comments.toggleLike(commentId);
     } catch {
-      // Ignore background error
+      // Revert silently on failure
     }
   };
 
   const totalCommentsCount = comments.reduce(
-    (acc, curr) => acc + 1 + (curr.replies ? curr.replies.length : 0),
+    (acc, curr) => acc + 1 + (curr.replies?.length || 0),
     0
   );
 
@@ -218,14 +218,14 @@ export function DiscussionDrawer({
               id="discussion-drawer-title"
               className="text-base font-serif font-bold text-slate-950 dark:text-white"
             >
-              Munozara ({totalCommentsCount})
+              {t("discussion.title")} ({totalCommentsCount})
             </h2>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            aria-label="Yopish"
+            aria-label={t("common.close")}
             className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -266,114 +266,112 @@ export function DiscussionDrawer({
                     handleAddComment();
                   }
                 }}
-                placeholder="Fikr bildiring yoki yangi nuqtayi nazar qo‘shing..."
+                placeholder={t("discussion.placeholder")}
                 className="w-full p-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-transparent focus:outline-none resize-none leading-relaxed"
               />
 
               <div className="flex items-center justify-between px-3 py-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-xl">
                 <span className="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:inline">
-                  Ctrl + Enter orqali jo‘natish
+                  Ctrl + Enter
                 </span>
                 <button
                   type="submit"
                   disabled={!commentText.trim()}
                   className="px-3.5 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ml-auto shadow-xs"
                 >
-                  <span>Qo‘shish</span>
-                  <Send className="w-3 h-3" />
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{t("discussion.send")}</span>
                 </button>
               </div>
             </div>
           </form>
 
-          {/* Comments List */}
-          <div className="space-y-5 pt-2">
+          {/* Discussion Stream / Tree */}
+          <div className="space-y-4">
             {comments.length === 0 ? (
-              <div className="text-center py-10 px-4">
-                <MessageSquare className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2 stroke-[1.5]" />
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
-                  Hozircha fikrlar yo‘q
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Ushbu mavzuda birinchi bo‘lib mulohaza bildiring
+              <div className="py-12 text-center space-y-2">
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {t("discussion.emptyTitle")}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+                  {t("discussion.emptySubtitle")}
                 </p>
               </div>
             ) : (
               comments.map((item) => (
                 <div key={item.id} className="space-y-3">
-                  {/* Top Level Comment */}
-                  <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
-                    {/* Author Bar */}
+                  {/* Parent Comment Card */}
+                  <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-800 dark:text-slate-200 shrink-0">
-                          {item.author.name.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1">
-                            <Link
-                              href={`/dashboard/profile?user=${item.author.handle}`}
-                              className="text-xs font-semibold text-slate-900 dark:text-white hover:underline truncate"
-                            >
-                              {item.author.name}
-                            </Link>
-                            {item.author.verified && (
-                              <CheckCircle2 className="w-3 h-3 text-slate-900 dark:text-white fill-current" />
-                            )}
-                          </div>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                            {item.author.role} • {formatRelativeTime(item.createdAt)}
-                          </span>
-                        </div>
+                        <Link
+                          href={localePath(`/dashboard/profile?user=${encodeURIComponent(item.author.handle)}`)}
+                          className="w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[10px] font-bold flex items-center justify-center"
+                        >
+                          {item.author.name[0]}
+                        </Link>
+                        <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                          {item.author.name}
+                        </span>
+                        {item.author.verified && (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-slate-900 dark:text-white fill-current" />
+                        )}
+                        <span className="text-[11px] text-slate-400">
+                          • {formatRelativeTime(item.createdAt)}
+                        </span>
                       </div>
 
                       {onReportClick && (
                         <button
                           type="button"
                           onClick={() =>
-                            onReportClick(item.id, item.author.name, item.content.slice(0, 60))
+                            onReportClick(
+                              item.id,
+                              item.author.name,
+                              item.content.slice(0, 80)
+                            )
                           }
-                          title="Shikoyat qilish"
-                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded"
+                          title={t("post.report")}
+                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded transition-colors"
                         >
                           <Flag className="w-3 h-3" />
                         </button>
                       )}
                     </div>
 
-                    {/* Content */}
                     <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line">
                       {item.content}
                     </p>
 
-                    {/* Actions */}
-                    <div className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-700/60 flex items-center gap-4 text-xs">
+                    {/* Actions Row */}
+                    <div className="mt-3 flex items-center gap-4 text-xs">
                       <button
                         type="button"
                         onClick={() => toggleCommentLike(item.id)}
-                        className={`inline-flex items-center gap-1 font-medium transition-colors cursor-pointer ${
+                        className={`inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors ${
                           item.isLiked
                             ? "text-red-600 dark:text-red-400 font-semibold"
-                            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
                         }`}
                       >
                         <Heart
-                          className={`w-3.5 h-3.5 ${
-                            item.isLiked ? "fill-current" : ""
-                          }`}
+                          className={`w-3.5 h-3.5 ${item.isLiked ? "fill-current" : ""}`}
                         />
-                        <span className="text-[11px]">{item.likesCount}</span>
+                        <span>{item.likesCount}</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() =>
-                          setReplyingToId((prev) => (prev === item.id ? null : item.id))
+                          setReplyingToId(replyingToId === item.id ? null : item.id)
                         }
-                        className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium cursor-pointer transition-colors text-[11px]"
+                        className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 font-medium cursor-pointer transition-colors"
                       >
-                        <CornerDownRight className="w-3 h-3" />
-                        <span>Javob berish</span>
+                        <CornerDownRight className="w-3.5 h-3.5" />
+                        <span>{t("discussion.reply")}</span>
                       </button>
                     </div>
 
@@ -384,7 +382,7 @@ export function DiscussionDrawer({
                           rows={2}
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
-                          placeholder={`${item.author.name}ga javob...`}
+                          placeholder={`${item.author.name} ${t("discussion.replyPlaceholder")}`}
                           className="w-full p-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white resize-none"
                         />
                         <div className="flex justify-end gap-2">
@@ -394,17 +392,17 @@ export function DiscussionDrawer({
                               setReplyingToId(null);
                               setReplyText("");
                             }}
-                            className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-800"
+                            className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-800 cursor-pointer"
                           >
-                            Bekor qilish
+                            {t("discussion.cancelReply")}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleAddReply(item.id)}
                             disabled={!replyText.trim()}
-                            className="px-3 py-1 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-md text-xs font-semibold disabled:opacity-40"
+                            className="px-3 py-1 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-md text-xs font-semibold disabled:opacity-40 cursor-pointer"
                           >
-                            Javob jo‘natish
+                            {t("discussion.send")}
                           </button>
                         </div>
                       </div>
@@ -442,8 +440,8 @@ export function DiscussionDrawer({
                                     reply.content.slice(0, 60)
                                   )
                                 }
-                                title="Shikoyat qilish"
-                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded"
+                                title={t("post.report")}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded cursor-pointer"
                               >
                                 <Flag className="w-2.5 h-2.5" />
                               </button>
@@ -458,7 +456,7 @@ export function DiscussionDrawer({
                             <button
                               type="button"
                               onClick={() => toggleCommentLike(reply.id, true, item.id)}
-                              className={`inline-flex items-center gap-1 text-[11px] font-medium ${
+                              className={`inline-flex items-center gap-1 text-[11px] font-medium cursor-pointer ${
                                 reply.isLiked
                                   ? "text-red-600 dark:text-red-400"
                                   : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"

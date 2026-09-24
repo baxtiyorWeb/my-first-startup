@@ -9,6 +9,21 @@ import { enforceRateLimit } from "@/server/common/rate-limiter";
 const CreatePostSchema = z.object({
   title: z.string().optional(),
   content: z.string().min(5, "Fikr matni kamida 5 ta belgidan iborat bo‘lishi kerak"),
+  postType: z.enum(["thought", "project"]).optional().default("thought"),
+  projectUrl: z
+    .string()
+    .trim()
+    .url("Noto‘g‘ri havola formati (masalan, https://example.com)")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  projectStage: z.enum(["idea", "mvp", "launched", "scaling"]).optional().nullable(),
+  lookingFor: z.enum(["cofounder", "feedback", "investment", "team"]).optional().nullable(),
+  mediaUrls: z
+    .array(z.string().url("Noto‘g‘ri rasm havolasi"))
+    .max(3, "Ko‘pi bilan 3 tagacha rasm yuklash mumkin")
+    .optional()
+    .default([]),
 });
 
 export async function GET(req: NextRequest) {
@@ -17,8 +32,10 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const cursor = searchParams.get("cursor") || undefined;
     const limit = Number(searchParams.get("limit")) || 20;
+    const typeParam = searchParams.get("type");
+    const postType = (typeParam === "thought" || typeParam === "project") ? typeParam : undefined;
 
-    const result = await getFeed(cursor, limit, authUser?.userId);
+    const result = await getFeed(cursor, limit, authUser?.userId, postType);
     return successResponse(result.posts, { nextCursor: result.nextCursor });
   } catch (error) {
     return errorResponse(error);

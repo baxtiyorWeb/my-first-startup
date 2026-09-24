@@ -6,7 +6,9 @@ import { CloseIcon, CheckIcon } from "@/components/icons";
 import { toast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
 import { compressAvatarImage } from "@/lib/image-compressor";
-import type { UserProfile } from "@/types/social";
+import type { UserProfile, UserIntent } from "@/types/social";
+import { useI18n } from "@/lib/i18n/context";
+import { CustomSelect, type CustomSelectOption } from "@/components/ui/custom-select";
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -24,13 +26,16 @@ function ProfileEditForm({
   onClose: () => void;
   onSave: (updatedProfile: Partial<UserProfile>) => void;
 }) {
+  const { t } = useI18n();
+
   const [name, setName] = useState(profile.name);
   const [role, setRole] = useState(profile.role);
   const [bio, setBio] = useState(profile.bio);
   const [location, setLocation] = useState(profile.location || "");
   const [website, setWebsite] = useState(profile.website || "");
+  const [intent, setIntent] = useState<UserIntent>(profile.intent || "none");
 
-  // Local-only avatar selection before saving (prevents Bunny.net costs on cancelled/changed images)
+  // Local-only avatar selection before saving
   const [previewAvatarUrl, setPreviewAvatarUrl] = useState(profile.avatarUrl || "");
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
   const [isPendingDelete, setIsPendingDelete] = useState(false);
@@ -38,7 +43,7 @@ function ProfileEditForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
 
-  // Clean up object URLs on unmount to prevent memory leaks
+  // Clean up object URLs on unmount
   useEffect(() => {
     return () => {
       if (objectUrlRef.current) {
@@ -58,7 +63,6 @@ function ProfileEditForm({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Local file selection (0 network requests, 0 Bunny storage cost!)
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -68,19 +72,15 @@ function ProfileEditForm({
       return;
     }
 
-    // Clean up previous preview URL if it was a local blob
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current);
     }
 
-    // Create instant local browser preview
     const localUrl = URL.createObjectURL(file);
     objectUrlRef.current = localUrl;
     setPreviewAvatarUrl(localUrl);
     setSelectedAvatarFile(file);
     setIsPendingDelete(false);
-
-    toast.info("Rasm tanlandi. Saqlash uchun 'O‘zgarishlarni saqlash' tugmasini bosing");
   };
 
   const handleRemoveAvatar = () => {
@@ -99,72 +99,85 @@ function ProfileEditForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error("Ism bo‘sh bo‘lishi mumkin emas");
+      toast.error(t("settings.nameRequired"));
       return;
     }
 
     setIsSaving(true);
     try {
-      let finalAvatarUrl: string | undefined = profile.avatarUrl || undefined;
+      let finalAvatarUrl: string | undefined = profile.avatarUrl;
 
-      // Only upload to Bunny.net when the user actually commits by saving!
-      if (selectedAvatarFile) {
-        // 1. Compress image in browser (reduces ~5MB photo to ~50KB WebP with 0 quality loss)
-        const compressedFile = await compressAvatarImage(selectedAvatarFile, 400, 0.85);
-
-        // 2. Upload compressed file to Bunny.net
-        const result = await api.upload.uploadFile(compressedFile, "avatars");
-        finalAvatarUrl = result.url;
-      } else if (isPendingDelete) {
+      if (isPendingDelete) {
         finalAvatarUrl = "";
+      } else if (selectedAvatarFile) {
+        const compressedBlob = await compressAvatarImage(selectedAvatarFile);
+        const compressedFile = new File([compressedBlob], "avatar.webp", {
+          type: "image/webp",
+        });
+
+        const uploadRes = await api.upload.uploadAvatar(compressedFile);
+        finalAvatarUrl = uploadRes.url;
       }
 
-      await onSave({
+      await api.users.updateMe({
         name: name.trim(),
         role: role.trim(),
         bio: bio.trim(),
         location: location.trim() || undefined,
         website: website.trim() || undefined,
         avatarUrl: finalAvatarUrl,
+        intent,
       });
 
-      toast.success("Profil ma’lumotlari muvaffaqiyatli saqlandi");
+      onSave({
+        name: name.trim(),
+        role: role.trim(),
+        bio: bio.trim(),
+        location: location.trim() || undefined,
+        website: website.trim() || undefined,
+        avatarUrl: finalAvatarUrl || undefined,
+        intent,
+      });
+
+      toast.success(t("common.saved"));
       onClose();
     } catch {
-      toast.error("Profilni saqlashda xatolik yuz berdi");
+      toast.error(t("settings.errorSaved"));
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div
-      className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-150"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-150">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-        <h2
-          id="edit-profile-title"
-          className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100"
-        >
-          Profilni tahrirlash
-        </h2>
+      <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <h2
+            id="edit-profile-title"
+            className="text-base font-bold text-slate-950 dark:text-white"
+          >
+            {t("profile.editModal.title")}
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {t("profile.editModal.subtitle")}
+          </p>
+        </div>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Yopish"
-          className="p-1 rounded-md text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          aria-label={t("common.close")}
+          className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
         >
           <CloseIcon size={18} />
         </button>
       </div>
 
-      {/* Form */}
+      {/* Form Body */}
       <form onSubmit={handleSubmit} className="p-5 space-y-4">
-        {/* Avatar Local Preview & Upload Section */}
-        <div className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
-          <div className="relative group w-16 h-16 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 shrink-0 border-2 border-white dark:border-slate-800 shadow-sm">
+        {/* Avatar Upload / Preview */}
+        <div className="flex items-center gap-4 pb-2 border-b border-slate-100 dark:border-slate-800/80">
+          <div className="relative w-16 h-16 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-xl flex items-center justify-center ring-2 ring-slate-200 dark:ring-slate-800 overflow-hidden shrink-0 select-none">
             {previewAvatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -173,31 +186,18 @@ function ProfileEditForm({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-lg font-bold text-slate-600 dark:text-slate-300">
-                {name.charAt(0).toUpperCase()}
-              </div>
-            )}
-            {isSaving && selectedAvatarFile && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
-                <Loader2 className="w-5 h-5 animate-spin" />
-              </div>
+              name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
             )}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                Profil rasmi
-              </p>
-              {selectedAvatarFile && (
-                <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
-                  Lokal tanlandi (saqlanmagan)
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              JPG, PNG yoki WebP. Saqlashda avtomatik siqiladi.
-            </p>
+          <div className="flex-1">
+            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+              {t("profile.editModal.name")}
+            </span>
             <div className="mt-2 flex items-center gap-2">
               <input
                 ref={fileInputRef}
@@ -213,7 +213,7 @@ function ProfileEditForm({
                 className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-colors cursor-pointer shadow-2xs"
               >
                 <Camera size={13} />
-                <span>{previewAvatarUrl ? "Boshqa rasm tanlash" : "Rasm tanlash"}</span>
+                <span>{previewAvatarUrl ? "Rasm almashtirish" : "Rasm yuklash"}</span>
               </button>
               {previewAvatarUrl && (
                 <button
@@ -223,7 +223,7 @@ function ProfileEditForm({
                   className="inline-flex items-center gap-1 text-xs text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer transition-colors"
                 >
                   <Trash2 size={12} />
-                  <span>O‘chirish</span>
+                  <span>{t("common.delete")}</span>
                 </button>
               )}
             </div>
@@ -232,7 +232,7 @@ function ProfileEditForm({
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-            To‘liq ism
+            {t("profile.editModal.name")}
           </label>
           <input
             type="text"
@@ -243,28 +243,44 @@ function ProfileEditForm({
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-            Mutaxassislik yoki faoliyat sohasi
-          </label>
-          <input
-            type="text"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            placeholder="Masalan: Senior Software Architect"
-            className="w-full h-9 px-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              {t("profile.editModal.role")}
+            </label>
+            <input
+              type="text"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="Masalan: Senior Software Architect"
+              className="w-full h-9 px-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
+            />
+          </div>
+
+          <div className="pt-0.5">
+            <CustomSelect<UserIntent>
+              label={t("intents.label")}
+              value={intent}
+              onChange={setIntent}
+              options={[
+                { value: "none", label: t("intents.none"), description: t("intents.noneDesc") },
+                { value: "looking_for_cofounder", label: t("intents.badge_cofounder"), description: t("intents.cofounderDesc") },
+                { value: "open_to_work", label: t("intents.badge_open_to_work"), description: t("intents.openToWorkDesc") },
+                { value: "raising_funds", label: t("intents.badge_raising"), description: t("intents.raisingDesc") },
+                { value: "open_to_advisory", label: t("intents.badge_advisory"), description: t("intents.advisoryDesc") },
+              ]}
+            />
+          </div>
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-            Qarashlaringiz va qiziqishlaringiz (Bio)
+            {t("profile.editModal.bio")}
           </label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={3}
-            placeholder="Platformadagi kuzatuvlaringiz, izlanishlaringiz haqida qisqacha..."
             className="w-full p-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none leading-relaxed"
           />
         </div>
@@ -304,7 +320,7 @@ function ProfileEditForm({
             onClick={onClose}
             className="px-3.5 py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            Bekor qilish
+            {t("common.cancel")}
           </button>
           <button
             type="submit"
@@ -312,7 +328,7 @@ function ProfileEditForm({
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-xs font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-60"
           >
             <CheckIcon size={14} />
-            <span>{isSaving ? "Siqilmoqda va saqlanmoqda..." : "O‘zgarishlarni saqlash"}</span>
+            <span>{isSaving ? t("profile.editModal.saving") : t("profile.editModal.save")}</span>
           </button>
         </div>
       </form>

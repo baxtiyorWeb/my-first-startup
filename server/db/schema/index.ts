@@ -6,6 +6,7 @@ import {
   boolean,
   integer,
   timestamp,
+  jsonb,
   primaryKey,
   index,
   uniqueIndex,
@@ -25,6 +26,7 @@ export const users = pgTable(
     avatarUrl: varchar("avatar_url", { length: 500 }),
     location: varchar("location", { length: 100 }),
     website: varchar("website", { length: 200 }),
+    intent: varchar("intent", { length: 50 }).default("none").notNull(),
     verified: boolean("verified").default(false).notNull(),
     isOnboarded: boolean("is_onboarded").default(false).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -46,6 +48,11 @@ export const posts = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     title: varchar("title", { length: 300 }),
     content: text("content").notNull(),
+    postType: varchar("post_type", { length: 30 }).default("thought").notNull(),
+    projectUrl: varchar("project_url", { length: 500 }),
+    projectStage: varchar("project_stage", { length: 50 }),
+    lookingFor: varchar("looking_for", { length: 50 }),
+    mediaUrls: jsonb("media_urls").$type<string[]>().default([]).notNull(),
     readingTimeMinutes: integer("reading_time_minutes").default(1).notNull(),
     likesCount: integer("likes_count").default(0).notNull(),
     commentsCount: integer("comments_count").default(0).notNull(),
@@ -58,6 +65,7 @@ export const posts = pgTable(
   (table) => [
     index("idx_posts_created_at").on(table.createdAt),
     index("idx_posts_author_created").on(table.authorId, table.createdAt),
+    index("idx_posts_post_type").on(table.postType),
   ]
 );
 

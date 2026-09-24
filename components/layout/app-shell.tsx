@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-context";
+import { useI18n } from "@/lib/i18n/context";
 import {
   ShellProvider,
   useShell,
@@ -29,16 +30,19 @@ function ShellLayoutInner({
   const { isCollapsed } = useShell();
   const { session, isLoaded } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() || "";
+  const { localePath } = useI18n();
 
-  const isAuthRequired = pathname === "/dashboard/create" || pathname === "/dashboard/settings";
+  const isAuthRequired =
+    pathname.endsWith("/dashboard/create") ||
+    pathname.endsWith("/dashboard/settings");
 
   useEffect(() => {
     if (!isLoaded) return;
     if (!session.isAuthenticated && isAuthRequired) {
-      router.replace(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+      router.replace(localePath(`/auth/login?redirect=${encodeURIComponent(pathname)}`));
     }
-  }, [session, isLoaded, router, pathname, isAuthRequired]);
+  }, [session, isLoaded, router, pathname, isAuthRequired, localePath]);
 
   if (!isLoaded) {
     return (

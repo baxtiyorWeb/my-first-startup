@@ -3,6 +3,13 @@
  * Designed for seamless future backend (REST/GraphQL/Server Actions) integration.
  */
 
+export type UserIntent =
+  | "none"
+  | "looking_for_cofounder"
+  | "open_to_work"
+  | "raising_funds"
+  | "open_to_advisory";
+
 export interface Author {
   id: string;
   name: string;
@@ -10,6 +17,7 @@ export interface Author {
   role: string;
   avatarUrl?: string;
   verified: boolean;
+  intent?: UserIntent;
 }
 
 export type ContentTopic = 
@@ -28,11 +36,20 @@ export type ContentCategory =
   | "analytical"
   | "experience";
 
+export type PostType = "thought" | "project";
+export type ProjectStage = "idea" | "mvp" | "launched" | "scaling";
+export type ProjectLookingFor = "cofounder" | "feedback" | "investment" | "team";
+
 export interface Post {
   id: string;
   author: Author;
   title?: string;
   content: string;
+  postType?: PostType;
+  projectUrl?: string;
+  projectStage?: ProjectStage;
+  lookingFor?: ProjectLookingFor;
+  mediaUrls?: string[];
   topic?: ContentTopic;
   category?: "discussion" | "analytical" | "quick_thought" | "experience";
   readingTimeMinutes?: number;
@@ -59,7 +76,12 @@ export interface Comment {
 export interface CreatePostInput {
   title?: string;
   content: string;
-  topic: ContentTopic;
+  postType?: PostType;
+  projectUrl?: string;
+  projectStage?: ProjectStage;
+  lookingFor?: ProjectLookingFor;
+  mediaUrls?: string[];
+  topic?: ContentTopic;
   tags?: string[];
 }
 
@@ -142,6 +164,7 @@ export interface SearchItem {
   type: "author" | "post" | "topic" | "user";
   title: string;
   subtitle?: string;
+  snippet?: string;
   href: string;
   badge?: string;
   avatarUrl?: string;

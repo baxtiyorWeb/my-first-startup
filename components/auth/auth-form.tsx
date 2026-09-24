@@ -7,6 +7,8 @@ import { ShieldCheck, ArrowRight, ArrowLeft, RefreshCw, Smartphone, Sparkles } f
 import { useAuth } from "@/components/auth/auth-context";
 import { OtpInput } from "@/components/auth/otp-input";
 import { toast } from "@/components/ui/toast";
+import { useI18n } from "@/lib/i18n/context";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 
 interface AuthFormProps {
   mode: "login" | "register";
@@ -15,6 +17,7 @@ interface AuthFormProps {
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const { loginWithPhone, verifyOtp, resendOtp } = useAuth();
+  const { t, localePath } = useI18n();
 
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [rawPhone, setRawPhone] = useState("");
@@ -71,7 +74,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const handleSendCode = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (rawPhone.length < 9) {
-      setError("Iltimos, 9 xonali telefon raqamingizni to‘liq kiriting");
+      setError(t("auth.phoneInvalid"));
       return;
     }
 
@@ -83,9 +86,9 @@ export function AuthForm({ mode }: AuthFormProps) {
       setStep("otp");
       setCountdown(60);
       setCanResend(false);
-      toast.info(`${fullPhoneNumber} raqamiga 4 xonali tasdiqlash kodi jo‘natildi`);
+      toast.info(`${fullPhoneNumber} ${t("auth.codeSentNotice")}`);
     } catch {
-      setError("SMS yuborishda xatolik yuz berdi. Qayta urinib ko‘ring.");
+      setError(t("common.errorOccurred"));
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +97,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const handleVerifyOtp = async (codeToVerify?: string) => {
     const code = codeToVerify || otpValue;
     if (code.length < 4) {
-      setError("Iltimos, 4 xonali kodni to‘liq kiriting");
+      setError(t("auth.codeInvalid"));
       return;
     }
 
@@ -104,18 +107,18 @@ export function AuthForm({ mode }: AuthFormProps) {
     try {
       const res = await verifyOtp(code);
       if (res.success) {
-        toast.success(mode === "login" ? "Xush kelibsiz! Tizimga muvaffaqiyatli ulandingiz." : "Raqam tasdiqlandi.");
+        toast.success(t("common.success"));
 
         if (mode === "login" || res.isOnboarded) {
-          router.push("/dashboard");
+          router.push(localePath("/dashboard"));
         } else {
-          router.push("/onboarding");
+          router.push(localePath("/onboarding"));
         }
       } else {
-        setError(res.error || "Kod noto‘g‘ri. Qayta urinib ko‘ring.");
+        setError(res.error || t("auth.codeInvalid"));
       }
     } catch {
-      setError("Tasdiqlashda server xatosi yuz berdi.");
+      setError(t("common.errorOccurred"));
     } finally {
       setIsLoading(false);
     }
@@ -130,9 +133,9 @@ export function AuthForm({ mode }: AuthFormProps) {
       setCountdown(60);
       setCanResend(false);
       setOtpValue("");
-      toast.info("Yangi SMS-kod telefoningizga jo‘natildi.");
+      toast.info(`${fullPhoneNumber} ${t("auth.codeSentNotice")}`);
     } catch {
-      setError("Kodni qayta jo‘natish imkoni bo‘lmadi.");
+      setError(t("common.errorOccurred"));
     } finally {
       setIsLoading(false);
     }
@@ -140,12 +143,19 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-8">
+      {/* Top Language Switcher Bar on Auth Screen */}
+      <div className="flex justify-end mb-4">
+        <LanguageSwitcher variant="header" />
+      </div>
 
+      <div className="text-center mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+          {mode === "login" ? t("auth.loginTitle") : t("auth.registerTitle")}
+        </h1>
         <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
           {mode === "login"
-            ? "O‘zbekiston intellektual hamjamiyatidagi hisobingizga kiring"
-            : "o'z auditoriyangizni kashf qiling ... "}
+            ? t("auth.loginSubtitle")
+            : t("auth.registerSubtitle")}
         </p>
       </div>
 
@@ -158,14 +168,15 @@ export function AuthForm({ mode }: AuthFormProps) {
                 htmlFor="phone-input"
                 className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
               >
-                Telefon raqamingiz
+                {t("auth.phoneLabel")}
               </label>
 
               <div
-                className={`relative flex items-center rounded-xl border transition-all ${error
-                  ? "border-red-500 ring-2 ring-red-500/20 bg-red-50/20 dark:bg-red-950/20"
-                  : "border-slate-300 dark:border-slate-700 focus-within:border-slate-950 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-slate-950/10 dark:focus-within:ring-white/10"
-                  }`}
+                className={`relative flex items-center rounded-xl border transition-all ${
+                  error
+                    ? "border-red-500 ring-2 ring-red-500/20 bg-red-50/20 dark:bg-red-950/20"
+                    : "border-slate-300 dark:border-slate-700 focus-within:border-slate-950 dark:focus-within:border-white focus-within:ring-2 focus-within:ring-slate-950/10 dark:focus-within:ring-white/10"
+                }`}
               >
                 <div className="flex items-center pl-3.5 pr-2 py-3 text-slate-500 dark:text-slate-400 select-none border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 rounded-l-xl">
                   <Smartphone className="w-4 h-4 mr-2 text-slate-400" />
@@ -179,7 +190,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   ref={phoneInputRef}
                   type="tel"
                   inputMode="numeric"
-                  placeholder="90 123 45 67"
+                  placeholder={t("auth.phonePlaceholder")}
                   value={getFormattedPhoneDisplay()}
                   onChange={handlePhoneChange}
                   disabled={isLoading}
@@ -198,128 +209,107 @@ export function AuthForm({ mode }: AuthFormProps) {
             <button
               type="submit"
               disabled={isLoading || rawPhone.length < 9}
-              className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 font-medium text-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm active:scale-[0.99]"
+              className="w-full py-3.5 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed group active:scale-[0.99]"
             >
               {isLoading ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>{t("auth.sendingCode")}</span>
+                </>
               ) : (
                 <>
-                  <span>SMS orqali kod olish</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>{t("auth.sendCode")}</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </>
+              )}
+            </button>
+          </form>
+        ) : (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  {t("auth.enterCode")}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setStep("phone")}
+                  className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <ArrowLeft className="w-3 h-3" />
+                  <span>{t("auth.changeNumber")}</span>
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">
+                  {fullPhoneNumber}
+                </span>{" "}
+                {t("auth.codeSentNotice")}
+              </p>
+
+              {/* 4-digit OTP box */}
+              <div className="py-2">
+                <OtpInput
+                  length={4}
+                  value={otpValue}
+                  onChange={(val) => {
+                    setOtpValue(val);
+                    setError(null);
+                  }}
+                  onComplete={handleVerifyOtp}
+                  disabled={isLoading}
+                  autoFocus
+                />
+              </div>
+
+              {error && (
+                <p className="text-xs text-red-600 dark:text-red-400 font-medium text-center animate-in fade-in">
+                  {error}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleVerifyOtp()}
+              disabled={isLoading || otpValue.length < 4}
+              className="w-full py-3.5 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed group active:scale-[0.99]"
+            >
+              {isLoading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>{t("auth.verifying")}</span>
+                </>
+              ) : (
+                <>
+                  <span>{t("auth.verifyAndLogin")}</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
             </button>
 
-            {/* Test hint for effortless evaluation */}
-            <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 border border-slate-100 dark:border-slate-800 text-center">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                <span className="font-semibold text-slate-700 dark:text-slate-300">
-                  Tezkor ko‘rish:
-                </span>{" "}
-                Ixtiyoriy 9 xonali raqam kiriting (masalan:{" "}
+            {/* Resend Cooldown Timer */}
+            <div className="text-center pt-1">
+              {canResend ? (
                 <button
                   type="button"
-                  onClick={() => setRawPhone("901234567")}
-                  className="underline font-mono text-slate-900 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400"
+                  onClick={handleResend}
+                  disabled={isLoading}
+                  className="text-xs font-semibold text-slate-900 dark:text-white hover:underline cursor-pointer transition-colors"
                 >
-                  90 123 45 67
+                  {t("auth.resendCode")}
                 </button>
-                )
-              </p>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-6">
-            <div className="text-center space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                SMS tasdiqlash
-              </p>
-              <p className="text-sm text-slate-700 dark:text-slate-300">
-                <span className="font-semibold text-slate-950 dark:text-white">
-                  {fullPhoneNumber}
-                </span>{" "}
-                raqamiga yuborilgan 4 xonali kodni kiriting
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setStep("phone");
-                  setError(null);
-                  setOtpValue("");
-                }}
-                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors underline underline-offset-2 pt-1"
-              >
-                <ArrowLeft className="w-3 h-3" />
-                <span>Raqamni o‘zgartirish</span>
-              </button>
+              ) : (
+                <p className="text-xs text-slate-400 font-mono">
+                  {countdown} {t("auth.resendIn")}
+                </p>
+              )}
             </div>
 
-            <div className="py-2">
-              <OtpInput
-                length={4}
-                value={otpValue}
-                onChange={(val) => {
-                  setOtpValue(val);
-                  setError(null);
-                }}
-                onComplete={(code) => handleVerifyOtp(code)}
-                error={error}
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => handleVerifyOtp()}
-                disabled={isLoading || otpValue.length < 4}
-                className="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 font-medium text-sm transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm active:scale-[0.99]"
-              >
-                {isLoading ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <span>Kodni tasdiqlash</span>
-                )}
-              </button>
-
-              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-1">
-                <span>Kod yetib kelmadimi?</span>
-                {canResend ? (
-                  <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={isLoading}
-                    className="font-medium text-slate-950 dark:text-white hover:underline cursor-pointer flex items-center gap-1"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    <span>Qayta yuborish</span>
-                  </button>
-                ) : (
-                  <span className="font-mono text-slate-400 dark:text-slate-500">
-                    {countdown}s kuting
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Test hint for OTP */}
-            <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3 border border-slate-100 dark:border-slate-800 text-center">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                <span className="font-semibold text-slate-700 dark:text-slate-300">
-                  Sinov kodi:
-                </span>{" "}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOtpValue("1234");
-                    handleVerifyOtp("1234");
-                  }}
-                  className="font-mono font-bold text-slate-950 dark:text-white underline hover:text-blue-600"
-                >
-                  1234
-                </button>{" "}
-                (Xatolik testi: 0000)
-              </p>
+            {/* Test demo tip */}
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 text-center leading-relaxed">
+              <p>{t("auth.demoNote")}</p>
             </div>
           </div>
         )}
@@ -327,7 +317,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         {/* Security badge */}
         <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span>Fikr xavfsiz va maxfiy autentifikatsiyani kafolatlaydi</span>
+          <span>Fikr — xavfsiz va maxfiy autentifikatsiya</span>
         </div>
       </div>
 
@@ -335,22 +325,22 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
         {mode === "login" ? (
           <p>
-            Fikrda hali hisobingiz yo‘qmi?{" "}
+            {t("auth.dontHaveAccount")}{" "}
             <Link
-              href="/auth/register"
+              href={localePath("/auth/register")}
               className="font-semibold text-slate-950 dark:text-white hover:underline underline-offset-2"
             >
-              Ro‘yxatdan o‘tish
+              {t("nav.register")}
             </Link>
           </p>
         ) : (
           <p>
-            Oldin ro‘yxatdan o‘tganmisiz?{" "}
+            {t("auth.haveAccount")}{" "}
             <Link
-              href="/auth/login"
+              href={localePath("/auth/login")}
               className="font-semibold text-slate-950 dark:text-white hover:underline underline-offset-2"
             >
-              Tizimga kirish
+              {t("nav.login")}
             </Link>
           </p>
         )}
@@ -359,11 +349,11 @@ export function AuthForm({ mode }: AuthFormProps) {
       {/* Guest Explore link */}
       <div className="mt-4 text-center">
         <Link
-          href="/dashboard"
+          href={localePath("/dashboard")}
           className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
         >
           <Sparkles className="w-3 h-3 text-amber-500" />
-          <span>Mehmon sifatida ko‘rib chiqish</span>
+          <span>{t("auth.guestEntry")}</span>
         </Link>
       </div>
     </div>

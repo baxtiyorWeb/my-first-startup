@@ -6,7 +6,7 @@ import { MessageIcon, HeartIcon } from "@/components/icons";
 import { Eye } from "lucide-react";
 import type { Post } from "@/types/social";
 import { RichContent } from "@/components/feed/rich-content";
-import { formatRelativeTime } from "@/lib/format-date";
+import { useI18n } from "@/lib/i18n/context";
 
 interface ProfileFeaturedThoughtProps {
   post: Post;
@@ -15,9 +15,11 @@ interface ProfileFeaturedThoughtProps {
 export function ProfileFeaturedThought({
   post,
 }: ProfileFeaturedThoughtProps) {
+  const { t, localePath, formatRelativeTime } = useI18n();
+
   return (
     <Link
-      href={`/dashboard/posts/${post.id}`}
+      href={localePath(`/dashboard/posts/${post.id}`)}
       className="block group focus:outline-none focus:ring-2 focus:ring-slate-400 rounded-xl"
     >
       <div className="relative rounded-xl border border-slate-200 dark:border-slate-800 bg-linear-to-b from-slate-50/80 to-white dark:from-slate-800/30 dark:to-slate-900 p-4 sm:p-5 transition-all group-hover:border-slate-300 dark:group-hover:border-slate-700 shadow-xs cursor-pointer">
@@ -25,7 +27,7 @@ export function ProfileFeaturedThought({
         <div className="flex items-center justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-slate-100">
             <span className="text-sm">📌</span>
-            <span className="tracking-tight">Muallifning tanlangan qarashi</span>
+            <span className="tracking-tight">{t("profile.featuredThought") || "Muallifning tanlangan qarashi"}</span>
           </div>
         </div>
 
@@ -51,7 +53,7 @@ export function ProfileFeaturedThought({
               <MessageIcon size={14} />
               <span className="tabular-nums">{post.commentsCount}</span>
               <span className="hidden sm:inline text-[11px] text-slate-400">
-                ta fikr-mulohaza
+                {t("post.comment")}
               </span>
             </span>
 
@@ -63,7 +65,7 @@ export function ProfileFeaturedThought({
             <span className="flex items-center gap-1 text-[11px] text-slate-400">
               <Eye size={14} className="stroke-[1.75]" />
               <span className="tabular-nums">{post.viewsCount ?? 0}</span>
-              <span className="hidden sm:inline text-[11px]">ko‘rish</span>
+              <span className="hidden sm:inline text-[11px]">{t("common.views")}</span>
             </span>
           </div>
 
