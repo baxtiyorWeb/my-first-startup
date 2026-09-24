@@ -9,7 +9,7 @@ import {
   CheckIcon,
 } from "@/components/icons";
 import { toast } from "@/components/ui/toast";
-import type { UserProfile } from "@/types/social";
+import type { UserProfile, ProfileTab } from "@/types/social";
 import { useI18n } from "@/lib/i18n/context";
 
 interface ProfileHeaderProps {
@@ -17,6 +17,7 @@ interface ProfileHeaderProps {
   isSelf: boolean;
   onEditClick: () => void;
   onFollowToggle?: (isFollowing: boolean) => void;
+  onTabChange?: (tab: ProfileTab) => void;
 }
 
 export function ProfileHeader({
@@ -24,6 +25,7 @@ export function ProfileHeader({
   isSelf,
   onEditClick,
   onFollowToggle,
+  onTabChange,
 }: ProfileHeaderProps) {
   const { t, localePath } = useI18n();
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing ?? false);
@@ -62,7 +64,7 @@ export function ProfileHeader({
   };
 
   return (
-    <header className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 sm:p-7 shadow-xs">
+    <header className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-7 shadow-xs">
       {/* 1. Identity & Actions Row */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
         {/* Left: Avatar + Primary Identity */}
@@ -229,45 +231,53 @@ export function ProfileHeader({
 
       {/* 3. Discussion & Contribution Signals */}
       {/* Mobile: Compact, sleek inline metrics bar (Zero chunky boxes) */}
-      <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/80 sm:hidden flex items-center justify-between gap-1 text-center py-1">
-        <div className="flex-1 py-0.5">
+      <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/80 sm:hidden flex items-center justify-between gap-1 text-center py-0.5">
+        <button
+          type="button"
+          onClick={() => onTabChange?.("posts")}
+          className="flex-1 py-1 px-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 active:scale-95 transition-all text-center cursor-pointer"
+        >
           <span className="text-sm font-bold text-slate-950 dark:text-white tabular-nums block leading-tight">
             {profile.stats.postsCount}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium truncate">
             {t("profile.stats.thoughts")}
           </span>
-        </div>
+        </button>
 
-        <div className="w-px h-6 bg-slate-200/80 dark:border-slate-800 shrink-0" />
+        <div className="w-px h-5 bg-slate-200/70 dark:bg-slate-800 shrink-0" />
 
-        <div className="flex-1 py-0.5">
+        <button
+          type="button"
+          onClick={() => onTabChange?.("discussions")}
+          className="flex-1 py-1 px-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 active:scale-95 transition-all text-center cursor-pointer"
+        >
           <span className="text-sm font-bold text-slate-950 dark:text-white tabular-nums block leading-tight">
             {profile.stats.discussionsCount}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium truncate">
             {t("profile.stats.discussions")}
           </span>
-        </div>
+        </button>
 
-        <div className="w-px h-6 bg-slate-200/80 dark:border-slate-800 shrink-0" />
+        <div className="w-px h-5 bg-slate-200/70 dark:bg-slate-800 shrink-0" />
 
-        <div className="flex-1 py-0.5">
+        <div className="flex-1 py-1 px-1 text-center">
           <span className="text-sm font-bold text-slate-950 dark:text-white tabular-nums block leading-tight">
             {followersCount.toLocaleString()}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium truncate">
             {t("profile.stats.followers")}
           </span>
         </div>
 
-        <div className="w-px h-6 bg-slate-200/80 dark:border-slate-800 shrink-0" />
+        <div className="w-px h-5 bg-slate-200/70 dark:bg-slate-800 shrink-0" />
 
-        <div className="flex-1 py-0.5">
+        <div className="flex-1 py-1 px-1 text-center">
           <span className="text-sm font-bold text-slate-950 dark:text-white tabular-nums block leading-tight">
             {profile.stats.followingCount.toLocaleString()}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium truncate">
             {t("profile.stats.following")}
           </span>
         </div>
@@ -275,29 +285,37 @@ export function ProfileHeader({
 
       {/* Tablet & Desktop: Refined metric tiles */}
       <div className="hidden sm:grid sm:grid-cols-4 gap-3 mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 text-left">
-        <div className="p-2.5 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60">
+        <button
+          type="button"
+          onClick={() => onTabChange?.("posts")}
+          className="p-2.5 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 hover:bg-slate-100/70 dark:hover:bg-slate-800/70 transition-colors text-left cursor-pointer"
+        >
           <span className="text-base sm:text-lg font-bold text-slate-950 dark:text-white tabular-nums block leading-tight">
             {profile.stats.postsCount}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium">
             {t("profile.stats.thoughts")}
           </span>
-        </div>
+        </button>
 
-        <div className="p-2.5 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60">
+        <button
+          type="button"
+          onClick={() => onTabChange?.("discussions")}
+          className="p-2.5 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 hover:bg-slate-100/70 dark:hover:bg-slate-800/70 transition-colors text-left cursor-pointer"
+        >
           <span className="text-base sm:text-lg font-bold text-slate-950 dark:text-white tabular-nums block leading-tight">
             {profile.stats.discussionsCount}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium">
             {t("profile.stats.discussions")}
           </span>
-        </div>
+        </button>
 
         <div className="p-2.5 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60">
           <span className="text-base sm:text-lg font-bold text-slate-950 dark:text-white tabular-nums block leading-tight">
             {followersCount.toLocaleString()}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium">
             {t("profile.stats.followers")}
           </span>
         </div>
@@ -306,7 +324,7 @@ export function ProfileHeader({
           <span className="text-base sm:text-lg font-bold text-slate-950 dark:text-white tabular-nums block leading-tight">
             {profile.stats.followingCount.toLocaleString()}
           </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 font-medium">
             {t("profile.stats.following")}
           </span>
         </div>

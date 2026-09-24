@@ -210,6 +210,7 @@ function ProfileContent() {
         isSelf={isSelf}
         onEditClick={() => setIsEditModalOpen(true)}
         onFollowToggle={handleFollowToggle}
+        onTabChange={setActiveTab}
       />
 
       {/* 2. Pinned / Featured Thought Card */}
