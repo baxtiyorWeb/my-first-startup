@@ -42,12 +42,12 @@ export function proxy(request: NextRequest) {
 
   if (pathnameLocale) {
     // Already has locale
-    const cookieLocale = request.cookies.get("fikr_locale")?.value;
+    const cookieLocale = request.cookies.get("gogetters_locale")?.value;
     const response = NextResponse.next();
 
     // Sync cookie if different
     if (cookieLocale !== pathnameLocale) {
-      response.cookies.set("fikr_locale", pathnameLocale, {
+      response.cookies.set("gogetters_locale", pathnameLocale, {
         path: "/",
         maxAge: 31536000,
         sameSite: "lax",
@@ -60,7 +60,7 @@ export function proxy(request: NextRequest) {
   // 2. Resolve preferred locale for requests without locale prefix
   let targetLocale = DEFAULT_LOCALE;
 
-  const cookieLocale = request.cookies.get("fikr_locale")?.value;
+  const cookieLocale = request.cookies.get("gogetters_locale")?.value;
   if (cookieLocale && isValidLocale(cookieLocale)) {
     targetLocale = cookieLocale;
   } else {
@@ -83,7 +83,7 @@ export function proxy(request: NextRequest) {
   );
 
   const response = NextResponse.redirect(redirectUrl);
-  response.cookies.set("fikr_locale", targetLocale, {
+  response.cookies.set("gogetters_locale", targetLocale, {
     path: "/",
     maxAge: 31536000,
     sameSite: "lax",

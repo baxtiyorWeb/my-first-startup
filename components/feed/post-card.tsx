@@ -185,7 +185,7 @@ export function PostCard({
   return (
     <>
       <article
-        aria-label={`${post.author.name} fikri`}
+        aria-label={`${post.author.name} posti`}
         className={`bg-white dark:bg-slate-900 border rounded-lg p-4 sm:p-4.5 transition-all duration-300 ${
           highlightActive
             ? "animate-highlight-pulse border-amber-400/80 dark:border-amber-400/60 ring-2 ring-amber-400/50"

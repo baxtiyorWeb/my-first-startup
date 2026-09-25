@@ -21,7 +21,7 @@ export const users = pgTable(
     phone: varchar("phone", { length: 20 }).notNull(),
     handle: varchar("handle", { length: 50 }).notNull(),
     name: varchar("name", { length: 100 }).notNull(),
-    role: varchar("role", { length: 150 }).default("Fikr muallifi").notNull(),
+    role: varchar("role", { length: 150 }).default("Innovator").notNull(),
     bio: text("bio").default(""),
     avatarUrl: varchar("avatar_url", { length: 500 }),
     location: varchar("location", { length: 100 }),

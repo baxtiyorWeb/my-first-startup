@@ -10,7 +10,11 @@ import {
   SettingsIcon,
 } from "@/components/icons";
 import { LogOut } from "lucide-react";
-import { useShell, SIDEBAR_EXPANDED_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from "./shell-context";
+import {
+  useShell,
+  SIDEBAR_EXPANDED_WIDTH,
+  SIDEBAR_COLLAPSED_WIDTH,
+} from "./shell-context";
 import { useAuth } from "@/components/auth/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
@@ -27,16 +31,26 @@ export function Sidebar() {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
   // Strip locale for active route check
-  const normalizedPath = pathname.replace(/^\/(uz|ru|en)(\/|$)/, "/$2").replace(/\/+/g, "/") || "/dashboard";
+  const normalizedPath =
+    pathname.replace(/^\/(uz|ru|en)(\/|$)/, "/$2").replace(/\/+/g, "/") ||
+    "/dashboard";
 
   const primaryNavItems = [
     { label: t("nav.home"), rawHref: "/dashboard", icon: HomeIcon },
-    { label: t("nav.bookmarks"), rawHref: "/dashboard/bookmarks", icon: BookmarkIcon },
+    {
+      label: t("nav.bookmarks"),
+      rawHref: "/dashboard/bookmarks",
+      icon: BookmarkIcon,
+    },
   ];
 
   const secondaryNavItems = [
     { label: t("nav.profile"), rawHref: "/dashboard/profile", icon: UserIcon },
-    { label: t("nav.settings"), rawHref: "/dashboard/settings", icon: SettingsIcon },
+    {
+      label: t("nav.settings"),
+      rawHref: "/dashboard/settings",
+      icon: SettingsIcon,
+    },
   ];
 
   const handleConfirmLogout = () => {
@@ -52,7 +66,9 @@ export function Sidebar() {
         aria-label="Asosiy navigatsiya"
         className="hidden md:flex flex-col fixed top-0 left-0 bottom-0 z-30 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-out select-none"
         style={{
-          width: isCollapsed ? `${SIDEBAR_COLLAPSED_WIDTH}px` : `${SIDEBAR_EXPANDED_WIDTH}px`,
+          width: isCollapsed
+            ? `${SIDEBAR_COLLAPSED_WIDTH}px`
+            : `${SIDEBAR_EXPANDED_WIDTH}px`,
         }}
       >
         {/* Brand / Logo Header */}
@@ -62,19 +78,21 @@ export function Sidebar() {
             className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 rounded-md p-1 transition-colors cursor-pointer"
           >
             {/* Logo Mark */}
-            <div className="w-8 h-8 shrink-0 rounded-md bg-slate-900 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900 font-bold text-base tracking-wider transition-transform group-hover:scale-105">
-              F
+            <div className="w-8 h-8 shrink-0 rounded-md bg-indigo-600 text-white flex items-center justify-center font-black text-xs tracking-wider transition-transform group-hover:scale-105 shadow-xs">
+              GG
             </div>
             {/* Brand Name & Tagline */}
             <div
-              className={`flex flex-col transition-all duration-200 overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "opacity-0 w-0 pointer-events-none" : "opacity-100 w-auto"
+              className={`flex flex-col transition-all duration-200 overflow-hidden whitespace-nowrap min-w-0 ${
+                isCollapsed
+                  ? "opacity-0 w-0 pointer-events-none"
+                  : "opacity-100 flex-1 max-w-[150px]"
               }`}
             >
-              <span className="text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-50 leading-tight">
+              <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50 leading-tight truncate">
                 {t("common.brandName")}
               </span>
-              <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+              <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate">
                 {t("common.brandTagline")}
               </span>
             </div>
@@ -96,28 +114,23 @@ export function Sidebar() {
                 <div key={item.rawHref} className="relative group">
                   <Link
                     href={localePath(item.rawHref)}
-                    className={`flex items-center gap-3 px-2.5 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${
+                    className={`flex items-center gap-3 px-2.5 py-2 text-xs transition-colors cursor-pointer focus-visible:outline-none ${
                       isActive
-                        ? "bg-slate-100 dark:bg-slate-800 text-slate-950 dark:text-white font-semibold"
-                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
+                        ? "text-slate-900 dark:text-slate-100 font-bold"
+                        : "text-slate-600 dark:text-slate-400 font-medium"
                     }`}
                     aria-label={item.label}
                     aria-current={isActive ? "page" : undefined}
                   >
                     <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
-                      <IconComponent
-                        size={18}
-                        className={
-                          isActive
-                            ? "text-slate-950 dark:text-white"
-                            : "text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors"
-                        }
-                      />
+                      <IconComponent size={18} />
                     </div>
 
                     <span
                       className={`flex-1 transition-all duration-200 overflow-hidden whitespace-nowrap ${
-                        isCollapsed ? "opacity-0 w-0 pointer-events-none" : "opacity-100 w-auto"
+                        isCollapsed
+                          ? "opacity-0 w-0 pointer-events-none"
+                          : "opacity-100 w-auto"
                       }`}
                     >
                       {item.label}
@@ -127,7 +140,7 @@ export function Sidebar() {
                   {isCollapsed && (
                     <div
                       role="tooltip"
-                      className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-medium whitespace-nowrap shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                      className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                     >
                       {item.label}
                     </div>
@@ -149,28 +162,23 @@ export function Sidebar() {
                   <div key={item.rawHref} className="relative group">
                     <Link
                       href={localePath(item.rawHref)}
-                      className={`flex items-center gap-3 px-2.5 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${
+                      className={`flex items-center gap-3 px-2.5 py-2 text-xs transition-colors cursor-pointer focus-visible:outline-none ${
                         isActive
-                          ? "bg-slate-100 dark:bg-slate-800 text-slate-950 dark:text-white font-semibold"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
+                          ? "text-slate-900 dark:text-slate-100 font-bold"
+                          : "text-slate-600 dark:text-slate-400 font-medium"
                       }`}
                       aria-label={item.label}
                       aria-current={isActive ? "page" : undefined}
                     >
                       <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
-                        <IconComponent
-                          size={18}
-                          className={
-                            isActive
-                              ? "text-slate-950 dark:text-white"
-                              : "text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors"
-                          }
-                        />
+                        <IconComponent size={18} />
                       </div>
 
                       <span
                         className={`flex-1 transition-all duration-200 overflow-hidden whitespace-nowrap ${
-                          isCollapsed ? "opacity-0 w-0 pointer-events-none" : "opacity-100 w-auto"
+                          isCollapsed
+                            ? "opacity-0 w-0 pointer-events-none"
+                            : "opacity-100 w-auto"
                         }`}
                       >
                         {item.label}
@@ -192,7 +200,9 @@ export function Sidebar() {
 
             {/* Language Selector in Sidebar */}
             <div className={`px-1 ${isCollapsed ? "flex justify-center" : ""}`}>
-              <LanguageSwitcher variant={isCollapsed ? "compact" : "segmented"} />
+              <LanguageSwitcher
+                variant={isCollapsed ? "compact" : "segmented"}
+              />
             </div>
 
             {/* User card + quick logout OR Guest sign in button */}

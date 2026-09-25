@@ -1,5 +1,5 @@
 /**
- * Fikr — Domain Types for Social Feed & Content Architecture
+ * The Go-getters — Domain Types for Social Feed & Content Architecture
  * Designed for seamless future backend (REST/GraphQL/Server Actions) integration.
  */
 

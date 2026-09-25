@@ -34,6 +34,14 @@ function buildUzbekSearchPatterns(query: string): string[] {
   return Array.from(patternsSet);
 }
 
+interface ServerCacheEntry {
+  response: SearchResponse;
+  timestamp: number;
+}
+
+const serverSearchCache = new Map<string, ServerCacheEntry>();
+const SERVER_CACHE_TTL_MS = 15000;
+
 export async function searchContent(
   query: string,
   limit = 20,
@@ -46,6 +54,14 @@ export async function searchContent(
       items: [],
       counts: { all: 0, user: 0, post: 0 },
     };
+  }
+
+  const cacheKey = `${q.toLowerCase()}_${limit}_${category}`;
+  const cached = serverSearchCache.get(cacheKey);
+  const now = Date.now();
+
+  if (cached && now - cached.timestamp < SERVER_CACHE_TTL_MS) {
+    return cached.response;
   }
 
   const searchPatterns = buildUzbekSearchPatterns(q);
@@ -151,10 +167,14 @@ export async function searchContent(
       post: postItems.length,
     };
 
-    return {
+    const resultResponse: SearchResponse = {
       items: finalItems,
       counts,
     };
+
+    serverSearchCache.set(cacheKey, { response: resultResponse, timestamp: Date.now() });
+
+    return resultResponse;
   } catch (err) {
     console.error("[SEARCH] Error executing searchContent:", err);
     return {

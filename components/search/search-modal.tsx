@@ -19,7 +19,7 @@ import type { SearchItem, SearchCategory, SearchResponse } from "@/types/social"
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
 
-const RECENT_SEARCHES_KEY = "fikr_recent_searches_v1";
+const RECENT_SEARCHES_KEY = "gogetters_recent_searches_v1";
 const MAX_RECENT_ITEMS = 5;
 
 interface SearchModalProps {

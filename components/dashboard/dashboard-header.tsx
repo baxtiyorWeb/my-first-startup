@@ -14,21 +14,21 @@ export function DashboardHeader({ userName = "Alisher" }: DashboardHeaderProps) 
   return (
     <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
       <div>
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          <SparklesIcon size={12} className="text-slate-700 dark:text-slate-300" />
-          <span>Fikr Platformasi</span>
+        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+          <SparklesIcon size={13} className="text-cyan-500 animate-pulse" />
+          <span>The Go-getters Platformasi</span>
         </div>
-        <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+        <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
           {greeting}, {userName}!
         </h1>
       </div>
 
       <button
         type="button"
-        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold transition-all shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:opacity-95 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 hover:scale-[1.02] cursor-pointer"
       >
-        <PlusIcon size={14} />
-        <span>Fikr yozish</span>
+        <PlusIcon size={14} className="stroke-[2.5]" />
+        <span>Tashabbus yozish</span>
       </button>
     </div>
   );

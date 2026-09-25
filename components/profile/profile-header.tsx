@@ -53,7 +53,7 @@ export function ProfileHeader({
     const shareUrl =
       typeof window !== "undefined"
         ? `${window.location.origin}${localePath(`/dashboard/profile?user=${profile.handle}`)}`
-        : `https://fikr.uz/profile/${profile.handle}`;
+        : `https://gogetters.uz/profile/${profile.handle}`;
 
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl);

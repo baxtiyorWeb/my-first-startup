@@ -325,7 +325,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         {/* Security badge */}
         <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span>Fikr — xavfsiz va maxfiy autentifikatsiya</span>
+          <span>The Go-getters — xavfsiz va maxfiy autentifikatsiya</span>
         </div>
       </div>
 

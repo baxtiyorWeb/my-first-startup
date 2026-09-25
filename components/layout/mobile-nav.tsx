@@ -28,71 +28,51 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Mobil pastki navigatsiya"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 h-14 px-4 flex items-center justify-around select-none"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 h-14 px-2 grid grid-cols-5 items-center select-none shadow-lg"
     >
       {/* 1. Home */}
       <Link
         href={localePath("/dashboard")}
         aria-label={t("nav.home")}
-        className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          normalizedPath === "/dashboard" || normalizedPath === "/"
-            ? "text-slate-950 dark:text-white"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-        }`}
+        className="flex items-center justify-center py-2 cursor-pointer"
       >
-        <HomeIcon size={20} />
+        <HomeIcon size={22} />
       </Link>
 
       {/* 2. Bookmarks */}
       <Link
         href={localePath("/dashboard/bookmarks")}
         aria-label={t("nav.bookmarks")}
-        className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          normalizedPath.startsWith("/dashboard/bookmarks")
-            ? "text-slate-950 dark:text-white"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-        }`}
+        className="flex items-center justify-center py-2 cursor-pointer"
       >
-        <BookmarkIcon size={20} />
+        <BookmarkIcon size={22} />
       </Link>
 
-      {/* 3. Create Thought Floating */}
+      {/* 3. Create Thought Prominent Action */}
       <Link
         href={localePath("/dashboard/create")}
         aria-label={t("nav.createThought")}
-        className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          normalizedPath.startsWith("/dashboard/create")
-            ? "text-slate-950 dark:text-white"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-        }`}
+        className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400 text-slate-950 font-bold active:scale-95 transition-transform mx-auto"
       >
-        <PlusIcon size={20} />
+        <PlusIcon size={22} className="stroke-[2.5] stroke-slate-950 no-gradient" />
       </Link>
 
       {/* 4. Profile */}
       <Link
         href={localePath("/dashboard/profile")}
         aria-label={t("nav.profile")}
-        className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          normalizedPath.startsWith("/dashboard/profile")
-            ? "text-slate-950 dark:text-white"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-        }`}
+        className="flex items-center justify-center py-2 cursor-pointer"
       >
-        <UserIcon size={20} />
+        <UserIcon size={22} />
       </Link>
 
       {/* 5. Settings */}
       <Link
         href={localePath("/dashboard/settings")}
         aria-label={t("nav.settings")}
-        className={`flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors ${
-          normalizedPath.startsWith("/dashboard/settings")
-            ? "text-slate-950 dark:text-white"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-        }`}
+        className="flex items-center justify-center py-2 cursor-pointer"
       >
-        <SettingsIcon size={20} />
+        <SettingsIcon size={22} />
       </Link>
     </nav>
   );
@@ -131,14 +111,14 @@ export function MobileDrawer() {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity md:hidden"
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={closeMobileNav}
         aria-hidden="true"
       />
 
       {/* Drawer */}
       <div
-        className="fixed inset-y-0 left-0 z-50 w-72 max-w-[80vw] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out md:hidden"
+        className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out"
         role="dialog"
         aria-modal="true"
         aria-label="Mobil navigatsiya menyusi"

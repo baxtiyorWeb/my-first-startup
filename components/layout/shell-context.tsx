@@ -13,7 +13,7 @@ export const SIDEBAR_COLLAPSED_WIDTH = 68;
 export const HEADER_HEIGHT = 56;
 export const CONTENT_MAX_WIDTH = 940; // Central max-width in pixels across the whole dashboard
 
-const STORAGE_KEY = "fikr_sidebar_collapsed";
+const STORAGE_KEY = "gogetters_sidebar_collapsed";
 
 const listeners = new Set<() => void>();
 

@@ -7,7 +7,7 @@ const globalForDb = globalThis as unknown as {
 };
 
 const connectionString =
-  process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/fikr_db";
+  process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/gogetters_db";
 
 const isRemoteDb =
   connectionString.includes("neon.tech") ||

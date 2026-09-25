@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { type NextRequest } from "next/server";
 import { AppError } from "./errors";
 
-export const SESSION_COOKIE_NAME = "fikr_session";
+export const SESSION_COOKIE_NAME = "gogetters_session";
 
 function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
@@ -14,7 +14,7 @@ function getJwtSecret(): Uint8Array {
     console.warn(
       "[SECURITY WARNING] JWT_SECRET is not defined in environment variables. Using development fallback key."
     );
-    return new TextEncoder().encode("fikr_dev_only_jwt_signing_key_2026_min_32_chars");
+    return new TextEncoder().encode("gogetters_dev_only_jwt_signing_key_2026_min_32_chars");
   }
   return new TextEncoder().encode(secret);
 }

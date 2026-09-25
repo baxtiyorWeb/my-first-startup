@@ -34,7 +34,7 @@ const REPORT_REASONS: { id: ReportReasonType; label: string; description: string
   {
     id: "inappropriate",
     label: "Noo‘rin yoki taqiqlangan kontent",
-    description: "Fikr qoidalariga va axloqiy me’yorlarga zid bo‘lgan materiallar",
+    description: "Platforma qoidalariga va axloqiy me’yorlarga zid bo‘lgan materiallar",
   },
   {
     id: "other",
@@ -71,7 +71,7 @@ export function ReportModal({
   const getTargetTitle = () => {
     switch (targetType) {
       case "post":
-        return "Fikr yuzasidan shikoyat";
+        return "Post yuzasidan shikoyat";
       case "comment":
         return "Izoh yuzasidan shikoyat";
       case "user":
@@ -158,7 +158,7 @@ export function ReportModal({
               Tashakkur, murojaat qabul qilindi
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-              Fikr platformasida intellektual va xavfsiz muhitni saqlashga qo‘shayotgan hissangiz uchun rahmat.
+              The Go-getters platformasida innovatsion va xavfsiz muhitni saqlashga qo‘shayotgan hissangiz uchun rahmat.
             </p>
           </div>
         ) : (
