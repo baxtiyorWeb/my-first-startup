@@ -409,46 +409,19 @@ export function PostCard({
             </div>
           )}
 
-          {/* Project Showcase Meta Box */}
-          {post.postType === "project" && (
-            <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  <Rocket className="w-3 h-3" />
-                  {t("project.badge")}
-                </span>
-
-                {post.projectStage && (
-                  <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                    {post.projectStage === "idea" && t("project.stage_idea")}
-                    {post.projectStage === "mvp" && t("project.stage_mvp")}
-                    {post.projectStage === "launched" && t("project.stage_launched")}
-                    {post.projectStage === "scaling" && t("project.stage_scaling")}
-                  </span>
-                )}
-
-                {post.lookingFor && (
-                  <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
-                    {post.lookingFor === "cofounder" && `🤝 ${t("project.looking_cofounder")}`}
-                    {post.lookingFor === "feedback" && `💬 ${t("project.looking_feedback")}`}
-                    {post.lookingFor === "investment" && `🚀 ${t("project.looking_investment")}`}
-                    {post.lookingFor === "team" && `👥 ${t("project.looking_team")}`}
-                  </span>
-                )}
-              </div>
-
-              {post.projectUrl && (
-                <a
-                  href={post.projectUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-colors shadow-2xs"
-                >
-                  <span>{t("project.visitProject")}</span>
-                  <ExternalLink className="w-3 h-3 text-slate-400" />
-                </a>
-              )}
+          {/* Optional External Link Attachment */}
+          {post.projectUrl && (
+            <div className="mt-2.5">
+              <a
+                href={post.projectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors shadow-2xs"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>{post.projectUrl.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]}</span>
+              </a>
             </div>
           )}
         </div>

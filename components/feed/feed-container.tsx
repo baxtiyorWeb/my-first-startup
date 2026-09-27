@@ -177,32 +177,6 @@ export function FeedContainer() {
 
   return (
     <div className="space-y-3.5 w-full">
-      {/* Stream Filter Pills */}
-      <div className="flex items-center gap-2 pb-1 overflow-x-auto no-scrollbar">
-        <button
-          type="button"
-          onClick={() => handleFilterChange("all")}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-            filterType === "all"
-              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xs"
-              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-          }`}
-        >
-          {t("exploreFilters.all")}
-        </button>
-        <button
-          type="button"
-          onClick={() => handleFilterChange("project")}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5 ${
-            filterType === "project"
-              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xs"
-              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-          }`}
-        >
-          <span>{t("exploreFilters.projects")}</span>
-        </button>
-      </div>
-
       {/* Feed Stream */}
       {posts.length === 0 ? (
         <div className="py-14 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">

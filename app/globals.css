@@ -79,15 +79,16 @@ body {
 /* FIKR Rich Editor In-Place Typography */
 .fikr-rich-editor {
   outline: none;
-  min-height: 260px;
-  line-height: 1.75;
-  font-size: 0.95rem;
+  min-height: 200px;
+  line-height: 1.65;
+  font-size: 0.875rem;
   word-break: break-word;
 }
 
 .fikr-rich-editor:empty::before {
   content: attr(data-placeholder);
   color: #94a3b8;
+  font-size: 0.825rem;
   pointer-events: none;
   display: block;
 }
