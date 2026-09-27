@@ -1,7 +1,7 @@
 export const uz = {
   common: {
     brandName: "The Go-getters",
-    brandTagline: "Innovatorlar tarmog‘i",
+    brandTagline: "Intiluvchan insonlar, g‘oyalar va startaplar tarmog‘i",
     save: "Saqlash",
     saving: "Saqlanmoqda...",
     saved: "Saqlandi",
@@ -21,7 +21,7 @@ export const uz = {
     follow: "Obuna bo‘lish",
     following: "Obuna bo‘lingan",
     unfollow: "Kuzatishni to‘xtatish",
-    verifiedAuthor: "Tasdiqlangan innovator",
+    verifiedAuthor: "Tasdiqlangan a'zo",
     all: "Barchasi",
     errorOccurred: "Xatolik yuz berdi",
     success: "Muvaffaqiyatli",
@@ -340,7 +340,7 @@ export const uz = {
     handleRequired: "The Go-getters tizimida o‘zingizga mos taxallus (@handle) tanlang",
     roleRequired: "Kasbingiz yoki asosiy sohangizni ko‘rsating",
     nextStep: "Keyingi qadam",
-    title2: "Tavsiya etilgan innovatorlarni kuzating",
+    title2: "Tavsiya etilgan insonlarni kuzating",
     subtitle2: "O‘zbekiston texnologik va intellektual maydonida mazmunli tahlillar yozuvchi faol mualliflar.",
     back: "Orqaga",
     skip: "O‘tkazib yuborish",

@@ -193,7 +193,7 @@ export function GoGettersLanding() {
                     GG
                   </div>
                   <h3 className="text-lg font-extrabold text-white">
-                    Innovatorlar Maydoniga Xush Kelibsiz!
+                    Intiluvchan Insonlar Maydoniga Xush Kelibsiz!
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     The Go-getters — bu faqatgina ijtimoiy muloqot emas, balki
@@ -331,7 +331,7 @@ export function GoGettersLanding() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-cyan-950 rounded-3xl p-8 sm:p-12 border border-indigo-500/30 text-center space-y-5 shadow-2xl">
             <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
-              O‘zbekiston Innovatorlari Tarmog‘iga Qo‘shiling!
+              Intiluvchan Insonlar, G‘oyalar va Startaplar Tarmog‘iga Qo‘shiling!
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto leading-relaxed">
               O‘z g‘oyalaringizni amalga oshirish va maqsadi baland insonlar

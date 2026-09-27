@@ -114,8 +114,10 @@ export default function CreatePostPage() {
     while (node && node !== editorRef.current) {
       if (node instanceof HTMLElement) {
         const tag = node.tagName.toLowerCase();
-        if (tag === "b" || tag === "strong" || node.style.fontWeight === "bold") result.bold = true;
-        if (tag === "i" || tag === "em" || node.style.fontStyle === "italic") result.italic = true;
+        if (tag === "b" || tag === "strong" || node.style.fontWeight === "bold")
+          result.bold = true;
+        if (tag === "i" || tag === "em" || node.style.fontStyle === "italic")
+          result.italic = true;
         if (tag === "h2") result.h2 = true;
         if (tag === "h3") result.h3 = true;
         if (tag === "blockquote") result.quote = true;
@@ -173,14 +175,18 @@ export default function CreatePostPage() {
       !editorRef.current ||
       !editorRef.current.contains(selection.anchorNode)
     ) {
-      setFloatingToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+      setFloatingToolbar((prev) =>
+        prev.visible ? { ...prev, visible: false } : prev,
+      );
       setActiveFormats(getActiveFormats());
       return;
     }
 
     const text = selection.toString().trim();
     if (text.length === 0) {
-      setFloatingToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+      setFloatingToolbar((prev) =>
+        prev.visible ? { ...prev, visible: false } : prev,
+      );
       setActiveFormats(getActiveFormats());
       return;
     }
@@ -194,7 +200,10 @@ export default function CreatePostPage() {
       const top = Math.max(8, rect.top - toolbarHeight - 6);
       const left = Math.max(
         8,
-        Math.min(window.innerWidth - toolbarWidth - 8, rect.left + rect.width / 2 - toolbarWidth / 2)
+        Math.min(
+          window.innerWidth - toolbarWidth - 8,
+          rect.left + rect.width / 2 - toolbarWidth / 2,
+        ),
       );
 
       setFloatingToolbar({
@@ -205,7 +214,9 @@ export default function CreatePostPage() {
 
       setActiveFormats(getActiveFormats());
     } catch {
-      setFloatingToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+      setFloatingToolbar((prev) =>
+        prev.visible ? { ...prev, visible: false } : prev,
+      );
     }
   }, [getActiveFormats]);
 
@@ -228,7 +239,7 @@ export default function CreatePostPage() {
     const timer = setTimeout(() => {
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(
-        now.getMinutes()
+        now.getMinutes(),
       ).padStart(2, "0")}`;
       setDraftSavedTime(timeStr);
     }, 1800);
@@ -276,7 +287,11 @@ export default function CreatePostPage() {
     let initialUrl = "";
     let rangeToSave: Range | null = null;
 
-    if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
+    if (
+      selection &&
+      selection.rangeCount > 0 &&
+      editorRef.current.contains(selection.anchorNode)
+    ) {
       rangeToSave = selection.getRangeAt(0).cloneRange();
       initialText = selection.toString();
 
@@ -298,7 +313,10 @@ export default function CreatePostPage() {
   }, []);
 
   // Format action execution
-  const executeCommand = (command: string, value: string | undefined = undefined) => {
+  const executeCommand = (
+    command: string,
+    value: string | undefined = undefined,
+  ) => {
     if (!editorRef.current) return;
     editorRef.current.focus();
 
@@ -320,19 +338,28 @@ export default function CreatePostPage() {
       document.execCommand("bold", false);
     } else if (command === "italic") {
       document.execCommand("italic", false);
-    } else if (command === "formatBlock" && (value === "<h2>" || value === "H2")) {
+    } else if (
+      command === "formatBlock" &&
+      (value === "<h2>" || value === "H2")
+    ) {
       if (currentFormats.h2) {
         document.execCommand("formatBlock", false, "<p>");
       } else {
         document.execCommand("formatBlock", false, "<h2>");
       }
-    } else if (command === "formatBlock" && (value === "<h3>" || value === "H3")) {
+    } else if (
+      command === "formatBlock" &&
+      (value === "<h3>" || value === "H3")
+    ) {
       if (currentFormats.h3) {
         document.execCommand("formatBlock", false, "<p>");
       } else {
         document.execCommand("formatBlock", false, "<h3>");
       }
-    } else if (command === "formatBlock" && (value === "<blockquote>" || value === "BLOCKQUOTE")) {
+    } else if (
+      command === "formatBlock" &&
+      (value === "<blockquote>" || value === "BLOCKQUOTE")
+    ) {
       if (currentFormats.quote) {
         document.execCommand("formatBlock", false, "<p>");
       } else {
@@ -345,10 +372,14 @@ export default function CreatePostPage() {
       if (currentFormats.code) {
         let node: Node | null = selection.anchorNode;
         while (node && node !== editorRef.current) {
-          if (node instanceof HTMLElement && node.tagName.toLowerCase() === "code") {
+          if (
+            node instanceof HTMLElement &&
+            node.tagName.toLowerCase() === "code"
+          ) {
             const parent = node.parentNode;
             if (parent) {
-              while (node.firstChild) parent.insertBefore(node.firstChild, node);
+              while (node.firstChild)
+                parent.insertBefore(node.firstChild, node);
               parent.removeChild(node);
             }
             break;
@@ -378,10 +409,14 @@ export default function CreatePostPage() {
       if (currentFormats.highlight) {
         let node: Node | null = selection.anchorNode;
         while (node && node !== editorRef.current) {
-          if (node instanceof HTMLElement && node.tagName.toLowerCase() === "mark") {
+          if (
+            node instanceof HTMLElement &&
+            node.tagName.toLowerCase() === "mark"
+          ) {
             const parent = node.parentNode;
             if (parent) {
-              while (node.firstChild) parent.insertBefore(node.firstChild, node);
+              while (node.firstChild)
+                parent.insertBefore(node.firstChild, node);
               parent.removeChild(node);
             }
             break;
@@ -407,11 +442,13 @@ export default function CreatePostPage() {
         while (node && node !== editorRef.current) {
           if (
             node instanceof HTMLElement &&
-            (node.tagName.toLowerCase() === "code" || node.tagName.toLowerCase() === "mark")
+            (node.tagName.toLowerCase() === "code" ||
+              node.tagName.toLowerCase() === "mark")
           ) {
             const parent = node.parentNode;
             if (parent) {
-              while (node.firstChild) parent.insertBefore(node.firstChild, node);
+              while (node.firstChild)
+                parent.insertBefore(node.firstChild, node);
               parent.removeChild(node);
             }
           }
@@ -455,7 +492,6 @@ export default function CreatePostPage() {
         sel.addRange(savedRange);
       }
     }
-
     const displayText = linkModalText.trim() || targetUrl;
 
     const selection = window.getSelection();
@@ -524,7 +560,10 @@ export default function CreatePostPage() {
     if (!files || files.length === 0) return;
 
     if (mediaUrls.length + files.length > 3) {
-      toast.error(t("project.maxImagesError") || "Ko‘pi bilan 3 tagacha rasm yuklash mumkin");
+      toast.error(
+        t("project.maxImagesError") ||
+          "Ko‘pi bilan 3 tagacha rasm yuklash mumkin",
+      );
       return;
     }
 
@@ -534,22 +573,34 @@ export default function CreatePostPage() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (file.size > 10 * 1024 * 1024) {
-          toast.error(t("project.imageSizeError") || "Rasm hajmi 10MB dan oshmasligi kerak");
+          toast.error(
+            t("project.imageSizeError") ||
+              "Rasm hajmi 10MB dan oshmasligi kerak",
+          );
           continue;
         }
 
         const compressedBlob = await compressAvatarImage(file);
-        const compressedFile = new File([compressedBlob], `post-${Date.now()}-${i}.webp`, {
-          type: "image/webp",
-        });
+        const compressedFile = new File(
+          [compressedBlob],
+          `post-${Date.now()}-${i}.webp`,
+          {
+            type: "image/webp",
+          },
+        );
 
-        const uploadRes = await api.upload.uploadFile(compressedFile, "projects");
+        const uploadRes = await api.upload.uploadFile(
+          compressedFile,
+          "projects",
+        );
         newUrls.push(uploadRes.url);
       }
 
       setMediaUrls((prev) => [...prev, ...newUrls].slice(0, 3));
     } catch {
-      toast.error(t("create.errorPublishing") || "Rasmni yuklashda xatolik yuz berdi");
+      toast.error(
+        t("create.errorPublishing") || "Rasmni yuklashda xatolik yuz berdi",
+      );
     } finally {
       setIsUploadingImage(false);
       if (imageInputRef.current) {
@@ -568,7 +619,9 @@ export default function CreatePostPage() {
     const htmlContent = editorRef.current?.innerHTML.trim() || "";
 
     if (!plainText) {
-      toast.error(t("create.contentRequired") || "Iltimos, post matnini kiriting");
+      toast.error(
+        t("create.contentRequired") || "Iltimos, post matnini kiriting",
+      );
       editorRef.current?.focus();
       return;
     }
@@ -596,11 +649,15 @@ export default function CreatePostPage() {
         mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
       });
 
-      toast.success(t("create.successPublished") || "Post muvaffaqiyatli chop etildi!");
+      toast.success(
+        t("create.successPublished") || "Post muvaffaqiyatli chop etildi!",
+      );
       router.push(localePath("/dashboard"));
     } catch (err) {
       const msg =
-        err instanceof ApiError ? err.message : t("create.errorPublishing") || "Chop etishda xatolik yuz berdi";
+        err instanceof ApiError
+          ? err.message
+          : t("create.errorPublishing") || "Chop etishda xatolik yuz berdi";
       toast.error(msg);
       setIsSubmitting(false);
     }
@@ -619,18 +676,24 @@ export default function CreatePostPage() {
             <span>{t("create.backToDashboard") || "Lentaga qaytish"}</span>
           </Link>
 
-          <span className="hidden sm:inline-block text-slate-300 dark:text-slate-700">|</span>
+          <span className="hidden sm:inline-block text-slate-300 dark:text-slate-700">
+            |
+          </span>
 
           {/* Auto-save draft status */}
           <div className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>{t("create.draftAutoSaved") || "Qoralama saqlandi"} ({draftSavedTime})</span>
+            <span>
+              {t("create.draftAutoSaved") || "Qoralama saqlandi"} (
+              {draftSavedTime})
+            </span>
           </div>
         </div>
 
         {/* Word count & Reading time */}
         <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-800/60 px-2 py-0.5 rounded-md">
-          {wordCount} {t("create.words") || "so‘z"} • ~{readingTime} {t("create.readingTime") || "min"}
+          {wordCount} {t("create.words") || "so‘z"} • ~{readingTime}{" "}
+          {t("create.readingTime") || "min"}
         </div>
       </div>
 
@@ -657,7 +720,9 @@ export default function CreatePostPage() {
             title="Qalin (Ctrl+B)"
             aria-label="Qalin matn"
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.bold ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : ""
+              activeFormats.bold
+                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
+                : ""
             }`}
           >
             <Bold className="w-3.5 h-3.5" />
@@ -673,7 +738,9 @@ export default function CreatePostPage() {
             title="Kursiv (Ctrl+I)"
             aria-label="Kursiv matn"
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.italic ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : ""
+              activeFormats.italic
+                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
+                : ""
             }`}
           >
             <Italic className="w-3.5 h-3.5" />
@@ -691,7 +758,9 @@ export default function CreatePostPage() {
             title="Sarlavha (H2)"
             aria-label="Sarlavha formati"
             className={`px-1.5 py-0.5 text-[11px] font-bold rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.h2 ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : ""
+              activeFormats.h2
+                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
+                : ""
             }`}
           >
             H2
@@ -707,7 +776,9 @@ export default function CreatePostPage() {
             title="Iqtibos bloki"
             aria-label="Iqtibos bloki"
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.quote ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : ""
+              activeFormats.quote
+                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
+                : ""
             }`}
           >
             <Quote className="w-3.5 h-3.5" />
@@ -739,7 +810,9 @@ export default function CreatePostPage() {
             title="Kod"
             aria-label="Kod formati"
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.code ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : ""
+              activeFormats.code
+                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
+                : ""
             }`}
           >
             <Code className="w-3.5 h-3.5" />
@@ -755,7 +828,9 @@ export default function CreatePostPage() {
             title="Havola (Ctrl+K)"
             aria-label="Havola kiritish"
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.link ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : ""
+              activeFormats.link
+                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
+                : ""
             }`}
           >
             <Link2 className="w-3.5 h-3.5" />
@@ -825,7 +900,9 @@ export default function CreatePostPage() {
                   >
                     O‘chirish
                   </button>
-                ) : <div />}
+                ) : (
+                  <div />
+                )}
 
                 <div className="flex items-center gap-1.5">
                   <button
@@ -1074,7 +1151,9 @@ export default function CreatePostPage() {
               }`}
             >
               <Link2 className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-semibold hidden sm:inline">Havola</span>
+              <span className="text-[11px] font-semibold hidden sm:inline">
+                Havola
+              </span>
             </button>
 
             {/* Clear Formatting */}
@@ -1112,20 +1191,32 @@ export default function CreatePostPage() {
               if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
                 e.preventDefault();
                 openLinkModal();
-              } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+              } else if (
+                (e.metaKey || e.ctrlKey) &&
+                e.key.toLowerCase() === "z"
+              ) {
                 e.preventDefault();
                 if (e.shiftKey) {
                   executeRedo();
                 } else {
                   executeUndo();
                 }
-              } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
+              } else if (
+                (e.metaKey || e.ctrlKey) &&
+                e.key.toLowerCase() === "y"
+              ) {
                 e.preventDefault();
                 executeRedo();
-              } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+              } else if (
+                (e.metaKey || e.ctrlKey) &&
+                e.key.toLowerCase() === "b"
+              ) {
                 e.preventDefault();
                 executeCommand("bold");
-              } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i") {
+              } else if (
+                (e.metaKey || e.ctrlKey) &&
+                e.key.toLowerCase() === "i"
+              ) {
                 e.preventDefault();
                 executeCommand("italic");
               }
@@ -1191,12 +1282,16 @@ export default function CreatePostPage() {
                 {isUploadingImage ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-indigo-600 dark:text-indigo-400" />
-                    <span className="text-[10px] font-medium">Yuklanmoqda...</span>
+                    <span className="text-[10px] font-medium">
+                      Yuklanmoqda...
+                    </span>
                   </>
                 ) : (
                   <>
                     <Paperclip className="w-4 h-4 text-slate-400" />
-                    <span className="text-[10px] font-semibold">Rasm biriktirish</span>
+                    <span className="text-[10px] font-semibold">
+                      Rasm biriktirish
+                    </span>
                   </>
                 )}
               </button>
@@ -1246,5 +1341,3 @@ export default function CreatePostPage() {
     </div>
   );
 }
-
-

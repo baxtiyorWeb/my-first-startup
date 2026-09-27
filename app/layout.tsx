@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "The Go-getters — O‘zbekiston Innovatorlari Ijtimoiy Tarmog‘i",
+  title: "The Go-getters — Intiluvchan insonlar, o'ziga xos g'oyalar va yangi startaplar tarmog'i",
   description: "Maqsadi baland tadbirkorlar, dasturchilar, startapchilar va g‘oya egalari uchun ijtimoiy tarmoq",
 };
 
