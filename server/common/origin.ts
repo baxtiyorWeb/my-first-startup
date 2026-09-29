@@ -54,6 +54,5 @@ export function getAppOrigin(req: NextRequest): string {
     }
   }
 
-  // 5. Localhost fallback when developing locally
   return envUrl || "http://localhost:3000";
 }
