@@ -27,7 +27,12 @@ export function getSearchHighlightRegex(query: string): RegExp | null {
   const tokens = getSearchTokens(query);
   if (tokens.length === 0) return null;
   const pattern = tokens.map(escapeRegExp).join("|");
-  return new RegExp(`(${pattern})`, "gi");
+  try {
+    // Only match at start of words or whole words, not inside words (e.g. not in "imko[ni]yat")
+    return new RegExp(`(?<![\\p{L}\\p{N}])(${pattern})`, "giu");
+  } catch {
+    return new RegExp(`\\b(${pattern})`, "gi");
+  }
 }
 
 interface HighlightTextProps {

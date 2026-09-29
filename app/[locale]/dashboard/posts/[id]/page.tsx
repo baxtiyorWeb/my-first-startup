@@ -64,26 +64,67 @@ function PostDetailInner({
             : []
     : [];
 
-  // Search highlight & 1.5-second scale pulse state
+  // Search highlight state: shows once when navigated from search, then disappears
   const cardRef = useRef<HTMLElement>(null);
-  const searchQuery = hlParam;
-  const [prevHl, setPrevHl] = useState(hlParam);
-  const [isHighlighted, setIsHighlighted] = useState(Boolean(hlParam));
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window !== "undefined" && postId && hlParam) {
+      try {
+        const hasSeen = sessionStorage.getItem(`seen_hl_${postId}`);
+        if (hasSeen === hlParam) {
+          return "";
+        }
+      } catch {
+        // Ignore storage error
+      }
+    }
+    return hlParam;
+  });
 
-  if (prevHl !== hlParam) {
-    setPrevHl(hlParam);
-    setIsHighlighted(Boolean(hlParam));
-  }
+  const [isHighlighted, setIsHighlighted] = useState(() => Boolean(searchQuery));
 
   useEffect(() => {
-    if (isHighlighted) {
+    if (searchQuery) {
+      // Record in session so this post never highlights this term again
+      if (typeof window !== "undefined" && postId) {
+        try {
+          sessionStorage.setItem(`seen_hl_${postId}`, searchQuery);
+        } catch {
+          // Ignore
+        }
+      }
+
+      // Smooth scroll to card
       cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // Highlight once for 2 seconds, then remove highlighting completely
       const timer = setTimeout(() => {
         setIsHighlighted(false);
-      }, 1500);
+        setSearchQuery("");
+
+        // Clean query parameter from URL without page reload
+        if (typeof window !== "undefined") {
+          const currentUrl = new URL(window.location.href);
+          if (currentUrl.searchParams.has("hl") || currentUrl.searchParams.has("q")) {
+            currentUrl.searchParams.delete("hl");
+            currentUrl.searchParams.delete("q");
+            const cleanUrl = currentUrl.pathname + (currentUrl.search ? currentUrl.search : "");
+            window.history.replaceState(null, "", cleanUrl);
+          }
+        }
+      }, 2000);
+
       return () => clearTimeout(timer);
+    } else if (typeof window !== "undefined" && (hlParam || searchParams.has("hl") || searchParams.has("q"))) {
+      // Clean query parameter if already seen
+      const currentUrl = new URL(window.location.href);
+      if (currentUrl.searchParams.has("hl") || currentUrl.searchParams.has("q")) {
+        currentUrl.searchParams.delete("hl");
+        currentUrl.searchParams.delete("q");
+        const cleanUrl = currentUrl.pathname + (currentUrl.search ? currentUrl.search : "");
+        window.history.replaceState(null, "", cleanUrl);
+      }
     }
-  }, [isHighlighted]);
+  }, [searchQuery, postId, hlParam, searchParams]);
 
   // Interaction states
   const [isLiked, setIsLiked] = useState(false);

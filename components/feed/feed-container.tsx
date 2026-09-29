@@ -43,6 +43,23 @@ export function FeedContainer() {
   }, [t]);
 
   useEffect(() => {
+    if (targetPostId || hlQuery) {
+      const timer = setTimeout(() => {
+        if (typeof window !== "undefined") {
+          const currentUrl = new URL(window.location.href);
+          if (currentUrl.searchParams.has("post") || currentUrl.searchParams.has("hl")) {
+            currentUrl.searchParams.delete("post");
+            currentUrl.searchParams.delete("hl");
+            const cleanUrl = currentUrl.pathname + (currentUrl.search ? currentUrl.search : "");
+            window.history.replaceState(null, "", cleanUrl);
+          }
+        }
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [targetPostId, hlQuery]);
+
+  useEffect(() => {
     let isMounted = true;
     api.posts
       .getFeed({ limit: 10 })

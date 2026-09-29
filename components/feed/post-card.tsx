@@ -61,6 +61,7 @@ export function PostCard({
   // Search highlight & 1.5-second scale pulse state
   const [prevHighlighted, setPrevHighlighted] = useState(isHighlighted ?? false);
   const [highlightActive, setHighlightActive] = useState(isHighlighted ?? false);
+  const [activeSearchQuery, setActiveSearchQuery] = useState(searchQuery || "");
 
   if (prevHighlighted !== (isHighlighted ?? false)) {
     setPrevHighlighted(isHighlighted ?? false);
@@ -68,13 +69,14 @@ export function PostCard({
   }
 
   useEffect(() => {
-    if (highlightActive) {
+    if (highlightActive || activeSearchQuery) {
       const timer = setTimeout(() => {
         setHighlightActive(false);
-      }, 1500);
+        setActiveSearchQuery("");
+      }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [highlightActive]);
+  }, [highlightActive, activeSearchQuery]);
 
   // Views Count State
   const [viewsCount, setViewsCount] = useState(post.viewsCount ?? 0);
@@ -338,14 +340,14 @@ export function PostCard({
           {post.title && (
             <Link href={localePath(`/dashboard/posts/${post.id}`)}>
               <h2 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 tracking-tight leading-snug hover:underline cursor-pointer">
-                <HighlightText text={post.title} query={searchQuery} />
+                <HighlightText text={post.title} query={activeSearchQuery} />
               </h2>
             </Link>
           )}
           <Link href={localePath(`/dashboard/posts/${post.id}`)} className="block group">
             <RichContent
               content={post.content}
-              searchQuery={searchQuery}
+              searchQuery={activeSearchQuery}
               className="text-xs sm:text-[13.5px] group-hover:text-slate-950 dark:group-hover:text-slate-100 transition-colors"
             />
           </Link>
