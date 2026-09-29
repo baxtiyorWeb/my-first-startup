@@ -28,6 +28,7 @@ import { toast } from "@/components/ui/toast";
 import { VerifiedBadgeIcon } from "@/components/icons";
 import { ReportModal } from "@/components/ui/report-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { RichContent } from "@/components/feed/rich-content";
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
@@ -329,22 +330,13 @@ function PostDetailInner({
           <div className="flex items-center gap-3">
             <Link
               href={localePath(`/dashboard/profile?user=${encodeURIComponent(post.author.handle)}`)}
-              className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-xs text-slate-700 dark:text-slate-300 overflow-hidden ring-1 ring-slate-200 dark:ring-slate-800 shrink-0"
+              className="shrink-0"
             >
-              {post.author.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={post.author.avatarUrl}
-                  alt={post.author.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                post.author.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .slice(0, 2)
-                  .join("")
-              )}
+              <UserAvatar
+                name={post.author.name}
+                avatarUrl={post.author.avatarUrl}
+                size="lg"
+              />
             </Link>
 
             <div className="min-w-0">
@@ -632,13 +624,11 @@ function PostDetailInner({
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 sm:p-4 space-y-3"
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-semibold text-[11px] text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-800 shrink-0">
-                  {comment.author.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .slice(0, 2)
-                    .join("")}
-                </div>
+                <UserAvatar
+                  name={comment.author.name}
+                  avatarUrl={comment.author.avatarUrl}
+                  size="sm"
+                />
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">

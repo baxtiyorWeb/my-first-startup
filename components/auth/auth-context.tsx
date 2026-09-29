@@ -197,6 +197,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateCurrentUser = useCallback(
     async (updates: Partial<UserProfile>) => {
+      // Optimistic instant local session update
+      setSession((prev) => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          ...updates,
+          avatarUrl: updates.avatarUrl !== undefined ? (updates.avatarUrl || undefined) : prev.user.avatarUrl,
+        },
+      }));
+
       try {
         const result = await api.users.updateProfile({
           name: updates.name,
@@ -205,6 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           location: updates.location,
           website: updates.website,
           avatarUrl: updates.avatarUrl,
+          intent: updates.intent,
         });
 
         setSession((prev) => ({

@@ -92,23 +92,8 @@ function ProfileContent() {
     return userPosts[0];
   }, [userPosts]);
 
-  const handleUpdateProfile = async (updates: Partial<UserProfile>) => {
-    try {
-      const data = await api.users.updateProfile({
-        name: updates.name,
-        role: updates.role,
-        bio: updates.bio,
-        location: updates.location,
-        website: updates.website,
-        avatarUrl: updates.avatarUrl,
-      });
-      setProfile(data.profile);
-    } catch (err) {
-      const msg =
-        err instanceof ApiError ? err.message : t("settings.errorSaved");
-      toast.error(msg);
-      throw err;
-    }
+  const handleUpdateProfile = (updates: Partial<UserProfile>) => {
+    setProfile((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
   const handleFollowToggle = async () => {

@@ -6,6 +6,7 @@ import { Users, ArrowRight, Sparkles, MessageSquare } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Post } from "@/types/social";
 import { useI18n } from "@/lib/i18n/context";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 export default function ExplorePage() {
   const { t, localePath } = useI18n();
@@ -95,13 +96,11 @@ export default function ExplorePage() {
                 className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-2xs transition-all flex items-center justify-between gap-3 group cursor-pointer"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm flex items-center justify-center shrink-0">
-                    {author.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join("")}
-                  </div>
+                  <UserAvatar
+                    name={author.name}
+                    avatarUrl={author.avatarUrl}
+                    size="lg"
+                  />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:underline">

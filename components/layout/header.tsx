@@ -19,6 +19,7 @@ import { useAuth } from "@/components/auth/auth-context";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { LanguageSwitcher } from "./language-switcher";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface HeaderProps {
   title?: string;
@@ -214,15 +215,11 @@ export function Header({ title, subtitle }: HeaderProps) {
                   aria-label={t("nav.userMenu")}
                   aria-expanded={isUserMenuOpen}
                 >
-                  <div className="w-7 h-7 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-[11px] flex items-center justify-center ring-1 ring-slate-200 dark:ring-slate-800 select-none shrink-0">
-                    {session.user.name
-                      ? session.user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .slice(0, 2)
-                        .join("")
-                      : "F"}
-                  </div>
+                  <UserAvatar
+                    name={session.user.name}
+                    avatarUrl={session.user.avatarUrl}
+                    size="sm"
+                  />
                   <span className="hidden md:inline-block text-xs font-medium text-slate-700 dark:text-slate-300 max-w-[100px] truncate">
                     {session.user.name
                       ? session.user.name.split(" ")[0]
@@ -233,13 +230,20 @@ export function Header({ title, subtitle }: HeaderProps) {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-100 text-xs">
                     {/* User details header */}
-                    <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-800">
-                      <p className="font-semibold text-slate-900 dark:text-white truncate">
-                        {session.user.name}
-                      </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        {session.user.handle}
-                      </p>
+                    <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2.5">
+                      <UserAvatar
+                        name={session.user.name}
+                        avatarUrl={session.user.avatarUrl}
+                        size="md"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-slate-900 dark:text-white truncate">
+                          {session.user.name}
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {session.user.handle}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="py-1">

@@ -22,7 +22,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
+
+
+
+
   const origin = getAppOrigin(req);
+
 
   if (error || !code) {
     console.error("[GOOGLE AUTH CALLBACK] Error or missing code:", error);

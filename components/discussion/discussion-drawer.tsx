@@ -17,6 +17,7 @@ import { toast } from "@/components/ui/toast";
 import { RichContent } from "@/components/feed/rich-content";
 import { api, ApiError } from "@/lib/api";
 import { useI18n } from "@/lib/i18n/context";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface DiscussionDrawerProps {
   isOpen: boolean;
@@ -309,9 +310,13 @@ export function DiscussionDrawer({
                       <div className="flex items-center gap-2">
                         <Link
                           href={localePath(`/dashboard/profile?user=${encodeURIComponent(item.author.handle)}`)}
-                          className="w-6 h-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[10px] font-bold flex items-center justify-center"
+                          className="shrink-0"
                         >
-                          {item.author.name[0]}
+                          <UserAvatar
+                            name={item.author.name}
+                            avatarUrl={item.author.avatarUrl}
+                            size="xs"
+                          />
                         </Link>
                         <span className="text-xs font-semibold text-slate-900 dark:text-white">
                           {item.author.name}
@@ -419,6 +424,16 @@ export function DiscussionDrawer({
                         >
                           <div className="flex items-center justify-between gap-2 mb-1.5">
                             <div className="flex items-center gap-1.5">
+                              <Link
+                                href={localePath(`/dashboard/profile?user=${encodeURIComponent(reply.author.handle)}`)}
+                                className="shrink-0"
+                              >
+                                <UserAvatar
+                                  name={reply.author.name}
+                                  avatarUrl={reply.author.avatarUrl}
+                                  size="xs"
+                                />
+                              </Link>
                               <span className="text-xs font-semibold text-slate-900 dark:text-white">
                                 {reply.author.name}
                               </span>

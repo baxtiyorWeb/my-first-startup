@@ -18,9 +18,11 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { LanguageSwitcher } from "./language-switcher";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { session } = useAuth();
   const { t, localePath } = useI18n();
 
   const normalizedPath = pathname.replace(/^\/(uz|ru|en)(\/|$)/, "/$2").replace(/\/+/g, "/") || "/dashboard";
@@ -63,7 +65,15 @@ export function MobileBottomNav() {
         aria-label={t("nav.profile")}
         className="flex items-center justify-center py-2 cursor-pointer"
       >
-        <UserIcon size={22} />
+        {session.isAuthenticated ? (
+          <UserAvatar
+            name={session.user.name}
+            avatarUrl={session.user.avatarUrl}
+            size="xs"
+          />
+        ) : (
+          <UserIcon size={22} />
+        )}
       </Link>
 
       {/* 5. Settings */}
@@ -194,15 +204,11 @@ export function MobileDrawer() {
                 onClick={closeMobileNav}
                 className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 flex items-center justify-center font-bold text-xs">
-                  {session.user.name
-                    ? session.user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .slice(0, 2)
-                        .join("")
-                    : "F"}
-                </div>
+                <UserAvatar
+                  name={session.user.name}
+                  avatarUrl={session.user.avatarUrl}
+                  size="md"
+                />
                 <div className="flex flex-col min-w-0 flex-1">
                   <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
                     {session.user.name || t("nav.guestUser")}

@@ -11,6 +11,7 @@ import {
 import { toast } from "@/components/ui/toast";
 import type { UserProfile, ProfileTab } from "@/types/social";
 import { useI18n } from "@/lib/i18n/context";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -71,22 +72,12 @@ export function ProfileHeader({
         <div className="flex items-start gap-4 sm:gap-5">
           {/* Avatar with authority ring */}
           <div className="relative shrink-0 select-none">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-xl sm:text-2xl flex items-center justify-center ring-2 ring-slate-200 dark:ring-slate-800 shadow-sm">
-              {profile.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={profile.avatarUrl}
-                  alt={profile.name}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : (
-                profile.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .slice(0, 2)
-                  .join("")
-              )}
-            </div>
+            <UserAvatar
+              name={profile.name}
+              avatarUrl={profile.avatarUrl}
+              size="xl"
+              className="ring-2 ring-slate-200 dark:ring-slate-800 shadow-sm"
+            />
             {profile.verified && (
               <span
                 className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-white dark:bg-slate-900"

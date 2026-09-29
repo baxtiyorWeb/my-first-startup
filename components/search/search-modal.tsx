@@ -18,6 +18,7 @@ import { api } from "@/lib/api";
 import type { SearchItem, SearchCategory, SearchResponse } from "@/types/social";
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 const RECENT_SEARCHES_KEY = "gogetters_recent_searches_v1";
 const MAX_RECENT_ITEMS = 5;
@@ -370,13 +371,18 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      {item.type === "user" ? (
-                        <User className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-                      ) : (
+                    {item.type === "user" ? (
+                      <UserAvatar
+                        name={item.title}
+                        avatarUrl={item.avatarUrl}
+                        size="md"
+                        className="w-9 h-9 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                         <MessageSquare className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">

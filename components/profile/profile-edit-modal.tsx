@@ -9,6 +9,7 @@ import { compressAvatarImage } from "@/lib/image-compressor";
 import type { UserProfile, UserIntent } from "@/types/social";
 import { useI18n } from "@/lib/i18n/context";
 import { CustomSelect, type CustomSelectOption } from "@/components/ui/custom-select";
+import { useAuth } from "@/components/auth/auth-context";
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ function ProfileEditForm({
   onSave: (updatedProfile: Partial<UserProfile>) => void;
 }) {
   const { t } = useI18n();
+  const { updateCurrentUser } = useAuth();
 
   const [name, setName] = useState(profile.name);
   const [role, setRole] = useState(profile.role);
@@ -119,7 +121,7 @@ function ProfileEditForm({
         finalAvatarUrl = uploadRes.url;
       }
 
-      await api.users.updateMe({
+      await updateCurrentUser({
         name: name.trim(),
         role: role.trim(),
         bio: bio.trim(),

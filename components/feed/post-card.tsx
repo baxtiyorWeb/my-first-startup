@@ -20,6 +20,7 @@ import { api } from "@/lib/api";
 import { RichContent } from "./rich-content";
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface PostCardProps {
   post: Post;
@@ -198,23 +199,15 @@ export function PostCard({
             {/* Avatar */}
             <Link
               href={authorProfileHref}
-              className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center shrink-0 select-none cursor-pointer hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-700 transition-all"
+              className="shrink-0 cursor-pointer hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-700 transition-all rounded-full"
               title={`${post.author.name} profili`}
             >
-              {post.author.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={post.author.avatarUrl}
-                  alt={post.author.name}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : (
-                post.author.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .slice(0, 2)
-                  .join("")
-              )}
+              <UserAvatar
+                name={post.author.name}
+                avatarUrl={post.author.avatarUrl}
+                size="md"
+                className="w-9 h-9"
+              />
             </Link>
 
             {/* Author Details */}
