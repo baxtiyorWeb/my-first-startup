@@ -349,7 +349,9 @@ export async function getPostById(
 }
 
 /**
- * Record a post view with a 1-hour deduplication window per viewer
+ * Record a post view with anti-fraud deduplication:
+ * - 24 hours window for regular viewers
+ * - 7 days (1 week) window for author's own views
  */
 export async function recordPostView(
   postId: string,
@@ -357,7 +359,7 @@ export async function recordPostView(
 ): Promise<{ incremented: boolean; viewsCount: number }> {
   try {
     const [post] = await db
-      .select({ id: posts.id, viewsCount: posts.viewsCount })
+      .select({ id: posts.id, authorId: posts.authorId, viewsCount: posts.viewsCount })
       .from(posts)
       .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
       .limit(1);
@@ -366,9 +368,13 @@ export async function recordPostView(
       throw AppError.notFound("Post topilmadi");
     }
 
-    // 1-hour deduplication window:
-    // If this viewer viewed this post within the last 1 hour, don't increment
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    // Deduplication rules: 7 days for author's self-view, 24 hours for other viewers
+    const isSelfView = viewerId === post.authorId;
+    const cutoffMs = isSelfView
+      ? 7 * 24 * 60 * 60 * 1000 // 7 days (1 week)
+      : 24 * 60 * 60 * 1000;    // 24 hours
+
+    const cutoffDate = new Date(Date.now() - cutoffMs);
 
     const [recentView] = await db
       .select()
@@ -377,7 +383,7 @@ export async function recordPostView(
         and(
           eq(postViews.postId, postId),
           eq(postViews.viewerId, viewerId),
-          sql`${postViews.viewedAt} >= ${oneHourAgo}`
+          sql`${postViews.viewedAt} >= ${cutoffDate}`
         )
       )
       .orderBy(desc(postViews.viewedAt))
