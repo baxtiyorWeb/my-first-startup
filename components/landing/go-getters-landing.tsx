@@ -25,16 +25,13 @@ export function GoGettersLanding() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
-      {/* Background Ambient Glow */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-60">
         <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-[140px]" />
         <div className="absolute top-1/2 -right-32 w-[450px] h-[450px] bg-cyan-500/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* 1. Header Navigation */}
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 py-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-          {/* Logo */}
           <Link
             href={localePath("/")}
             className="flex items-center gap-3 group cursor-pointer"
@@ -54,7 +51,6 @@ export function GoGettersLanding() {
             </div>
           </Link>
 
-          {/* Navigation Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
             <a href="#haqida" className="hover:text-white transition-colors">
               Platforma Haqida
@@ -67,19 +63,16 @@ export function GoGettersLanding() {
             </a>
           </nav>
 
-          {/* Right Controls */}
           <div className="flex items-center gap-3">
-            {/* Language Switch */}
             <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1 text-xs">
               {(["uz", "ru", "en"] as const).map((l) => (
                 <button
                   key={l}
                   onClick={() => switchLocale(l)}
-                  className={`px-2 py-0.5 rounded font-semibold transition-all cursor-pointer ${
-                    locale === l
-                      ? "bg-indigo-600 text-white"
-                      : "text-slate-400 hover:text-white"
-                  }`}
+                  className={`px-2 py-0.5 rounded font-semibold transition-all cursor-pointer ${locale === l
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-400 hover:text-white"
+                    }`}
                 >
                   {l.toUpperCase()}
                 </button>
@@ -115,7 +108,6 @@ export function GoGettersLanding() {
         </div>
       </header>
 
-      {/* 2. HERO SECTION */}
       <section
         id="haqida"
         className="relative pt-10  pb-24 overflow-hidden z-10"
@@ -123,7 +115,6 @@ export function GoGettersLanding() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              {/* Main Headline */}
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
                 Maqsadi Baland Insonlar Uchun
                 <br />
@@ -132,7 +123,6 @@ export function GoGettersLanding() {
                 </span>
               </h1>
 
-              {/* Subtitle */}
               <p className="text-base sm:text-lg text-slate-300 leading-relaxed">
                 <strong className="text-white font-semibold">
                   The Go-getters
@@ -143,7 +133,6 @@ export function GoGettersLanding() {
                 loyihalaringizni birga rivojlantiring.
               </p>
 
-              {/* CTAs */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
                 <button
                   onClick={() => router.push(localePath("/auth/register"))}
@@ -168,7 +157,6 @@ export function GoGettersLanding() {
                 </button>
               </div>
 
-              {/* Simple Feature Tags */}
               <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-5 text-xs font-medium text-slate-400">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -185,13 +173,10 @@ export function GoGettersLanding() {
               </div>
             </div>
 
-            {/* Right Side Visual Showcase Card */}
             <div className="lg:col-span-5">
               <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/60 rounded-3xl p-7 border border-slate-800 shadow-2xl space-y-6">
                 <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
-                    GG
-                  </div>
+
                   <h3 className="text-lg font-extrabold text-white">
                     Intiluvchan Insonlar Maydoniga Xush Kelibsiz!
                   </h3>
@@ -250,7 +235,6 @@ export function GoGettersLanding() {
         </div>
       </section>
 
-      {/* 3. IMPONIYATLAR (Core Social Features) */}
       <section
         id="imkoniyatlar"
         className="py-20 bg-slate-900/40 border-y border-slate-800/80"
@@ -267,7 +251,6 @@ export function GoGettersLanding() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Pillar 1 */}
             <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 hover:border-indigo-500/40 transition-all space-y-3">
               <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
                 <MessageSquare className="w-6 h-6" />
@@ -281,7 +264,6 @@ export function GoGettersLanding() {
               </p>
             </div>
 
-            {/* Pillar 2 */}
             <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 hover:border-cyan-500/40 transition-all space-y-3">
               <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
                 <Users className="w-6 h-6" />
@@ -295,7 +277,6 @@ export function GoGettersLanding() {
               </p>
             </div>
 
-            {/* Pillar 3 */}
             <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 hover:border-emerald-500/40 transition-all space-y-3">
               <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                 <Rocket className="w-6 h-6" />
@@ -309,7 +290,6 @@ export function GoGettersLanding() {
               </p>
             </div>
 
-            {/* Pillar 4 */}
             <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 hover:border-amber-500/40 transition-all space-y-3">
               <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
                 <ShieldCheck className="w-6 h-6" />
@@ -326,7 +306,6 @@ export function GoGettersLanding() {
         </div>
       </section>
 
-      {/* 4. CALL-TO-ACTION FOOTER BANNER */}
       <section className="py-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-cyan-950 rounded-3xl p-8 sm:p-12 border border-indigo-500/30 text-center space-y-5 shadow-2xl">
@@ -355,7 +334,6 @@ export function GoGettersLanding() {
         </div>
       </section>
 
-      {/* 5. FOOTER */}
       <footer className="py-8 bg-slate-950 border-t border-slate-800 text-slate-400 text-xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
