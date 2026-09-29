@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { handleGoogleAuth } from "@/server/modules/auth/auth.service";
 import { getSessionCookieOptions } from "@/server/common/auth-guard";
 import { DEFAULT_LOCALE, isValidLocale } from "@/lib/i18n/config";
+import { getAppOrigin } from "@/server/common/origin";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -21,10 +22,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const origin =
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-    req.nextUrl.origin ||
-    "http://localhost:3000";
+  const origin = getAppOrigin(req);
 
   if (error || !code) {
     console.error("[GOOGLE AUTH CALLBACK] Error or missing code:", error);
