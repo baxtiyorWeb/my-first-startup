@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -36,10 +36,25 @@ export default function OnboardingPage() {
   const [recommendedThinkers, setRecommendedThinkers] = useState<RecommendedThinker[]>([]);
   const [followedAuthorIds, setFollowedAuthorIds] = useState<string[]>([]);
 
-  const [name, setName] = useState(session.user.name || "");
-  const [handle, setHandle] = useState(session.user.handle.replace("@", "") || "");
-  const [role, setRole] = useState(session.user.role || "");
-  const [bio, setBio] = useState(session.user.bio || "");
+  // Prevent initial data from resetting when user clears inputs
+  const initializedRef = useRef(Boolean(session.user?.id));
+  const userTouchedRef = useRef({
+    name: false,
+    handle: false,
+    role: false,
+    bio: false,
+  });
+
+  const [name, setName] = useState(() => session.user?.name || "");
+  const [handle, setHandle] = useState(() => {
+    const raw = session.user?.handle?.replace("@", "") || "";
+    return raw.startsWith("user_") ? "" : raw;
+  });
+  const [role, setRole] = useState(() => {
+    const r = session.user?.role || "";
+    return r === "Go-getter" ? "" : r;
+  });
+  const [bio, setBio] = useState(() => session.user?.bio || "");
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,15 +66,31 @@ export default function OnboardingPage() {
     }
   }, [session, router, localePath]);
 
-  // Sync Google user name if session loads after initial render
+  // Sync Google user profile ONLY ONCE when session arrives asynchronously
   useEffect(() => {
-    if (session.user?.name && !name) {
-      setName(session.user.name);
+    if (session.user?.id && !initializedRef.current) {
+      initializedRef.current = true;
+      if (session.user.name && !userTouchedRef.current.name) {
+        setName(session.user.name);
+      }
+      if (session.user.handle && !userTouchedRef.current.handle) {
+        const clean = session.user.handle.replace("@", "");
+        if (!clean.startsWith("user_")) {
+          setHandle(clean);
+        }
+      }
+      if (
+        session.user.role &&
+        session.user.role !== "Go-getter" &&
+        !userTouchedRef.current.role
+      ) {
+        setRole(session.user.role);
+      }
+      if (session.user.bio && !userTouchedRef.current.bio) {
+        setBio(session.user.bio);
+      }
     }
-    if (session.user?.handle && !handle && !session.user.handle.startsWith("@user_")) {
-      setHandle(session.user.handle.replace("@", ""));
-    }
-  }, [session.user, name, handle]);
+  }, [session.user?.id, session.user?.name, session.user?.handle, session.user?.role, session.user?.bio]);
 
   // Fetch real recommended authors if any meet criteria (users > 500 && posts >= 100)
   useEffect(() => {
@@ -190,6 +221,7 @@ export default function OnboardingPage() {
                     type="text"
                     value={name}
                     onChange={(e) => {
+                      userTouchedRef.current.name = true;
                       setName(e.target.value);
                       setError(null);
                     }}
@@ -210,6 +242,7 @@ export default function OnboardingPage() {
                       type="text"
                       value={handle}
                       onChange={(e) => {
+                        userTouchedRef.current.handle = true;
                         setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""));
                         setError(null);
                       }}
@@ -227,6 +260,7 @@ export default function OnboardingPage() {
                     type="text"
                     value={role}
                     onChange={(e) => {
+                      userTouchedRef.current.role = true;
                       setRole(e.target.value);
                       setError(null);
                     }}
@@ -242,7 +276,10 @@ export default function OnboardingPage() {
                   <textarea
                     rows={2}
                     value={bio}
-                    onChange={(e) => setBio(e.target.value)}
+                    onChange={(e) => {
+                      userTouchedRef.current.bio = true;
+                      setBio(e.target.value);
+                    }}
                     placeholder={t("onboarding.bioPlaceholder")}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white resize-none"
                   />

@@ -165,10 +165,10 @@ export function Header({ title, subtitle }: HeaderProps) {
                   <SearchIcon size={13} />
                 </div>
                 <span className="hidden sm:inline text-xs text-slate-500 dark:text-slate-400 truncate font-medium">
-                  Qidirish... (G‘oya, muallif)
+                  {t("search.headerPlaceholder") || "Qidirish... (G‘oya, muallif)"}
                 </span>
                 <span className="inline sm:hidden text-[11px] text-slate-500 dark:text-slate-400 truncate font-medium">
-                  Qidirish...
+                  {t("search.headerPlaceholderShort") || "Qidirish..."}
                 </span>
               </div>
 

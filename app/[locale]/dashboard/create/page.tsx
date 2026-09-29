@@ -46,7 +46,7 @@ export default function CreatePostPage() {
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [draftSavedTime, setDraftSavedTime] = useState<string>("Hozirgina");
+  const [draftSavedTime, setDraftSavedTime] = useState<string>(() => t("create.draftStatus") || "Hozirgina");
 
   // Word count & reading time
   const [wordCount, setWordCount] = useState(0);
@@ -254,13 +254,13 @@ export default function CreatePostPage() {
       editorRef.current.innerHTML = historyRef.current[historyIndexRef.current];
       updateEditorStats();
       checkSelection();
-      toast.info("Amal bekor qilindi");
+      toast.info(t("create.undoToast") || "Amal bekor qilindi");
     } else {
       document.execCommand("undo");
       updateEditorStats();
       checkSelection();
     }
-  }, [updateEditorStats, checkSelection]);
+  }, [updateEditorStats, checkSelection, t]);
 
   // Redo execution
   const executeRedo = useCallback(() => {
@@ -270,13 +270,13 @@ export default function CreatePostPage() {
       editorRef.current.innerHTML = historyRef.current[historyIndexRef.current];
       updateEditorStats();
       checkSelection();
-      toast.info("Amal qaytarildi");
+      toast.info(t("create.redoToast") || "Amal qaytarildi");
     } else {
       document.execCommand("redo");
       updateEditorStats();
       checkSelection();
     }
-  }, [updateEditorStats, checkSelection]);
+  }, [updateEditorStats, checkSelection, t]);
 
   // Open Link Modal dialog
   const openLinkModal = useCallback(() => {
@@ -455,7 +455,7 @@ export default function CreatePostPage() {
           node = node.parentNode;
         }
       }
-      toast.info("Formatlash tozalandi");
+      toast.info(t("create.formatClearedToast") || "Formatlash tozalandi");
     } else if (command === "link") {
       openLinkModal();
       return;
@@ -475,7 +475,7 @@ export default function CreatePostPage() {
 
     let targetUrl = linkModalUrl.trim();
     if (!targetUrl) {
-      toast.error("Iltimos, havola manzilini kiriting");
+      toast.error(t("create.linkModalUrlRequired") || "Iltimos, havola manzilini kiriting");
       return;
     }
 
@@ -514,7 +514,7 @@ export default function CreatePostPage() {
     updateEditorStats();
     checkSelection();
     setIsLinkModalOpen(false);
-    toast.success("Havola qo‘shildi");
+    toast.success(t("create.linkAddedToast") || "Havola qo‘shildi");
   };
 
   // Remove Link from Modal
@@ -535,7 +535,7 @@ export default function CreatePostPage() {
     updateEditorStats();
     checkSelection();
     setIsLinkModalOpen(false);
-    toast.info("Havola olib tashlandi");
+    toast.info(t("create.linkRemovedToast") || "Havola olib tashlandi");
   };
 
   // Smart paste: Auto-convert raw URL strings into clickable HTML links
@@ -701,7 +701,7 @@ export default function CreatePostPage() {
       {floatingToolbar.visible && (
         <div
           role="toolbar"
-          aria-label="Formatlash asboblari"
+          aria-label={t("create.editorFormattingTools") || "Formatlash asboblari"}
           style={{
             position: "fixed",
             top: `${floatingToolbar.top}px`,
@@ -717,8 +717,8 @@ export default function CreatePostPage() {
               e.preventDefault();
               executeCommand("bold");
             }}
-            title="Qalin (Ctrl+B)"
-            aria-label="Qalin matn"
+            title={t("create.editorBold") || "Qalin (Ctrl+B)"}
+            aria-label={t("create.editorBoldAria") || "Qalin matn"}
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
               activeFormats.bold
                 ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -735,8 +735,8 @@ export default function CreatePostPage() {
               e.preventDefault();
               executeCommand("italic");
             }}
-            title="Kursiv (Ctrl+I)"
-            aria-label="Kursiv matn"
+            title={t("create.editorItalic") || "Kursiv (Ctrl+I)"}
+            aria-label={t("create.editorItalicAria") || "Kursiv matn"}
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
               activeFormats.italic
                 ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -755,8 +755,8 @@ export default function CreatePostPage() {
               e.preventDefault();
               executeCommand("formatBlock", "<h2>");
             }}
-            title="Sarlavha (H2)"
-            aria-label="Sarlavha formati"
+            title={t("create.editorH2") || "Sarlavha (H2)"}
+            aria-label={t("create.editorH2Aria") || "Sarlavha formati"}
             className={`px-1.5 py-0.5 text-[11px] font-bold rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
               activeFormats.h2
                 ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -773,8 +773,8 @@ export default function CreatePostPage() {
               e.preventDefault();
               executeCommand("formatBlock", "<blockquote>");
             }}
-            title="Iqtibos bloki"
-            aria-label="Iqtibos bloki"
+            title={t("create.editorQuote") || "Iqtibos bloki"}
+            aria-label={t("create.editorQuoteAria") || "Iqtibos bloki"}
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
               activeFormats.quote
                 ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -791,8 +791,8 @@ export default function CreatePostPage() {
               e.preventDefault();
               executeCommand("highlight");
             }}
-            title="Belgilash (Sariq fon)"
-            aria-label="Matnni belgilash"
+            title={t("create.editorHighlight") || "Belgilash (Sariq fon)"}
+            aria-label={t("create.editorHighlightAria") || "Matnni belgilash"}
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
               activeFormats.highlight ? "bg-amber-400 text-slate-950" : ""
             }`}
@@ -807,8 +807,8 @@ export default function CreatePostPage() {
               e.preventDefault();
               executeCommand("code");
             }}
-            title="Kod"
-            aria-label="Kod formati"
+            title={t("create.editorCode") || "Kod"}
+            aria-label={t("create.editorCodeAria") || "Kod formati"}
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
               activeFormats.code
                 ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -825,8 +825,8 @@ export default function CreatePostPage() {
               e.preventDefault();
               executeCommand("link");
             }}
-            title="Havola (Ctrl+K)"
-            aria-label="Havola kiritish"
+            title={t("create.editorLink") || "Havola (Ctrl+K)"}
+            aria-label={t("create.editorLinkAria") || "Havola kiritish"}
             className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
               activeFormats.link
                 ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -848,7 +848,7 @@ export default function CreatePostPage() {
                   <Link2 className="w-3.5 h-3.5" />
                 </div>
                 <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                  Havola (link) qo‘shish
+                  {t("create.linkModalTitle") || "Havola (link) qo‘shish"}
                 </h3>
               </div>
               <button
@@ -863,20 +863,20 @@ export default function CreatePostPage() {
             <form onSubmit={handleApplyLink} className="space-y-2.5">
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5">
-                  Matn (Nima deb ko‘rinsin)
+                  {t("create.linkModalTextLabel") || "Matn (Nima deb ko‘rinsin)"}
                 </label>
                 <input
                   type="text"
                   value={linkModalText}
                   onChange={(e) => setLinkModalText(e.target.value)}
-                  placeholder="Masalan: Maqola manbasi"
+                  placeholder={t("create.linkModalTextPlaceholder") || "Masalan: Maqola manbasi"}
                   className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5">
-                  Havola manzili (URL) *
+                  {t("create.linkModalUrlLabel") || "Havola manzili (URL) *"}
                 </label>
                 <div className="relative">
                   <Globe className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -885,7 +885,7 @@ export default function CreatePostPage() {
                     required
                     value={linkModalUrl}
                     onChange={(e) => setLinkModalUrl(e.target.value)}
-                    placeholder="https://example.com"
+                    placeholder={t("create.linkModalUrlPlaceholder") || "https://example.com"}
                     className="w-full h-8 pl-8 pr-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
@@ -898,7 +898,7 @@ export default function CreatePostPage() {
                     onClick={handleRemoveLink}
                     className="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-[11px] font-semibold hover:bg-rose-100 transition-colors cursor-pointer"
                   >
-                    O‘chirish
+                    {t("common.delete") || "O‘chirish"}
                   </button>
                 ) : (
                   <div />
@@ -910,13 +910,13 @@ export default function CreatePostPage() {
                     onClick={() => setIsLinkModalOpen(false)}
                     className="px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
-                    Bekor qilish
+                    {t("common.cancel") || "Bekor qilish"}
                   </button>
                   <button
                     type="submit"
                     className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
                   >
-                    Saqlash
+                    {t("common.save") || "Saqlash"}
                   </button>
                 </div>
               </div>
@@ -933,7 +933,7 @@ export default function CreatePostPage() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Post sarlavhasi (ixtiyoriy)..."
+            placeholder={t("create.postTitlePlaceholder") || "Post sarlavhasi (ixtiyoriy)..."}
             className="w-full text-sm sm:text-base font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 placeholder:text-xs text-xs sm:text-sm focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-600 transition-all"
           />
         </div>
@@ -949,8 +949,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeUndo();
               }}
-              title="Bekor qilish (Ctrl+Z)"
-              aria-label="Orqaga qaytarish"
+              title={t("create.editorUndo") || "Bekor qilish (Ctrl+Z)"}
+              aria-label={t("create.editorUndoAria") || "Orqaga qaytarish"}
               className="p-1 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
             >
               <Undo2 className="w-3.5 h-3.5" />
@@ -961,8 +961,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeRedo();
               }}
-              title="Qaytarish (Ctrl+Y)"
-              aria-label="Oldinga qaytarish"
+              title={t("create.editorRedo") || "Qaytarish (Ctrl+Y)"}
+              aria-label={t("create.editorRedoAria") || "Oldinga qaytarish"}
               className="p-1 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
             >
               <Redo2 className="w-3.5 h-3.5" />
@@ -977,8 +977,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("bold");
               }}
-              title="Qalin matn (Ctrl+B)"
-              aria-label="Qalin matn"
+              title={t("create.editorBold") || "Qalin matn (Ctrl+B)"}
+              aria-label={t("create.editorBoldAria") || "Qalin matn"}
               className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
                 activeFormats.bold
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white font-bold"
@@ -995,8 +995,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("italic");
               }}
-              title="Kursiv matn (Ctrl+I)"
-              aria-label="Kursiv matn"
+              title={t("create.editorItalic") || "Kursiv matn (Ctrl+I)"}
+              aria-label={t("create.editorItalicAria") || "Kursiv matn"}
               className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
                 activeFormats.italic
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -1015,8 +1015,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("formatBlock", "<h2>");
               }}
-              title="Katta sarlavha (H2)"
-              aria-label="Katta sarlavha"
+              title={t("create.editorH2") || "Katta sarlavha (H2)"}
+              aria-label={t("create.editorH2Aria") || "Katta sarlavha"}
               className={`px-1.5 py-0.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer text-[11px] font-bold flex items-center gap-0.5 ${
                 activeFormats.h2
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -1033,8 +1033,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("formatBlock", "<h3>");
               }}
-              title="O‘rtacha sarlavha (H3)"
-              aria-label="O‘rtacha sarlavha"
+              title={t("create.editorH3") || "O‘rtacha sarlavha (H3)"}
+              aria-label={t("create.editorH3Aria") || "O‘rtacha sarlavha"}
               className={`px-1.5 py-0.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer text-[11px] font-bold flex items-center gap-0.5 ${
                 activeFormats.h3
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -1052,8 +1052,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("formatBlock", "<blockquote>");
               }}
-              title="Iqtibos bloki"
-              aria-label="Iqtibos bloki"
+              title={t("create.editorQuote") || "Iqtibos bloki"}
+              aria-label={t("create.editorQuoteAria") || "Iqtibos bloki"}
               className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
                 activeFormats.quote
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -1070,8 +1070,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("insertUnorderedList");
               }}
-              title="Nuqtali ro‘yxat"
-              aria-label="Nuqtali ro‘yxat"
+              title={t("create.editorBulletList") || "Nuqtali ro‘yxat"}
+              aria-label={t("create.editorBulletListAria") || "Nuqtali ro‘yxat"}
               className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
                 activeFormats.ul
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -1086,8 +1086,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("insertOrderedList");
               }}
-              title="Raqamli ro‘yxat"
-              aria-label="Raqamli ro‘yxat"
+              title={t("create.editorNumberedList") || "Raqamli ro‘yxat"}
+              aria-label={t("create.editorNumberedListAria") || "Raqamli ro‘yxat"}
               className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
                 activeFormats.ol
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -1106,8 +1106,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("highlight");
               }}
-              title="Matnni belgilash (Sariq fon)"
-              aria-label="Matnni belgilash"
+              title={t("create.editorHighlight") || "Matnni belgilash (Sariq fon)"}
+              aria-label={t("create.editorHighlightAria") || "Matnni belgilash"}
               className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
                 activeFormats.highlight
                   ? "bg-amber-400 text-slate-950 font-bold"
@@ -1124,8 +1124,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("code");
               }}
-              title="Kod formati"
-              aria-label="Kod formati"
+              title={t("create.editorCode") || "Kod formati"}
+              aria-label={t("create.editorCodeAria") || "Kod formati"}
               className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer font-mono ${
                 activeFormats.code
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -1142,8 +1142,8 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("link");
               }}
-              title="Havola qo‘shish (Ctrl+K)"
-              aria-label="Havola qo‘shish"
+              title={t("create.editorLink") || "Havola qo‘shish (Ctrl+K)"}
+              aria-label={t("create.editorLinkAria") || "Havola qo‘shish"}
               className={`p-1 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
                 activeFormats.link
                   ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
@@ -1152,7 +1152,7 @@ export default function CreatePostPage() {
             >
               <Link2 className="w-3.5 h-3.5" />
               <span className="text-[11px] font-semibold hidden sm:inline">
-                Havola
+                {t("create.editorLinkText") || "Havola"}
               </span>
             </button>
 
@@ -1163,15 +1163,15 @@ export default function CreatePostPage() {
                 e.preventDefault();
                 executeCommand("clearFormat");
               }}
-              title="Formatni tozalash"
-              aria-label="Formatni tozalash"
+              title={t("create.editorClearFormat") || "Formatni tozalash"}
+              aria-label={t("create.editorClearFormatAria") || "Formatni tozalash"}
               className="p-1 rounded-md text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
             >
               <Eraser className="w-3.5 h-3.5" />
             </button>
 
             <span className="hidden md:inline-block ml-auto text-[11px] font-medium text-slate-400 dark:text-slate-500 pr-1 select-none">
-              Ctrl+K havola
+              {t("create.editorLinkShortcut") || "Ctrl+K havola"}
             </span>
           </div>
 
@@ -1221,7 +1221,7 @@ export default function CreatePostPage() {
                 executeCommand("italic");
               }
             }}
-            data-placeholder="O‘z g‘oyangiz, maqsadingiz yoki tahlilingizni yozing..."
+            data-placeholder={t("create.editorPlaceholder") || "O‘z g‘oyangiz, maqsadingiz yoki tahlilingizni yozing..."}
             className="fikr-rich-editor p-3.5 sm:p-4 text-xs sm:text-sm text-slate-900 dark:text-slate-100 cursor-text min-h-[220px]"
           />
         </div>
@@ -1232,7 +1232,7 @@ export default function CreatePostPage() {
             <div className="flex items-center gap-1.5">
               <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
               <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                Rasmlar (ko‘pi bilan 3 ta)
+                {t("create.imagesLabel") || "Rasmlar (ko‘pi bilan 3 ta)"}
               </label>
             </div>
             <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
@@ -1257,7 +1257,7 @@ export default function CreatePostPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={url}
-                  alt={`Rasm ${idx + 1}`}
+                  alt={`${t("create.image") || "Rasm"} ${idx + 1}`}
                   className="relative z-10 w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 transform-gpu"
                 />
 
@@ -1265,7 +1265,7 @@ export default function CreatePostPage() {
                   type="button"
                   onClick={() => handleRemoveImage(idx)}
                   className="absolute z-20 top-1 right-1 p-0.5 rounded bg-slate-950/75 text-white hover:bg-rose-600 transition-colors cursor-pointer"
-                  title="O‘chirish"
+                  title={t("common.delete") || "O‘chirish"}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -1283,14 +1283,14 @@ export default function CreatePostPage() {
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-indigo-600 dark:text-indigo-400" />
                     <span className="text-[10px] font-medium">
-                      Yuklanmoqda...
+                      {t("common.loading") || "Yuklanmoqda..."}
                     </span>
                   </>
                 ) : (
                   <>
                     <Paperclip className="w-4 h-4 text-slate-400" />
                     <span className="text-[10px] font-semibold">
-                      Rasm biriktirish
+                      {t("create.attachImage") || "Rasm biriktirish"}
                     </span>
                   </>
                 )}
