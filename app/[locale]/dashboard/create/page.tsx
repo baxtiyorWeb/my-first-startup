@@ -689,7 +689,6 @@ export default function CreatePostPage() {
           
         </div>
 
-        {/* Word count & Reading time */}
         <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-800/60 px-2 py-0.5 rounded-md">
           {wordCount} {t("create.words") || "so‘z"} • ~{readingTime}{" "}
           {t("create.readingTime") || "min"}
