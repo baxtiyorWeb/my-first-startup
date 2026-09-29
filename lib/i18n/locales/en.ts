@@ -207,10 +207,11 @@ export const en: typeof uz = {
   },
   auth: {
     loginTitle: "Log In",
-    loginSubtitle: "Choose your preferred method to sign in to The Go-getters",
+    loginSubtitle: "Sign in to The Go-getters using your Google account",
     registerTitle: "Create Account",
-    registerSubtitle: "Join the network for ambitious founders and innovators",
+    registerSubtitle: "Join the network for ambitious founders and innovators with Google",
     continueWithGoogle: "Continue with Google",
+    googleHint: "After signing in, you will choose your custom @username and set up your profile.",
     orWithPhone: "or with phone number",
     phoneLabel: "Phone Number",
     phonePlaceholder: "90 123 45 67",

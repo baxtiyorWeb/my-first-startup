@@ -355,3 +355,73 @@ export async function updateProfile(
     throw AppError.internal("Profil ma’lumotlarini yangilashda xatolik yuz berdi");
   }
 }
+
+export interface RecommendedThinker {
+  id: string;
+  name: string;
+  handle: string;
+  role: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  postsCount: number;
+}
+
+/**
+ * Get recommended thinkers for onboarding.
+ * Strict quality criteria:
+ * - Platform must have at least 500 total registered users
+ * - Authors must have at least 100 verified posts/thoughts
+ * If these conditions are not met, returns empty array (skip recommendation step).
+ */
+export async function getRecommendedThinkers(currentUserId?: string): Promise<{
+  eligible: boolean;
+  thinkers: RecommendedThinker[];
+}> {
+  try {
+    // 1. Check total users count: must be > 500
+    const [countRow] = await db
+      .select({ total: sql<number>`count(*)::int` })
+      .from(users);
+
+    const totalUsers = countRow?.total ?? 0;
+    if (totalUsers < 500) {
+      return { eligible: false, thinkers: [] };
+    }
+
+    // 2. Only real authors with at least 100 posts
+    const rows = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        handle: users.handle,
+        role: users.role,
+        avatarUrl: users.avatarUrl,
+        bio: users.bio,
+        postsCount: sql<number>`count(${posts.id})::int`,
+      })
+      .from(users)
+      .innerJoin(posts, and(eq(posts.authorId, users.id), isNull(posts.deletedAt)))
+      .where(currentUserId ? sql`${users.id} != ${currentUserId}::uuid` : sql`true`)
+      .groupBy(users.id)
+      .having(sql`count(${posts.id}) >= 100`)
+      .orderBy(desc(sql`count(${posts.id})`))
+      .limit(10);
+
+    return {
+      eligible: rows.length > 0,
+      thinkers: rows.map((r) => ({
+        id: r.id,
+        name: r.name,
+        handle: r.handle.startsWith("@") ? r.handle : `@${r.handle}`,
+        role: r.role,
+        avatarUrl: r.avatarUrl,
+        bio: r.bio || "",
+        postsCount: r.postsCount,
+      })),
+    };
+  } catch (err) {
+    console.error("[USERS] Error getting recommended thinkers:", err);
+    return { eligible: false, thinkers: [] };
+  }
+}
+

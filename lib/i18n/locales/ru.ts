@@ -207,10 +207,11 @@ export const ru: typeof uz = {
   },
   auth: {
     loginTitle: "Вход в систему",
-    loginSubtitle: "Выберите удобный способ для входа на платформу The Go-getters",
+    loginSubtitle: "Войдите на платформу с помощью учетной записи Google",
     registerTitle: "Регистрация",
-    registerSubtitle: "Присоединяйтесь к сообществу целеустремленных людей и стартапов",
+    registerSubtitle: "Присоединяйтесь к сообществу The Go-getters через Google",
     continueWithGoogle: "Продолжить через Google",
+    googleHint: "После входа вы сможете выбрать уникальный @username и заполнить профиль.",
     orWithPhone: "или через номер телефона",
     phoneLabel: "Номер телефона",
     phonePlaceholder: "90 123 45 67",

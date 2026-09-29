@@ -173,13 +173,12 @@ export function Header({ title, subtitle }: HeaderProps) {
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                <span className="hidden md:inline-block text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-1.5 py-0.5 rounded">
-                  Search
-                </span>
-                <kbd className="hidden sm:inline-flex items-center text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 shadow-2xs">
-                  ⌘K
+                <kbd className="hidden sm:inline-flex h-7 items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 font-mono text-[11px] font-medium text-slate-500 shadow-sm transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                  <span className="text-sm leading-none">⌘</span>
+                  <span className="text-xs font-semibold">K</span>
                 </kbd>
               </div>
+
             </button>
           </div>
 
@@ -218,10 +217,10 @@ export function Header({ title, subtitle }: HeaderProps) {
                   <div className="w-7 h-7 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-[11px] flex items-center justify-center ring-1 ring-slate-200 dark:ring-slate-800 select-none shrink-0">
                     {session.user.name
                       ? session.user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .slice(0, 2)
-                          .join("")
+                        .split(" ")
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join("")
                       : "F"}
                   </div>
                   <span className="hidden md:inline-block text-xs font-medium text-slate-700 dark:text-slate-300 max-w-[100px] truncate">

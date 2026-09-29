@@ -9,6 +9,7 @@ import {
   Users,
   ShieldCheck,
   CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
 import { toast } from "@/components/ui/toast";
@@ -16,40 +17,15 @@ import { useI18n } from "@/lib/i18n/context";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { OnboardingData } from "@/types/social";
 
-const SUGGESTED_THINKERS = [
-  {
-    id: "u_bekzod",
-    name: "Bekzod Ziyatov",
-    handle: "@bziyatov",
-    role: "Backend Architect & System Engineer",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    bio: "Yuqori yuklamali tizimlar (High-load) va ma’lumotlar bazalari optimizatsiyasi bo‘yicha tahlillar.",
-  },
-  {
-    id: "u_dilnoza",
-    name: "Dilnoza Karimova",
-    handle: "@dilnoza_ux",
-    role: "Principal Product Designer",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
-    bio: "Raqamli mahsulotlarda qulaylik, dizayn-tizimlar va O‘zbekistondagi UX yetukligi haqida fikrlar.",
-  },
-  {
-    id: "u_jamshid",
-    name: "Jamshid Rahmonov",
-    handle: "@jamshid_ai",
-    role: "AI Researcher & ML Engineer",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    bio: "O‘zbek tilidagi LLM modellari va amaliy sun’iy intellekt integratsiyalari.",
-  },
-  {
-    id: "u_jasur",
-    name: "Jasur Saidov",
-    handle: "@jasur_fin",
-    role: "Venture Partner & Economist",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    bio: "Markaziy Osiyo venchur bozori, startap ko‘rsatkichlari va iqtisodiy o‘sish omillari.",
-  },
-];
+interface RecommendedThinker {
+  id: string;
+  name: string;
+  handle: string;
+  role: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  postsCount: number;
+}
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -57,15 +33,13 @@ export default function OnboardingPage() {
   const { t, localePath } = useI18n();
 
   const [step, setStep] = useState<1 | 2>(1);
+  const [recommendedThinkers, setRecommendedThinkers] = useState<RecommendedThinker[]>([]);
+  const [followedAuthorIds, setFollowedAuthorIds] = useState<string[]>([]);
 
   const [name, setName] = useState(session.user.name || "");
   const [handle, setHandle] = useState(session.user.handle.replace("@", "") || "");
   const [role, setRole] = useState(session.user.role || "");
   const [bio, setBio] = useState(session.user.bio || "");
-  const [followedAuthorIds, setFollowedAuthorIds] = useState<string[]>([
-    "u_bekzod",
-    "u_dilnoza",
-  ]);
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,9 +56,31 @@ export default function OnboardingPage() {
     if (session.user?.name && !name) {
       setName(session.user.name);
     }
-  }, [session.user?.name, name]);
+    if (session.user?.handle && !handle && !session.user.handle.startsWith("@user_")) {
+      setHandle(session.user.handle.replace("@", ""));
+    }
+  }, [session.user, name, handle]);
 
-  const handleStep1Next = () => {
+  // Fetch real recommended authors if any meet criteria (users > 500 && posts >= 100)
+  useEffect(() => {
+    fetch("/api/users/recommended")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json?.data?.eligible && Array.isArray(json.data.thinkers)) {
+          setRecommendedThinkers(json.data.thinkers);
+        } else {
+          setRecommendedThinkers([]);
+        }
+      })
+      .catch(() => {
+        setRecommendedThinkers([]);
+      });
+  }, []);
+
+  const hasThinkersStep = recommendedThinkers.length > 0;
+
+  // Next / Submit handler
+  const handlePrimaryAction = () => {
     if (!name.trim()) {
       setError(t("onboarding.nameRequired"));
       return;
@@ -98,7 +94,15 @@ export default function OnboardingPage() {
       return;
     }
     setError(null);
-    setStep(2);
+
+    // If there are real qualified authors (scale reached), go to step 2
+    if (hasThinkersStep && step === 1) {
+      setStep(2);
+      return;
+    }
+
+    // Otherwise, complete onboarding directly! (Skip fake accounts completely)
+    handleComplete();
   };
 
   const toggleFollow = (authorId: string) => {
@@ -140,29 +144,31 @@ export default function OnboardingPage() {
       </div>
 
       <div className="w-full max-w-2xl">
-        {/* Progress Bar (2-step: Shaxsiyat -> Mualliflar) */}
-        <div className="text-center mb-6">
-          <div className="max-w-md mx-auto">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider mb-2">
-              <span className={step >= 1 ? "text-slate-900 dark:text-white" : "text-slate-400"}>
-                {t("onboarding.step1")}
-              </span>
-              <span className={step >= 2 ? "text-slate-900 dark:text-white" : "text-slate-400"}>
-                {t("onboarding.step2")}
-              </span>
-            </div>
-            <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden flex">
-              <div
-                className="h-full bg-slate-900 dark:bg-white transition-all duration-300 ease-out"
-                style={{ width: `${(step / 2) * 100}%` }}
-              />
+        {/* Progress Bar (Only shown if there are real qualified thinkers for step 2) */}
+        {hasThinkersStep && (
+          <div className="text-center mb-6">
+            <div className="max-w-md mx-auto">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider mb-2">
+                <span className={step >= 1 ? "text-slate-900 dark:text-white" : "text-slate-400"}>
+                  {t("onboarding.step1")}
+                </span>
+                <span className={step >= 2 ? "text-slate-900 dark:text-white" : "text-slate-400"}>
+                  {t("onboarding.step2")}
+                </span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                <div
+                  className="h-full bg-slate-900 dark:bg-white transition-all duration-300 ease-out"
+                  style={{ width: `${(step / 2) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Card Surface */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-6 sm:p-8">
-          {/* STEP 1: Shaxsiyat */}
+          {/* STEP 1: Shaxsiyat (Profile setup) */}
           {step === 1 && (
             <div className="space-y-4">
               <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -247,21 +253,36 @@ export default function OnboardingPage() {
                 <p className="text-xs text-red-600 dark:text-red-400 font-medium">{error}</p>
               )}
 
-              <div className="pt-2 flex justify-end">
+              <div className="pt-3 flex justify-end">
                 <button
                   type="button"
-                  onClick={handleStep1Next}
-                  className="px-6 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 font-medium text-sm transition-all inline-flex items-center gap-2 cursor-pointer"
+                  onClick={handlePrimaryAction}
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 font-semibold text-sm transition-all inline-flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
                 >
-                  <span>{t("onboarding.nextStep")}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>{t("common.saving")}</span>
+                    </>
+                  ) : hasThinkersStep ? (
+                    <>
+                      <span>{t("onboarding.nextStep")}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>{t("onboarding.finish")}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 2: Mualliflar (Suggested Thinkers) */}
-          {step === 2 && (
+          {/* STEP 2: Real Qualified Authors (Only shown when users > 500 and authors have >= 100 posts) */}
+          {hasThinkersStep && step === 2 && (
             <div className="space-y-6">
               <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div className="flex items-center gap-2 text-slate-900 dark:text-white font-medium text-base mb-1">
@@ -274,7 +295,7 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-3">
-                {SUGGESTED_THINKERS.map((author) => {
+                {recommendedThinkers.map((author) => {
                   const isFollowing = followedAuthorIds.includes(author.id);
                   return (
                     <div
@@ -283,7 +304,16 @@ export default function OnboardingPage() {
                     >
                       <div className="flex items-start gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-sm text-slate-800 dark:text-slate-200 shrink-0">
-                          {author.name.charAt(0)}
+                          {author.avatarUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={author.avatarUrl}
+                              alt={author.name}
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            author.name.charAt(0)
+                          )}
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
@@ -293,13 +323,18 @@ export default function OnboardingPage() {
                             <span className="text-xs text-slate-500 dark:text-slate-400">
                               {author.handle}
                             </span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-medium">
+                              {author.postsCount} ta post
+                            </span>
                           </div>
                           <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1 mt-0.5">
                             {author.role}
                           </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1 text-[11px]">
-                            {author.bio}
-                          </p>
+                          {author.bio && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-1 text-[11px]">
+                              {author.bio}
+                            </p>
+                          )}
                         </div>
                       </div>
 

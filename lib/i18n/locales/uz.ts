@@ -205,10 +205,11 @@ export const uz = {
   },
   auth: {
     loginTitle: "Tizimga kirish",
-    loginSubtitle: "The Go-getters platformasiga kirish uchun qulay usulni tanlang",
+    loginSubtitle: "Google hisobingiz orqali platformaga bir zumda kiring",
     registerTitle: "Ro‘yxatdan o‘tish",
-    registerSubtitle: "Maqsad sari intiluvchilar va g‘oliblar tarmog‘iga a’zo bo‘ling",
+    registerSubtitle: "Google hisobingiz orqali The Go-getters tarmog‘iga a’zo bo‘ling",
     continueWithGoogle: "Google orqali davom etish",
+    googleHint: "Tizimga kirgach, keyingi qadamda o‘zingizga mos @username va ma’lumotlarni kiritasiz.",
     orWithPhone: "yoki telefon raqam orqali",
     phoneLabel: "Telefon raqami",
     phonePlaceholder: "90 123 45 67",
