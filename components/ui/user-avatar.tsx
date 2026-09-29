@@ -27,12 +27,13 @@ export function UserAvatar({
   className = "",
   alt,
 }: UserAvatarProps) {
+  const [prevAvatarUrl, setPrevAvatarUrl] = useState(avatarUrl);
   const [hasError, setHasError] = useState(false);
 
-  // Reset error when avatarUrl changes
-  useEffect(() => {
+  if (avatarUrl !== prevAvatarUrl) {
+    setPrevAvatarUrl(avatarUrl);
     setHasError(false);
-  }, [avatarUrl]);
+  }
 
   const initials = name
     ? name

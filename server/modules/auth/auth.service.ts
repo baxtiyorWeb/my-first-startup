@@ -25,21 +25,21 @@ export function normalizePhone(rawPhone: string): string {
 }
 
 /**
- * Request OTP via SMS (generates code, hashes, and stores with 10m TTL)
+ * Request authentication code for phone number.
+ * Generates code, hashes it with SHA-256, and stores in DB with 10-minute expiration.
  */
 export async function requestOtp(
   phone: string,
   ip: string
-): Promise<{ success: boolean; message: string; code: string }> {
+): Promise<{ success: boolean; message: string }> {
   const normalized = normalizePhone(phone);
 
-  // 1. Enforce rate limits (generous for testing)
+  // 1. Enforce rate limits
   enforceRateLimit(`otp:ip:${ip}`, 30, 3600); // Max 30 requests per hour per IP
   enforceRateLimit(`otp:phone:${normalized}`, 15, 600); // Max 15 requests per 10 min per phone
 
-  // 2. Generate 4-digit code (always returned in response until SMS gateway is active)
+  // 2. Generate 4-digit authentication code
   const code = String(Math.floor(1000 + Math.random() * 9000));
-  console.log(`[AUTH] Generated OTP for ${normalized}: ${code}`);
   const codeHash = hashOtp(code);
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -60,10 +60,13 @@ export async function requestOtp(
     throw AppError.internal("Tasdiqlash kodi saqlanmadi. Iltimos, qaytadan urining");
   }
 
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[AUTH DEV ONLY] Generated OTP for ${normalized}: ${code}`);
+  }
+
   return {
     success: true,
     message: "Tasdiqlash kodi telefon raqamingizga yuborildi",
-    code,
   };
 }
 
@@ -89,11 +92,6 @@ export async function verifyOtp(
 
   // 2. Verify code
   let isValid = false;
-
-  // Master fallback code for reliable testing
-  if (code === "1234") {
-    isValid = true;
-  }
 
   try {
     const records = await db

@@ -45,22 +45,20 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        // Ignore
+      }
+    }
+    return [];
+  });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
-
-  // Load recent searches from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
-      if (saved) {
-        setRecentSearches(JSON.parse(saved));
-      }
-    } catch {
-      // Ignore
-    }
-  }, []);
 
   const saveRecentSearch = useCallback((searchTerm: string) => {
     const trimmed = searchTerm.trim();
@@ -115,43 +113,40 @@ function SearchModalContent({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  // Debounced search caller
-  const performSearch = useCallback(
-    debounce(async (searchQuery: string, searchCategory: SearchCategory) => {
-      if (!searchQuery.trim() || searchQuery.trim().length < 2) {
-        setSearchResponse({ items: [], counts: { all: 0, user: 0, post: 0 } });
-        setIsLoading(false);
-        return;
-      }
+  // Debounced search caller using useMemo
+  const performSearch = React.useMemo(
+    () =>
+      debounce(async (searchQuery: string, searchCategory: SearchCategory) => {
+        const trimmed = searchQuery.trim();
+        if (!trimmed || trimmed.length < 2) {
+          setSearchResponse({ items: [], counts: { all: 0, user: 0, post: 0 } });
+          setIsLoading(false);
+          return;
+        }
 
-      setIsLoading(true);
-      try {
-        const response = await api.search.query({
-          q: searchQuery.trim(),
-          category: searchCategory,
-        });
-        setSearchResponse(response);
-        setSelectedIndex(0);
-      } catch {
-        setSearchResponse({ items: [], counts: { all: 0, user: 0, post: 0 } });
-      } finally {
-        setIsLoading(false);
-      }
-    }, 250),
+        setIsLoading(true);
+        try {
+          const response = await api.search.query({
+            q: trimmed,
+            category: searchCategory,
+          });
+          setSearchResponse(response);
+          setSelectedIndex(0);
+        } catch {
+          setSearchResponse({ items: [], counts: { all: 0, user: 0, post: 0 } });
+        } finally {
+          setIsLoading(false);
+        }
+      }, 250),
     []
   );
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (trimmed.length < 2) {
-      setSearchResponse({ items: [], counts: { all: 0, user: 0, post: 0 } });
-      setIsLoading(false);
-      return;
+    if (trimmed.length >= 2) {
+      setIsLoading(true);
+      performSearch(trimmed, category);
     }
-
-    setIsLoading(true);
-    performSearch(trimmed, category);
-
     return () => {
       performSearch.cancel();
     };
