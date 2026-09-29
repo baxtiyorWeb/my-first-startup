@@ -226,10 +226,12 @@ export async function completeOnboarding(
 
     return {
       userId: updated.id,
-      phone: updated.phone,
+      phone: updated.phone || null,
+      email: updated.email || null,
       handle: updated.handle,
       name: updated.name,
       role: updated.role,
+      avatarUrl: updated.avatarUrl || null,
       isOnboarded: true,
     };
   } catch (err) {
@@ -238,3 +240,97 @@ export async function completeOnboarding(
     throw AppError.internal("Onboarding ma’lumotlarini saqlashda xatolik yuz berdi");
   }
 }
+
+/**
+ * Handle Google OAuth authentication / registration:
+ * 1. Finds user by googleId or email
+ * 2. If new user, creates user record with isOnboarded = false (so they proceed to onboarding)
+ * 3. Signs JWT session token
+ */
+export async function handleGoogleAuth(googleUser: {
+  googleId: string;
+  email: string;
+  name: string;
+  avatarUrl?: string | null;
+}): Promise<{ token: string; user: AuthUserPayload }> {
+  const { googleId, email, name, avatarUrl } = googleUser;
+
+  // 1. Look for existing user with this googleId
+  let existingUsers = await db
+    .select()
+    .from(users)
+    .where(eq(users.googleId, googleId))
+    .limit(1);
+
+  // 2. If not found by googleId, check by email
+  if (existingUsers.length === 0 && email) {
+    existingUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (existingUsers.length > 0) {
+      // Link googleId to existing account
+      await db
+        .update(users)
+        .set({
+          googleId,
+          avatarUrl: existingUsers[0].avatarUrl || avatarUrl || null,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, existingUsers[0].id));
+    }
+  }
+
+  let userRecord: AuthUserPayload;
+
+  if (existingUsers.length > 0) {
+    const u = existingUsers[0];
+    userRecord = {
+      userId: u.id,
+      phone: u.phone || null,
+      email: u.email || email,
+      handle: u.handle,
+      name: u.name,
+      role: u.role,
+      avatarUrl: u.avatarUrl || avatarUrl || null,
+      isOnboarded: u.isOnboarded,
+    };
+  } else {
+    // 3. Create new provisional user for Google sign-in
+    // Generate clean temporary handle from email or random hex
+    const emailPrefix = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").slice(0, 15);
+    const randomSuffix = crypto.randomBytes(2).toString("hex");
+    const tempHandle = `@${emailPrefix || "user"}_${randomSuffix}`;
+
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        googleId,
+        email,
+        name: name.trim() || "Go-getter",
+        handle: tempHandle,
+        role: "Go-getter",
+        avatarUrl: avatarUrl || null,
+        isOnboarded: false, // New users MUST complete onboarding!
+      })
+      .returning();
+
+    userRecord = {
+      userId: newUser.id,
+      phone: null,
+      email: newUser.email,
+      handle: newUser.handle,
+      name: newUser.name,
+      role: newUser.role,
+      avatarUrl: newUser.avatarUrl,
+      isOnboarded: false,
+    };
+  }
+
+  // 4. Sign JWT session token
+  const token = await signSessionToken(userRecord);
+  return { token, user: userRecord };
+}
+

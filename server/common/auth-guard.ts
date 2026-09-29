@@ -23,10 +23,12 @@ const JWT_SECRET = getJwtSecret();
 
 export interface AuthUserPayload {
   userId: string;
-  phone: string;
+  phone?: string | null;
+  email?: string | null;
   handle: string;
   name: string;
   role: string;
+  avatarUrl?: string | null;
   isOnboarded: boolean;
 }
 
@@ -49,10 +51,12 @@ export async function verifySessionToken(token: string): Promise<AuthUserPayload
     const { payload } = await jwtVerify(token, JWT_SECRET);
     return {
       userId: payload.userId as string,
-      phone: payload.phone as string,
+      phone: (payload.phone as string) || null,
+      email: (payload.email as string) || null,
       handle: payload.handle as string,
       name: payload.name as string,
       role: payload.role as string,
+      avatarUrl: (payload.avatarUrl as string) || null,
       isOnboarded: Boolean(payload.isOnboarded),
     };
   } catch {

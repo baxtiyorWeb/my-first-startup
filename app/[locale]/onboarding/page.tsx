@@ -77,6 +77,13 @@ export default function OnboardingPage() {
     }
   }, [session, router, localePath]);
 
+  // Sync Google user name if session loads after initial render
+  useEffect(() => {
+    if (session.user?.name && !name) {
+      setName(session.user.name);
+    }
+  }, [session.user?.name, name]);
+
   const handleStep1Next = () => {
     if (!name.trim()) {
       setError(t("onboarding.nameRequired"));

@@ -18,7 +18,9 @@ export const users = pgTable(
   "users",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    phone: varchar("phone", { length: 20 }).notNull(),
+    phone: varchar("phone", { length: 20 }),
+    email: varchar("email", { length: 255 }),
+    googleId: varchar("google_id", { length: 255 }),
     handle: varchar("handle", { length: 50 }).notNull(),
     name: varchar("name", { length: 100 }).notNull(),
     role: varchar("role", { length: 150 }).default("Go-getter").notNull(),
@@ -34,6 +36,8 @@ export const users = pgTable(
   },
   (table) => [
     uniqueIndex("idx_users_phone").on(table.phone),
+    uniqueIndex("idx_users_email").on(table.email),
+    uniqueIndex("idx_users_google_id").on(table.googleId),
     uniqueIndex("idx_users_handle").on(table.handle),
   ]
 );

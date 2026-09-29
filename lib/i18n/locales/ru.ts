@@ -207,9 +207,11 @@ export const ru: typeof uz = {
   },
   auth: {
     loginTitle: "Вход в систему",
-    loginSubtitle: "Введите ваш номер телефона для безопасного входа на платформу Fikr",
+    loginSubtitle: "Выберите удобный способ для входа на платформу The Go-getters",
     registerTitle: "Регистрация",
-    registerSubtitle: "Присоединяйтесь к интеллектуальной сети Узбекистана",
+    registerSubtitle: "Присоединяйтесь к сообществу целеустремленных людей и стартапов",
+    continueWithGoogle: "Продолжить через Google",
+    orWithPhone: "или через номер телефона",
     phoneLabel: "Номер телефона",
     phonePlaceholder: "90 123 45 67",
     sendCode: "Получить код подтверждения",

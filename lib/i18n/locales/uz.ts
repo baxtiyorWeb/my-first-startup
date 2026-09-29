@@ -205,9 +205,11 @@ export const uz = {
   },
   auth: {
     loginTitle: "Tizimga kirish",
-    loginSubtitle: "The Go-getters platformasiga xavfsiz kirish uchun telefon raqamingizni kiriting",
+    loginSubtitle: "The Go-getters platformasiga kirish uchun qulay usulni tanlang",
     registerTitle: "Ro‘yxatdan o‘tish",
     registerSubtitle: "Maqsad sari intiluvchilar va g‘oliblar tarmog‘iga a’zo bo‘ling",
+    continueWithGoogle: "Google orqali davom etish",
+    orWithPhone: "yoki telefon raqam orqali",
     phoneLabel: "Telefon raqami",
     phonePlaceholder: "90 123 45 67",
     sendCode: "Tasdiqlash kodini olish",

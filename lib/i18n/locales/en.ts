@@ -207,9 +207,11 @@ export const en: typeof uz = {
   },
   auth: {
     loginTitle: "Log In",
-    loginSubtitle: "Enter your phone number to securely access the Fikr platform",
+    loginSubtitle: "Choose your preferred method to sign in to The Go-getters",
     registerTitle: "Create Account",
-    registerSubtitle: "Join Uzbekistan’s intellectual community",
+    registerSubtitle: "Join the network for ambitious founders and innovators",
+    continueWithGoogle: "Continue with Google",
+    orWithPhone: "or with phone number",
     phoneLabel: "Phone Number",
     phonePlaceholder: "90 123 45 67",
     sendCode: "Get Verification Code",
