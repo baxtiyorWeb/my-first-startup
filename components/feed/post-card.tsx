@@ -90,7 +90,13 @@ export function PostCard({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
+  const [isFollowingAuthor, setIsFollowingAuthor] = useState(
+    Boolean(post.author.isFollowing)
+  );
+
+  useEffect(() => {
+    setIsFollowingAuthor(Boolean(post.author.isFollowing));
+  }, [post.author.isFollowing]);
 
   // Specific report context if triggered from inside discussion
   const [reportTarget, setReportTarget] = useState<{
@@ -306,13 +312,15 @@ export function PostCard({
                     >
                       {isFollowingAuthor ? (
                         <>
-                          <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>{t("common.unfollow")}</span>
+                          <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                            {t("common.unfollow") || "Kuzatishni to‘xtatish"}
+                          </span>
                         </>
                       ) : (
                         <>
-                          <UserPlus className="w-3.5 h-3.5" />
-                          <span>{t("common.follow")}</span>
+                          <UserPlus className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{t("common.follow") || "Kuzatish"}</span>
                         </>
                       )}
                     </button>

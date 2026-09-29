@@ -686,14 +686,7 @@ export default function CreatePostPage() {
             |
           </span>
 
-          {/* Auto-save draft status */}
-          <div className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>
-              {t("create.draftAutoSaved") || "Qoralama saqlandi"} (
-              {draftSavedTime})
-            </span>
-          </div>
+          
         </div>
 
         {/* Word count & Reading time */}

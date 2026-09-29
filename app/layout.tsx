@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/components/auth/auth-context";
+import { OneSignalInitializer } from "@/components/notifications/onesignal-initializer";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </defs>
         </svg>
         <AuthProvider>
+          <OneSignalInitializer />
           <ToastProvider>{children}</ToastProvider>
         </AuthProvider>
       </body>

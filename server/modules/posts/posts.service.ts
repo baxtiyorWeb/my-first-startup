@@ -1,6 +1,6 @@
 import { eq, and, desc, lt, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { posts, users, postLikes, bookmarks, postViews } from "@/server/db/schema";
+import { posts, users, postLikes, bookmarks, postViews, follows } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import { sanitizeRichContent, stripHtmlToPlainText } from "@/server/common/sanitizer";
 import { triggerNotification, notifyFollowersNewPost } from "@/server/modules/notifications/notifications.service";
@@ -15,6 +15,7 @@ export interface PostResponse {
     avatarUrl?: string | null;
     verified: boolean;
     intent?: string;
+    isFollowing?: boolean;
   };
   title?: string | null;
   content: string;
@@ -78,6 +79,9 @@ export async function getFeed(
         authorAvatarUrl: users.avatarUrl,
         authorVerified: users.verified,
         authorIntent: users.intent,
+        isFollowingAuthor: currentUserId
+          ? sql<boolean>`EXISTS(SELECT 1 FROM ${follows} WHERE ${follows.followerId} = ${currentUserId}::uuid AND ${follows.followingId} = ${users.id})`
+          : sql<boolean>`false`,
         isLiked: currentUserId
           ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
           : sql<boolean>`false`,
@@ -120,6 +124,7 @@ export async function getFeed(
         avatarUrl: r.authorAvatarUrl,
         verified: r.authorVerified,
         intent: r.authorIntent || "none",
+        isFollowing: Boolean(r.isFollowingAuthor),
       },
     }));
 
@@ -289,6 +294,9 @@ export async function getPostById(
         authorAvatarUrl: users.avatarUrl,
         authorVerified: users.verified,
         authorIntent: users.intent,
+        isFollowingAuthor: currentUserId
+          ? sql<boolean>`EXISTS(SELECT 1 FROM ${follows} WHERE ${follows.followerId} = ${currentUserId}::uuid AND ${follows.followingId} = ${users.id})`
+          : sql<boolean>`false`,
         isLiked: currentUserId
           ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
           : sql<boolean>`false`,
@@ -330,6 +338,7 @@ export async function getPostById(
         avatarUrl: row.authorAvatarUrl,
         verified: row.authorVerified,
         intent: row.authorIntent || "none",
+        isFollowing: Boolean(row.isFollowingAuthor),
       },
     };
   } catch (err) {

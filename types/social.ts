@@ -18,6 +18,7 @@ export interface Author {
   avatarUrl?: string;
   verified: boolean;
   intent?: UserIntent;
+  isFollowing?: boolean;
 }
 
 export type ContentTopic = 
