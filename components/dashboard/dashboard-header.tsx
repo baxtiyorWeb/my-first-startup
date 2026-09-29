@@ -28,7 +28,7 @@ export function DashboardHeader({ userName = "Alisher" }: DashboardHeaderProps) 
         className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:opacity-95 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/20 hover:scale-[1.02] cursor-pointer"
       >
         <PlusIcon size={14} className="stroke-[2.5]" />
-        <span>Tashabbus yozish</span>
+        <span>Post joylash</span>
       </button>
     </div>
   );

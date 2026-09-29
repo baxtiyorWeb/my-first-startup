@@ -32,6 +32,7 @@ function sanitizeClientHtml(html: string, searchQuery?: string): string {
     const allowedTags = new Set([
       "h2",
       "p",
+      "div",
       "blockquote",
       "code",
       "mark",
@@ -61,6 +62,11 @@ function sanitizeClientHtml(html: string, searchQuery?: string): string {
             }
             node.removeChild(el);
             continue;
+          }
+
+          // Ensure empty p or div tags don't collapse to 0px
+          if ((tagName === "p" || tagName === "div") && !el.textContent?.trim() && !el.querySelector("br")) {
+            el.appendChild(doc.createElement("br"));
           }
 
           // Strip all attributes except href/target/rel on <a> and class on <mark>/<code>
@@ -149,7 +155,7 @@ export function RichContent({
   if (!isHtml) {
     return (
       <p
-        className={`whitespace-pre-line leading-relaxed text-slate-800 dark:text-slate-200 ${className}`}
+        className={`whitespace-pre-wrap break-words leading-relaxed text-slate-800 dark:text-slate-200 ${className}`}
       >
         <HighlightText text={content} query={searchQuery} />
       </p>
@@ -168,7 +174,10 @@ export function RichContent({
         [&_mark]:bg-amber-100 [&_mark]:dark:bg-amber-950/60 [&_mark]:text-amber-950 [&_mark]:dark:text-amber-200 [&_mark]:px-1 [&_mark]:py-0.5 [&_mark]:rounded
         [&_ul]:list-disc [&_ul]:list-inside [&_ul]:my-1.5 [&_ul]:space-y-0.5
         [&_ol]:list-decimal [&_ol]:list-inside [&_ol]:my-1.5 [&_ol]:space-y-0.5
-        [&_p]:my-1
+        [&_p]:my-1 [&_p]:min-h-[1.5em]
+        [&_div]:min-h-[1.5em]
+        [&_p:empty]:min-h-[1.5em]
+        [&_div:empty]:min-h-[1.5em]
         [&_a]:text-blue-600 [&_a]:dark:text-blue-400 [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:opacity-80
         ${className}`}
       dangerouslySetInnerHTML={{ __html: sanitized }}

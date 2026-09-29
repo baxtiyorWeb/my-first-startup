@@ -616,7 +616,7 @@ export default function CreatePostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const plainText = editorRef.current?.innerText.trim() || "";
-    const htmlContent = editorRef.current?.innerHTML.trim() || "";
+    let htmlContent = editorRef.current?.innerHTML.trim() || "";
 
     if (!plainText) {
       toast.error(
@@ -625,6 +625,12 @@ export default function CreatePostPage() {
       editorRef.current?.focus();
       return;
     }
+
+    // Normalize empty line breaks from various browsers (Chrome div breaks)
+    htmlContent = htmlContent
+      .replace(/<div><br\s*\/?><\/div>/gi, "<p><br /></p>")
+      .replace(/<div>(.*?)<\/div>/gi, "<p>$1</p>")
+      .replace(/<p><\/p>/gi, "<p><br /></p>");
 
     // Auto-detect the first URL in content (from <a> tags or raw text) for projectUrl metadata
     let autoDetectedUrl: string | undefined = undefined;
@@ -1180,6 +1186,13 @@ export default function CreatePostPage() {
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
+            onFocus={() => {
+              try {
+                document.execCommand("defaultParagraphSeparator", false, "p");
+              } catch {
+                // Ignore
+              }
+            }}
             onInput={() => {
               updateEditorStats();
               saveHistory();

@@ -37,7 +37,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "idx_users_google_id" ON "users" USING btree (
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_users_phone" ON "users" USING btree ("phone") WHERE "phone" IS NOT NULL;
 
 -- ==============================================================================
--- 2. POSTS JADVALI (Tashabbuslar, Tahliliy maqolalar & Startap loyihalar)
+-- 2. POSTS JADVALI (Postlar, Tahliliy maqolalar & Startap loyihalar)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS "posts" (
     "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),

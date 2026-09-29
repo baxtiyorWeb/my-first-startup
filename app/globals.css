@@ -216,6 +216,31 @@ body {
   }
 }
 
+/* Preserve empty lines, paragraph gaps, and line breaks in posts and rich editor */
+.rich-content p,
+.rich-content div,
+.gogetters-rich-editor p,
+.gogetters-rich-editor div {
+  min-height: 1.5em;
+}
+
+.rich-content p:empty,
+.rich-content div:empty,
+.gogetters-rich-editor p:empty,
+.gogetters-rich-editor div:empty {
+  min-height: 1.5em;
+  display: block;
+}
+
+.rich-content p > br:only-child,
+.rich-content div > br:only-child,
+.gogetters-rich-editor p > br:only-child,
+.gogetters-rich-editor div > br:only-child {
+  display: block;
+  content: "";
+  height: 1.5em;
+}
+
 /* 1.5-second smooth scale effect & amber glow for search result highlight */
 @keyframes highlight-scale-pulse {
   0% {

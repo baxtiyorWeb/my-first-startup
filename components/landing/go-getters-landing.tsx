@@ -129,7 +129,7 @@ export function GoGettersLanding() {
                 </strong>{" "}
                 — bu tadbirkorlar, dasturchilar, startapchilar va g‘oya egalari
                 birlashadigan professional ijtimoiy platforma. Bu yerda o‘z
-                tashabbuslaringiz bilan bo‘lishing, hammuassislar toping va
+                postlaringiz va g‘oyalaringiz bilan bo‘lishing, hammuassislar toping va
                 loyihalaringizni birga rivojlantiring.
               </p>
 
@@ -256,7 +256,7 @@ export function GoGettersLanding() {
                 <MessageSquare className="w-6 h-6" />
               </div>
               <h3 className="text-base font-bold text-white">
-                1. Tashabbus va Postlar
+                1. G‘oya va Postlar
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 O‘z tahlillaringiz, tajribalaringiz va g‘oyalaringizni yozing.

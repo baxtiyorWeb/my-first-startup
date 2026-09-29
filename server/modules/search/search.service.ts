@@ -146,7 +146,7 @@ export async function searchContent(
           title: p.title || cleanSnippet.slice(0, 60),
           subtitle: cleanSnippet.slice(0, 110),
           href: `/dashboard/posts/${p.id}`,
-          badge: p.postType === "project" ? "Loyiha" : "Tashabbus",
+          badge: p.postType === "project" ? "Loyiha" : "Post",
           createdAt: formattedDate,
           stats: statsText || undefined,
         });

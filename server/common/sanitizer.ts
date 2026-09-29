@@ -3,6 +3,7 @@ import sanitizeHtml from "sanitize-html";
 const ALLOWED_TAGS = [
   "h2",
   "p",
+  "div",
   "blockquote",
   "code",
   "mark",
@@ -15,6 +16,7 @@ const ALLOWED_TAGS = [
   "li",
   "a",
   "br",
+  "span",
 ];
 
 const ALLOWED_ATTRIBUTES = {
@@ -24,16 +26,22 @@ const ALLOWED_ATTRIBUTES = {
 
 /**
  * Sanitize user-submitted HTML to prevent XSS attacks while preserving
- * rich text formatting created in the WYSIWYG editor.
+ * rich text formatting and empty lines created in the WYSIWYG editor.
  */
 export function sanitizeRichContent(rawHtml: string): string {
   if (!rawHtml) return "";
 
-  return sanitizeHtml(rawHtml, {
+  // Normalize empty line breaks from various browsers
+  const prepared = rawHtml
+    .replace(/<div><br\s*\/?><\/div>/gi, "<p><br /></p>")
+    .replace(/<p><\/p>/gi, "<p><br /></p>");
+
+  return sanitizeHtml(prepared, {
     allowedTags: ALLOWED_TAGS,
     allowedAttributes: ALLOWED_ATTRIBUTES,
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
+      div: "p",
       a: (tagName, attribs) => {
         return {
           tagName: "a",
