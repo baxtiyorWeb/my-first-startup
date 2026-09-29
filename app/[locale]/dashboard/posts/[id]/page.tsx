@@ -20,6 +20,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  UserPlus,
 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import type { Post, CommentThreadItem } from "@/types/social";
@@ -429,6 +430,33 @@ function PostDetailInner({
                   <Share2 size={14} />
                   <span>{t("post.share")}</span>
                 </button>
+                {!isOwnPost && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setIsMenuOpen(false);
+                      if (!session.isAuthenticated) {
+                        toast.info(t("auth.loginRequired") || "Kuzatish uchun tizimga kiring");
+                        return;
+                      }
+                      try {
+                        const res = await api.users.toggleFollow(post.author.handle);
+                        if (res.following) {
+                          toast.success(`${post.author.name} obunachilaringiz ro‘yxatiga qo‘shildi`);
+                        } else {
+                          toast.info(`${post.author.name} obunadan chiqarildi`);
+                        }
+                      } catch (err: unknown) {
+                        const msg = err instanceof Error ? err.message : "Kuzatish amalida xatolik yuz berdi";
+                        toast.error(msg);
+                      }
+                    }}
+                    className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
+                  >
+                    <UserPlus size={14} />
+                    <span>{t("common.follow")}</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {

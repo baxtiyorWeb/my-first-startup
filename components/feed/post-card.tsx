@@ -153,15 +153,30 @@ export function PostCard({
     setIsMenuOpen(false);
   };
 
-  const handleToggleFollow = (e: React.MouseEvent) => {
+  const handleToggleFollow = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFollowingAuthor((prev) => !prev);
-    if (!isFollowingAuthor) {
-      toast.success(`${post.author.name} (${t("common.following")})`);
-    } else {
-      toast.info(`${post.author.name} (${t("common.unfollow")})`);
+    if (!session.isAuthenticated) {
+      toast.info(t("auth.loginRequired") || "Kuzatish uchun tizimga kiring");
+      return;
     }
+
+    const nextState = !isFollowingAuthor;
+    setIsFollowingAuthor(nextState);
     setIsMenuOpen(false);
+
+    try {
+      const res = await api.users.toggleFollow(post.author.handle);
+      setIsFollowingAuthor(res.following);
+      if (res.following) {
+        toast.success(`${post.author.name} obunachilaringiz ro‘yxatiga qo‘shildi`);
+      } else {
+        toast.info(`${post.author.name} obunadan chiqarildi`);
+      }
+    } catch (err: unknown) {
+      setIsFollowingAuthor(!nextState);
+      const msg = err instanceof Error ? err.message : "Kuzatish amalida xatolik yuz berdi";
+      toast.error(msg);
+    }
   };
 
   const handleDeleteConfirm = () => {
