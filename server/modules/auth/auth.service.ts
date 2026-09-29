@@ -170,7 +170,7 @@ export async function verifyOtp(
         phone: normalized,
         handle: tempHandle,
         name: "Yangi Foydalanuvchi",
-        role: "Fikr a’zosi",
+        role: "Go-getter",
         isOnboarded: false,
       })
       .returning();
@@ -216,7 +216,7 @@ export async function completeOnboarding(
       .set({
         name: data.name.trim(),
         handle: cleanHandle,
-        role: data.role.trim() || "Fikr a’zosi",
+        role: data.role.trim() || "Go-getter",
         bio: (data.bio || "").trim(),
         isOnboarded: true,
         updatedAt: new Date(),

@@ -80,8 +80,8 @@ export function I18nProvider({
       document.documentElement.lang = locale;
     }
     try {
-      localStorage.setItem("fikr_locale", locale);
-      document.cookie = `fikr_locale=${locale}; path=/; max-age=31536000; SameSite=Lax`;
+      localStorage.setItem("gogetters_locale", locale);
+      document.cookie = `gogetters_locale=${locale}; path=/; max-age=31536000; SameSite=Lax`;
     } catch {
       // Ignore
     }
@@ -115,8 +115,8 @@ export function I18nProvider({
       if (newLocale === locale) return;
 
       try {
-        localStorage.setItem("fikr_locale", newLocale);
-        document.cookie = `fikr_locale=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+        localStorage.setItem("gogetters_locale", newLocale);
+        document.cookie = `gogetters_locale=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
       } catch {
         // Ignore
       }

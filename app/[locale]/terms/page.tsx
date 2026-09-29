@@ -12,7 +12,7 @@ export default function TermsPage() {
     uz: {
       title: "Foydalanish Shartlari",
       date: "Kuchga kirish sanasi: 2026-yil",
-      intro: "«Fikr» ijtimoiy-intellektual tarmog‘iga a’zo bo‘lish orqali siz quyidagi shartlarga rozilik bildirasiz:",
+      intro: "«The Go-getters» innovatsion va intellektual tarmog‘iga a’zo bo‘lish orqali siz quyidagi shartlarga rozilik bildirasiz:",
       sections: [
         {
           title: "1. Hisobdan foydalanish",
@@ -27,7 +27,7 @@ export default function TermsPage() {
     ru: {
       title: "Условия Использования",
       date: "Дата вступления в силу: 2026 г.",
-      intro: "Присоединяясь к интеллектуальной сети «Fikr», вы подтверждаете своё согласие со следующими условиями:",
+      intro: "Присоединяясь к сообществу «The Go-getters», вы подтверждаете своё согласие со следующими условиями:",
       sections: [
         {
           title: "1. Использование аккаунта",
@@ -42,7 +42,7 @@ export default function TermsPage() {
     en: {
       title: "Terms of Service",
       date: "Effective date: 2026",
-      intro: "By accessing and using Fikr, you acknowledge and agree to the following operational terms:",
+      intro: "By accessing and using The Go-getters, you acknowledge and agree to the following operational terms:",
       sections: [
         {
           title: "1. Account Responsibility",

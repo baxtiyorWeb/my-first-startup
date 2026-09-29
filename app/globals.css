@@ -76,8 +76,8 @@ body {
   }
 }
 
-/* FIKR Rich Editor In-Place Typography */
-.fikr-rich-editor {
+/* The Go-getters Rich Editor In-Place Typography */
+.gogetters-rich-editor {
   outline: none;
   min-height: 200px;
   line-height: 1.65;
@@ -85,7 +85,7 @@ body {
   word-break: break-word;
 }
 
-.fikr-rich-editor:empty::before {
+.gogetters-rich-editor:empty::before {
   content: attr(data-placeholder);
   color: #94a3b8;
   font-size: 0.825rem;
@@ -94,16 +94,16 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .fikr-rich-editor:empty::before {
+  .gogetters-rich-editor:empty::before {
     color: #64748b;
   }
 }
 
-.fikr-rich-editor p {
+.gogetters-rich-editor p {
   margin-bottom: 0.85em;
 }
 
-.fikr-rich-editor h2 {
+.gogetters-rich-editor h2 {
   font-size: 1.35rem;
   font-weight: 700;
   margin-top: 1.25em;
@@ -112,7 +112,7 @@ body {
   color: inherit;
 }
 
-.fikr-rich-editor h3 {
+.gogetters-rich-editor h3 {
   font-size: 1.15rem;
   font-weight: 600;
   margin-top: 1em;
@@ -120,7 +120,7 @@ body {
   color: inherit;
 }
 
-.fikr-rich-editor blockquote {
+.gogetters-rich-editor blockquote {
   border-left: 3.5px solid #0f172a;
   padding-left: 1rem;
   padding-top: 0.4rem;
@@ -132,29 +132,29 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .fikr-rich-editor blockquote {
+  .gogetters-rich-editor blockquote {
     border-left-color: #f8fafc;
     background: rgba(30, 41, 59, 0.45);
   }
 }
 
-.fikr-rich-editor ul {
+.gogetters-rich-editor ul {
   list-style-type: disc;
   padding-left: 1.5rem;
   margin: 0.75rem 0;
 }
 
-.fikr-rich-editor ol {
+.gogetters-rich-editor ol {
   list-style-type: decimal;
   padding-left: 1.5rem;
   margin: 0.75rem 0;
 }
 
-.fikr-rich-editor li {
+.gogetters-rich-editor li {
   margin-bottom: 0.25rem;
 }
 
-.fikr-rich-editor code {
+.gogetters-rich-editor code {
   font-family: var(--font-mono, monospace);
   font-size: 0.85em;
   background: #f1f5f9;
@@ -165,14 +165,14 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .fikr-rich-editor code {
+  .gogetters-rich-editor code {
     background: #1e293b;
     border-color: #334155;
     color: #f8fafc;
   }
 }
 
-.fikr-rich-editor pre {
+.gogetters-rich-editor pre {
   font-family: var(--font-mono, monospace);
   font-size: 0.85em;
   background: #0f172a;
@@ -184,13 +184,13 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .fikr-rich-editor pre {
+  .gogetters-rich-editor pre {
     background: #020617;
     border: 1px solid #1e293b;
   }
 }
 
-.fikr-rich-editor mark {
+.gogetters-rich-editor mark {
   background: #fef08a;
   color: #0f172a;
   padding: 0.1rem 0.3rem;
@@ -198,20 +198,20 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .fikr-rich-editor mark {
+  .gogetters-rich-editor mark {
     background: #854d0e;
     color: #fef08a;
   }
 }
 
-.fikr-rich-editor a {
+.gogetters-rich-editor a {
   color: #2563eb;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 @media (prefers-color-scheme: dark) {
-  .fikr-rich-editor a {
+  .gogetters-rich-editor a {
     color: #60a5fa;
   }
 }

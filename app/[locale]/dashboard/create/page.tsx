@@ -1222,7 +1222,7 @@ export default function CreatePostPage() {
               }
             }}
             data-placeholder={t("create.editorPlaceholder") || "O‘z g‘oyangiz, maqsadingiz yoki tahlilingizni yozing..."}
-            className="fikr-rich-editor p-3.5 sm:p-4 text-xs sm:text-sm text-slate-900 dark:text-slate-100 cursor-text min-h-[220px]"
+            className="gogetters-rich-editor p-3.5 sm:p-4 text-xs sm:text-sm text-slate-900 dark:text-slate-100 cursor-text min-h-[220px]"
           />
         </div>
 

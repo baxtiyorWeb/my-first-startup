@@ -8,7 +8,7 @@ import { enforceRateLimit } from "@/server/common/rate-limiter";
 
 const CreatePostSchema = z.object({
   title: z.string().optional(),
-  content: z.string().min(5, "Fikr matni kamida 5 ta belgidan iborat bo‘lishi kerak"),
+  content: z.string().min(5, "Post matni kamida 5 ta belgidan iborat bo‘lishi kerak"),
   postType: z.enum(["thought", "project"]).optional().default("thought"),
   projectUrl: z
     .string()
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     if (!parseResult.success) {
       throw AppError.validation(
-        "Fikr ma’lumotlari noto‘g‘ri",
+        "Post ma’lumotlari noto‘g‘ri",
         parseResult.error.issues.map((e) => ({
           field: String(e.path[0] ?? ""),
           issue: e.message,

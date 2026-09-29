@@ -7,7 +7,7 @@ export default function DashboardPage() {
       {/* Pure Social Feed: Content Discovery, Reading, and Interaction */}
       <section aria-labelledby="feed-section-heading">
         <h2 id="feed-section-heading" className="sr-only">
-          Fikrlar va intellektual muhokamalar oqimi
+          Tashabbuslar, g‘oyalar va startaplar oqimi
         </h2>
         <Suspense
           fallback={

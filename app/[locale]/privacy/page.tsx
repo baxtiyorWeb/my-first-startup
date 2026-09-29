@@ -12,11 +12,11 @@ export default function PrivacyPage() {
     uz: {
       title: "Maxfiylik Siyosati",
       date: "Oxirgi yangilanish: 2026-yil",
-      intro: "«Fikr» platformasi foydalanuvchilarning shaxsiy ma’lumotlari daxlsizligini oliy darajada qadrlaydi. Biz sizning ma’lumotlaringizni uchinchi shaxslarga sotmaymiz va marketing maqsadlarida suiiste’mol qilmaymiz.",
+      intro: "«The Go-getters» platformasi foydalanuvchilarning shaxsiy ma’lumotlari daxlsizligini oliy darajada qadrlaydi. Biz sizning ma’lumotlaringizni uchinchi shaxslarga sotmaymiz va marketing maqsadlarida suiiste’mol qilmaymiz.",
       sections: [
         {
           title: "1. To‘planadigan ma’lumotlar",
-          desc: "Biz faqat hisob ochish va xizmatdan foydalanish uchun zarur bo‘lgan telefon raqam, ism, faoliyat sohasi hamda siz ixtiyoriy ravishda e’lon qilgan fikrlar va mulohazalarni saqlaymiz.",
+          desc: "Biz faqat hisob ochish va xizmatdan foydalanish uchun zarur bo‘lgan telefon raqam, ism, faoliyat sohasi hamda siz ixtiyoriy ravishda e’lon qilgan postlar va mulohazalarni saqlaymiz.",
         },
         {
           title: "2. Xavfsizlik va Himoya",
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
     ru: {
       title: "Политика Конфиденциальности",
       date: "Последнее обновление: 2026 г.",
-      intro: "Платформа «Fikr» ставит конфиденциальность пользователей на первое место. Мы никогда не продаём ваши персональные данные третьим лицам и не используем их в агрессивных маркетинговых целях.",
+      intro: "Платформа «The Go-getters» ставит конфиденциальность пользователей на первое место. Мы никогда не продаём ваши персональные данные третьим лицам и не используем их в агрессивных маркетинговых целях.",
       sections: [
         {
           title: "1. Собираемые данные",
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
     en: {
       title: "Privacy Policy",
       date: "Last updated: 2026",
-      intro: "Fikr is built on intellectual trust and digital privacy. We do not sell personal data to third parties nor do we exploit user activities for unsolicited advertising.",
+      intro: "The Go-getters is built on trust, transparency, and digital privacy. We do not sell personal data to third parties nor do we exploit user activities for unsolicited advertising.",
       sections: [
         {
           title: "1. Information We Collect",

@@ -134,9 +134,9 @@ function PostDetailInner({
       } catch (err) {
         if (!isMounted) return;
         if (err instanceof ApiError && err.status === 404) {
-          setError("Ushbu fikr topilmadi yoki o‘chirilgan");
+          setError(t("post.notFound") || "Ushbu post topilmadi yoki o‘chirilgan");
         } else {
-          setError("Fikrni yuklashda xatolik yuz berdi");
+          setError(t("post.loadError") || "Postni yuklashda xatolik yuz berdi");
         }
       } finally {
         if (isMounted) setLoading(false);

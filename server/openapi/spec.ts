@@ -1,13 +1,13 @@
 export const openApiSpec = {
   openapi: "3.1.0",
   info: {
-    title: "Fikr API Documentation",
+    title: "The Go-getters API Documentation",
     version: "1.0.0",
     description:
-      "Fikr — Intellektual, chuqur fikrlar va tahliliy munozaralar platformasi uchun ishlab chiqilgan rasmiy RESTful API spetsifikatsiyasi.",
+      "The Go-getters — Intiluvchan insonlar, g‘oyalar va startaplar tarmog‘i uchun ishlab chiqilgan rasmiy RESTful API spetsifikatsiyasi.",
     contact: {
-      name: "Fikr Engineering Team",
-      url: "https://fikr.uz",
+      name: "The Go-getters Engineering Team",
+      url: "https://thegogetters.uz",
     },
   },
   servers: [
@@ -21,7 +21,7 @@ export const openApiSpec = {
       cookieAuth: {
         type: "apiKey",
         in: "cookie",
-        name: "fikr_session",
+        name: "gogetters_session",
         description: "HttpOnly sessiya cookie",
       },
       bearerAuth: {
@@ -64,7 +64,7 @@ export const openApiSpec = {
         properties: {
           id: { type: "string", format: "uuid" },
           title: { type: "string", nullable: true, example: "Dasturiy ta'minotda YAGNI tamoyili" },
-          content: { type: "string", example: "Fikrning to‘liq matni..." },
+          content: { type: "string", example: "Postning to‘liq matni..." },
           readingTimeMinutes: { type: "integer", example: 2 },
           likesCount: { type: "integer", example: 68 },
           commentsCount: { type: "integer", example: 19 },
@@ -82,7 +82,7 @@ export const openApiSpec = {
           id: { type: "string", format: "uuid" },
           postId: { type: "string", format: "uuid" },
           parentId: { type: "string", format: "uuid", nullable: true },
-          content: { type: "string", example: "Fikrga to‘liq qo‘shilaman..." },
+          content: { type: "string", example: "Mavzuga to‘liq qo‘shilaman..." },
           likesCount: { type: "integer", example: 5 },
           isLiked: { type: "boolean", example: false },
           createdAt: { type: "string", format: "date-time" },
@@ -213,7 +213,7 @@ export const openApiSpec = {
     },
     "/posts": {
       get: {
-        summary: "Lenta (Feed) fikrlarini olish",
+        summary: "Lenta (Feed) postlarini olish",
         parameters: [
           { name: "cursor", in: "query", schema: { type: "string" }, description: "Keyingi sahifa uchun vaqt kursori" },
           { name: "limit", in: "query", schema: { type: "integer", default: 20 } },
@@ -245,7 +245,7 @@ export const openApiSpec = {
         },
       },
       post: {
-        summary: "Yangi fikr yozish",
+        summary: "Yangi post yozish",
         security: [{ cookieAuth: [] }, { bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -263,7 +263,7 @@ export const openApiSpec = {
           },
         },
         responses: {
-          201: { description: "Fikr yaratildi" },
+          201: { description: "Post yaratildi" },
           400: { $ref: "#/components/schemas/ErrorResponse" },
           401: { $ref: "#/components/schemas/ErrorResponse" },
         },
@@ -271,21 +271,21 @@ export const openApiSpec = {
     },
     "/posts/{id}": {
       delete: {
-        summary: "Fikrni o‘chirish (BOLA/IDOR himoyalangan)",
+        summary: "Postni o‘chirish (BOLA/IDOR himoyalangan)",
         security: [{ cookieAuth: [] }, { bearerAuth: [] }],
         parameters: [
           { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } },
         ],
         responses: {
-          200: { description: "Fikr o‘chirildi" },
+          200: { description: "Post o‘chirildi" },
           403: { description: "Faqat muallif o‘chira oladi" },
-          404: { description: "Fikr topilmadi" },
+          404: { description: "Post topilmadi" },
         },
       },
     },
     "/posts/{id}/like": {
       post: {
-        summary: "Fikrga layk bosish / bekor qilish (Toggle)",
+        summary: "Postga layk bosish / bekor qilish (Toggle)",
         security: [{ cookieAuth: [] }, { bearerAuth: [] }],
         parameters: [
           { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } },
@@ -297,7 +297,7 @@ export const openApiSpec = {
     },
     "/posts/{id}/bookmark": {
       post: {
-        summary: "Fikrni saqlash / saqlanganlardan o‘chirish (Toggle)",
+        summary: "Postni saqlash / saqlanganlardan o‘chirish (Toggle)",
         security: [{ cookieAuth: [] }, { bearerAuth: [] }],
         parameters: [
           { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } },
@@ -413,7 +413,7 @@ export const openApiSpec = {
     },
     "/search": {
       get: {
-        summary: "Mualliflar va fikrlarni qidirish",
+        summary: "Mualliflar va postlarni qidirish",
         parameters: [
           { name: "q", in: "query", required: true, schema: { type: "string" } },
           { name: "limit", in: "query", schema: { type: "integer", default: 10 } },

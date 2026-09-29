@@ -13,7 +13,7 @@ function buildUzbekSearchPatterns(query: string): string[] {
   if (!trimmed) return [];
 
   const standardApostrophe = trimmed.replace(/[’‘'`]/g, "'");
-  
+
   const latinFromCyrillic = standardApostrophe
     .replace(/ў/g, "o'")
     .replace(/ғ/g, "g'")
@@ -117,6 +117,7 @@ export async function searchContent(
           createdAt: posts.createdAt,
           viewsCount: posts.viewsCount,
           commentsCount: posts.commentsCount,
+          postType: posts.postType
         })
         .from(posts)
         .where(and(isNull(posts.deletedAt), or(...postConditions)))
@@ -127,9 +128,9 @@ export async function searchContent(
         const cleanSnippet = stripHtmlToPlainText(p.content);
         const formattedDate = p.createdAt
           ? new Date(p.createdAt).toLocaleDateString("uz-UZ", {
-              month: "short",
-              day: "numeric",
-            })
+            month: "short",
+            day: "numeric",
+          })
           : undefined;
 
         const statsText = [
@@ -145,7 +146,7 @@ export async function searchContent(
           title: p.title || cleanSnippet.slice(0, 60),
           subtitle: cleanSnippet.slice(0, 110),
           href: `/dashboard/posts/${p.id}`,
-          badge: "Fikr",
+          badge: p.postType === "project" ? "Loyiha" : "Tashabbus",
           createdAt: formattedDate,
           stats: statsText || undefined,
         });

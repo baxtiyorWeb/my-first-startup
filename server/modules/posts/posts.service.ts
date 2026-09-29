@@ -126,7 +126,7 @@ export async function getFeed(
   } catch (err) {
     if (err instanceof AppError) throw err;
     console.error("[POSTS] Error fetching feed:", err);
-    throw AppError.internal("Fikrlar tasmasini yuklashda xatolik yuz berdi");
+    throw AppError.internal("Postlar tasmasini yuklashda xatolik yuz berdi");
   }
 }
 
@@ -147,7 +147,7 @@ export async function createPost(
 ): Promise<PostResponse> {
   const plainText = stripHtmlToPlainText(input.content);
   if (plainText.length < 5) {
-    throw AppError.validation("Fikr matni kamida 5 ta belgidan iborat bo‘lishi kerak");
+    throw AppError.validation("Post matni kamida 5 ta belgidan iborat bo‘lishi kerak");
   }
 
   // Sanitize HTML
@@ -218,7 +218,7 @@ export async function createPost(
   } catch (err) {
     if (err instanceof AppError) throw err;
     console.error("[POSTS] Error creating post:", err);
-    throw AppError.internal("Fikrni saqlashda xatolik yuz berdi");
+    throw AppError.internal("Postni saqlashda xatolik yuz berdi");
   }
 }
 
@@ -234,12 +234,12 @@ export async function deletePost(postId: string, userId: string): Promise<void> 
       .limit(1);
 
     if (!existing) {
-      throw AppError.notFound("O‘chirilmoqchi bo‘lgan fikr topilmadi");
+      throw AppError.notFound("O‘chirilmoqchi bo‘lgan post topilmadi");
     }
 
     // BOLA/IDOR check: user must be the author
     if (existing.authorId !== userId) {
-      throw AppError.forbidden("Siz faqat o‘zingiz yozgan fikrlarni o‘chira olasiz");
+      throw AppError.forbidden("Siz faqat o‘zingiz yozgan postlarni o‘chira olasiz");
     }
 
     // Soft delete
@@ -250,7 +250,7 @@ export async function deletePost(postId: string, userId: string): Promise<void> 
   } catch (err) {
     if (err instanceof AppError) throw err;
     console.error("[POSTS] Error deleting post:", err);
-    throw AppError.internal("Fikrni o‘chirishda xatolik yuz berdi");
+    throw AppError.internal("Postni o‘chirishda xatolik yuz berdi");
   }
 }
 
@@ -298,7 +298,7 @@ export async function getPostById(
       .limit(1);
 
     if (!row) {
-      throw AppError.notFound("Fikr topilmadi");
+      throw AppError.notFound("Post topilmadi");
     }
 
     return {
@@ -331,7 +331,7 @@ export async function getPostById(
   } catch (err) {
     if (err instanceof AppError) throw err;
     console.error("[POSTS] Error fetching post by id:", err);
-    throw AppError.internal("Fikrni yuklashda xatolik yuz berdi");
+    throw AppError.internal("Postni yuklashda xatolik yuz berdi");
   }
 }
 
@@ -350,7 +350,7 @@ export async function recordPostView(
       .limit(1);
 
     if (!post) {
-      throw AppError.notFound("Fikr topilmadi");
+      throw AppError.notFound("Post topilmadi");
     }
 
     // 1-hour deduplication window:

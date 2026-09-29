@@ -8,11 +8,12 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 export default function HelpPage() {
   const { t, locale, localePath } = useI18n();
 
+
   const faqs = {
     uz: [
       {
         q: "Karma va reputatsiya tizimi qanday ishlaydi?",
-        a: "Siz ulashgan fikrlar boshqa foydalanuvchilar tomonidan foydali deb topilganda, karmangiz oshadi. Bu sizning profilingiz ishonchliligini belgilaydi.",
+        a: "Siz ulashgan postlar va loyihalar boshqa foydalanuvchilar tomonidan foydali deb topilganda, karmangiz oshadi. Bu sizning profilingiz ishonchliligini belgilaydi.",
       },
       {
         q: "Lotin va Kirill alifbosini qanday o‘zgartirish mumkin?",
@@ -26,7 +27,7 @@ export default function HelpPage() {
     ru: [
       {
         q: "Как работает система кармы и репутации?",
-        a: "Когда ваши мысли и аналитические заметки оцениваются другими участниками как полезные, ваша карма растёт. Это отражает уровень доверия к вашему профилю.",
+        a: "Когда ваши публикации и стартап-идеи оцениваются другими участниками как полезные, ваша карма растёт. Это отражает уровень доверия к вашему профилю.",
       },
       {
         q: "Как изменить язык интерфейса или алфавит?",
@@ -40,7 +41,7 @@ export default function HelpPage() {
     en: [
       {
         q: "How does the karma and reputation system work?",
-        a: "When your thoughts and analyses are found valuable by fellow thinkers, your karma increases, establishing your credibility across the network.",
+        a: "When your posts and startup insights are found valuable by fellow go-getters, your karma increases, establishing your credibility across the network.",
       },
       {
         q: "How can I change the interface language or script?",
@@ -89,7 +90,7 @@ export default function HelpPage() {
         </div>
 
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
-          support@fikr.uz
+          support@thegogetters.uz
         </div>
       </div>
     </div>

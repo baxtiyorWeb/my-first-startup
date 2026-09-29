@@ -2,8 +2,8 @@ import type { uz } from "./uz";
 
 export const en: typeof uz = {
   common: {
-    brandName: "Fikr",
-    brandTagline: "Intellectual Network of Uzbekistan",
+    brandName: "The Go-getters",
+    brandTagline: "Network of Ambitious Innovators, Unique Ideas & Startups",
     save: "Save",
     saving: "Saving...",
     saved: "Saved",
@@ -114,7 +114,7 @@ export const en: typeof uz = {
     titleRequired: "Please enter a title for your thought",
     contentRequired: "Please enter the content of your thought",
     thoughtTitlePlaceholder: "Thought title (optional, for analytical essays)...",
-    projectTitlePlaceholder: "Project or startup name (e.g., Fikr, Paynet)...",
+    projectTitlePlaceholder: "Project or startup name (e.g., The Go-getters, Paynet)...",
     thoughtContentPlaceholder: "Share your analytical thoughts, insights, or conclusions in detail...",
     projectContentPlaceholder: "Tell the community about your project: what problem does it solve, who is it for, current stage and roadmap?...",
     projectTitleRequired: "Please enter your project name",
@@ -311,7 +311,7 @@ export const en: typeof uz = {
       },
       inappropriate: {
         label: "Inappropriate or prohibited content",
-        description: "Content that violates Fikr community standards and intellectual etiquette",
+        description: "Content that violates The Go-getters community standards and intellectual etiquette",
       },
       other: {
         label: "Other reason",
@@ -373,14 +373,14 @@ export const en: typeof uz = {
   reelsPage: {
     badge: "Planned Module",
     title: "Media & Video Insights",
-    description: "At the current stage, the Fikr platform is focused on written thoughts, analytical articles, and intellectual discussions. The media and video module will roll out in upcoming phases.",
+    description: "At the current stage, The Go-getters platform is focused on innovative thoughts, analytical articles, and startup discussions. The media and video module will roll out in upcoming phases.",
     backHome: "Back to Home",
   },
   onboarding: {
     step1: "1. Identity",
     step2: "2. Thinkers",
     title1: "Tell us about yourself",
-    subtitle1: "Fikr is an intellectual community where your professional expertise adds high value to discussions.",
+    subtitle1: "The Go-getters is an innovative community where your professional expertise adds high value to discussions.",
     nameLabel: "Full Name *",
     namePlaceholder: "e.g., Alisher Kadirov",
     handleLabel: "Username (@handle) *",
@@ -396,9 +396,9 @@ export const en: typeof uz = {
     subtitle2: "Active authors creating insightful analyses in Uzbekistan's tech and intellectual community.",
     back: "Back",
     skip: "Skip",
-    finish: "Start in Fikr",
+    finish: "Start in The Go-getters",
     welcomeToast: "Welcome! Your feed is ready.",
-    footerNote: "You can update any profile information in Fikr at any time",
+    footerNote: "You can update any profile information in The Go-getters at any time",
   },
   intents: {
     label: "Professional Intent / Status",

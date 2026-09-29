@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth/auth-form";
 
 export const metadata: Metadata = {
-  title: "Ro‘yxatdan o‘tish — Fikr",
-  description: "Fikr intellektual va munozara tarmog‘iga a’zo bo‘ling",
+  title: "Ro‘yxatdan o‘tish — The Go-getters",
+  description: "The Go-getters innovatsion va intellektual hamjamiyatiga a’zo bo‘ling",
 };
 
 export default function RegisterPage() {

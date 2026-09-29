@@ -11,7 +11,7 @@ export async function GET(req: Request) {
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <title>Fikr API — Swagger Hujjatlari</title>
+  <title>The Go-getters API — Swagger Hujjatlari</title>
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
   <link rel="icon" type="image/png" href="/favicon.ico" />
   <style>

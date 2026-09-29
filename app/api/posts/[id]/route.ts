@@ -27,7 +27,7 @@ export async function DELETE(
     const { id } = await params;
 
     await deletePost(id, authUser.userId);
-    return successResponse({ message: "Fikr muvaffaqiyatli o‘chirildi" });
+    return successResponse({ message: "Post muvaffaqiyatli o‘chirildi" });
   } catch (error) {
     return errorResponse(error);
   }

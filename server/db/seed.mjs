@@ -107,7 +107,7 @@ const postsData = [
     authorHandle: "akmal_ai",
     title: "O‘zbek tili uchun LLM modellari: sifatli ma'lumotlar tanqisligi",
     content:
-      "Mahalliy sun'iy intellekt yechimlarini rivojlantirishdagi eng katta to‘siq hisoblash quvvati emas, balki toza, xatosiz, ilmiy va badiiy boy o‘zbekcha matnlar korpusining yetishmasligidir.\n\nFikr kabi platformalarda yuqori sifatli tahliliy yozuvlar ko‘payishi — kelajakdagi o‘zbek tili modellarining intellektual darajasini belgilab beradi.",
+      "Mahalliy sun'iy intellekt yechimlarini rivojlantirishdagi eng katta to‘siq hisoblash quvvati emas, balki toza, xatosiz, ilmiy va badiiy boy o‘zbekcha matnlar korpusining yetishmasligidir.\n\nThe Go-getters kabi platformalarda yuqori sifatli tahliliy yozuvlar ko‘payishi — kelajakdagi o‘zbek tili modellarining intellektual darajasini belgilab beradi.",
     readingTimeMinutes: 2,
     likesCount: 0,
     commentsCount: 0,

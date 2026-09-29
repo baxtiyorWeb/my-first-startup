@@ -12,15 +12,15 @@ export default function GuidelinesPage() {
     uz: {
       title: "Hamjamiyat Qoidalari",
       subtitle: "Madaniyatli va intellektual muloqot mezonlari",
-      intro: "«Fikr» — shov-shuv va haqoratlardan xoli, ilm, tajriba va konstruktiv tahlillar almashish makoni. Barcha a’zolar quyidagi qoidalarga rioya qilishi lozim:",
+      intro: "«The Go-getters» — intiluvchan insonlar, g‘oyalar, startaplar va konstruktiv tahlillar almashish makoni. Barcha a’zolar quyidagi qoidalarga rioya qilishi lozim:",
       rules: [
         {
           title: "1. Shaxsiyatga tegmaslik",
           desc: "Har qanday mavzuda bahslashish mumkin, lekin shaxsni haqorat qilish, kamsitish yoki guruhlarga nisbatan nafrat uyg‘otish qat’iyan man etiladi.",
         },
         {
-          title: "2. Asoslangan fikr va dalillar",
-          desc: "Fikringizni asoslash uchun ishonchli manbalar, ilmiy dalillar yoki shaxsiy amaliy tajribani keltirish tavsiya etiladi.",
+          title: "2. Asoslangan tahlil va dalillar",
+          desc: "Mavzularni asoslash uchun ishonchli manbalar, faktlar yoki shaxsiy amaliy tajribani keltirish tavsiya etiladi.",
         },
         {
           title: "3. Spamsiz muhit",
@@ -31,7 +31,7 @@ export default function GuidelinesPage() {
     ru: {
       title: "Правила Сообщества",
       subtitle: "Стандарты интеллектуального и уважительного диалога",
-      intro: "«Fikr» — это пространство без информационного шума и оскорблений, созданное для обмена знаниями, опытом и конструктивным анализом.",
+      intro: "«The Go-getters» — это пространство для амбициозных людей, созданное для обмена знаниями, стартап-идеями и конструктивным анализом.",
       rules: [
         {
           title: "1. Уважение к личности",
@@ -50,7 +50,7 @@ export default function GuidelinesPage() {
     en: {
       title: "Community Guidelines",
       subtitle: "Standards for civilized, intellectual discourse",
-      intro: "Fikr is a sanctuary for thoughtful ideas, domain expertise, and analytical dialogue. All contributors are expected to honor these core principles:",
+      intro: "The Go-getters is a community for ambitious thinkers, founders, and innovators. All contributors are expected to honor these core principles:",
       rules: [
         {
           title: "1. Mutual Respect",

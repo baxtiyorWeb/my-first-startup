@@ -119,7 +119,7 @@ export const SEED_POSTS: SeedPost[] = [
     },
     title: "O‘zbek tili uchun LLM modellari: sifatli ma'lumotlar tanqisligi",
     content:
-      "Mahalliy sun'iy intellekt yechimlarini rivojlantirishdagi eng katta to‘siq hisoblash quvvati emas, balki toza, xatosiz, ilmiy va badiiy boy o‘zbekcha matnlar korpusining yetishmasligidir.\n\nFikr kabi platformalarda yuqori sifatli tahliliy yozuvlar ko‘payishi — kelajakdagi o‘zbek tili modellarining intellektual darajasini belgilab beradi.",
+      "Mahalliy sun'iy intellekt yechimlarini rivojlantirishdagi eng katta to‘siq hisoblash quvvati emas, balki toza, xatosiz, ilmiy va badiiy boy o‘zbekcha matnlar korpusining yetishmasligidir.\n\nThe Go-getters kabi platformalarda yuqori sifatli tahliliy yozuvlar ko‘payishi — kelajakdagi o‘zbek tili modellarining intellektual darajasini belgilab beradi.",
     createdAt: "Bugun",
     likesCount: 0,
     commentsCount: 0,
@@ -178,7 +178,7 @@ export const SEED_COMMENTS: Record<string, SeedCommentThreadItem[]> = {
         verified: false,
       },
       content:
-        "Fikrga qo‘shilaman. Sun’iy intellekt vositalaridan foydalanishda ham inson intuitsiyasi va tanqidiy fikrlash birinchi o‘rinda qolishi lozim.",
+        "Ushbu qarashga to‘liq qo‘shilaman. Sun’iy intellekt vositalaridan foydalanishda ham inson intuitsiyasi va tanqidiy tahlil birinchi o‘rinda qolishi lozim.",
       createdAt: "25 daqiqa oldin",
       likesCount: 9,
       isLiked: false,
@@ -196,7 +196,7 @@ export const SEED_COMMENTS: Record<string, SeedCommentThreadItem[]> = {
         verified: true,
       },
       content:
-        "Microcopy borasida juda to‘g‘ri fikr. Shuningdek xatolik xabarlarini (error messages) berishda ham 'Xatolik yuz berdi' demasdan, foydalanuvchi nima qilishi kerakligini aniq ko‘rsatish zarur.",
+        "Microcopy borasida juda to‘g‘ri mulohaza. Shuningdek xatolik xabarlarini (error messages) berishda ham 'Xatolik yuz berdi' demasdan, foydalanuvchi nima qilishi kerakligini aniq ko‘rsatish zarur.",
       createdAt: "2 soat oldin",
       likesCount: 18,
       isLiked: true,

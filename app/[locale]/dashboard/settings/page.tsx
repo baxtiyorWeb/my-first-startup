@@ -22,7 +22,7 @@ export default function SettingsPage() {
   const [alphabet, setAlphabet] = useState<string>(() => {
     if (typeof window === "undefined") return "latin";
     try {
-      const saved = localStorage.getItem("fikr_alphabet");
+      const saved = localStorage.getItem("gogetters_alphabet") || localStorage.getItem("fikr_alphabet");
       return saved === "cyrillic" || saved === "latin" ? saved : "latin";
     } catch {
       return "latin";
@@ -56,7 +56,7 @@ export default function SettingsPage() {
         bio: bio.trim(),
       });
 
-      localStorage.setItem("fikr_alphabet", alphabet);
+      localStorage.setItem("gogetters_alphabet", alphabet);
       setSavedSuccess(true);
       toast.success(t("settings.successSaved"));
       setTimeout(() => setSavedSuccess(false), 3000);
