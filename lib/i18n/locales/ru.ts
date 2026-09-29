@@ -243,6 +243,11 @@ export const ru: typeof uz = {
     minCharsHint: "Введите не менее 2 символов для поиска",
     pressEsc: "Для выхода нажмите Esc",
     loading: "Поиск...",
+    viewAllResults: "Посмотреть все результаты",
+    resultsFor: "Результаты поиска",
+    resultsCount: "результатов найдено",
+    searchTitle: "Поиск",
+    searchDescription: "Найдите мысли и авторов на платформе The Go-getters",
   },
   bookmarks: {
     title: "Закладки",

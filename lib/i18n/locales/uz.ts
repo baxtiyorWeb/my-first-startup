@@ -241,6 +241,11 @@ export const uz = {
     minCharsHint: "Qidirish uchun kamida 2 ta belgi kiriting",
     pressEsc: "Yopish uchun Esc",
     loading: "Qidirilmoqda...",
+    viewAllResults: "Barcha natijalarni ko‘rish",
+    resultsFor: "Qidiruv natijalari",
+    resultsCount: "ta natija topildi",
+    searchTitle: "Qidiruv",
+    searchDescription: "The Go-getters platformasida postlar va mualliflarni toping",
   },
   bookmarks: {
     title: "Saqlanganlar",

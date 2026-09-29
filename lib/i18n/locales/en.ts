@@ -243,6 +243,11 @@ export const en: typeof uz = {
     minCharsHint: "Enter at least 2 characters to search",
     pressEsc: "Press Esc to close",
     loading: "Searching...",
+    viewAllResults: "View all results",
+    resultsFor: "Search results",
+    resultsCount: "results found",
+    searchTitle: "Search",
+    searchDescription: "Find posts and authors on The Go-getters platform",
   },
   bookmarks: {
     title: "Bookmarks",
