@@ -21,6 +21,7 @@ import { RichContent } from "./rich-content";
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { isSameUser } from "@/lib/user-utils";
 
 interface PostCardProps {
   post: Post;
@@ -153,10 +154,18 @@ export function PostCard({
     setIsMenuOpen(false);
   };
 
+  const authorProfileHref = localePath(`/dashboard/profile?user=${encodeURIComponent(post.author.handle)}`);
+  const isOwnPost = isSameUser(session.user, post.author);
+
   const handleToggleFollow = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!session.isAuthenticated) {
       toast.info(t("auth.loginRequired") || "Kuzatish uchun tizimga kiring");
+      return;
+    }
+
+    if (isOwnPost) {
+      toast.error("O‘zingizni kuzata olmaysiz");
       return;
     }
 
@@ -196,9 +205,6 @@ export function PostCard({
       // Non-blocking view tracking
     }
   };
-
-  const authorProfileHref = localePath(`/dashboard/profile?user=${encodeURIComponent(post.author.handle)}`);
-  const isOwnPost = session.user.handle === post.author.handle || post.author.id === "me";
 
   return (
     <>

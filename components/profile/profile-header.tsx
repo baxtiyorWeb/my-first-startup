@@ -13,6 +13,9 @@ import type { UserProfile, ProfileTab } from "@/types/social";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 
+import { useAuth } from "@/components/auth/auth-context";
+import { isSameUser } from "@/lib/user-utils";
+
 interface ProfileHeaderProps {
   profile: UserProfile;
   isSelf: boolean;
@@ -28,12 +31,18 @@ export function ProfileHeader({
   onFollowToggle,
   onTabChange,
 }: ProfileHeaderProps) {
+  const { session } = useAuth();
   const { t, localePath } = useI18n();
-  const [isFollowing, setIsFollowing] = useState(profile.isFollowing ?? false);
+  const isSelfUser = isSelf || isSameUser(session.user, profile);
+  const [isFollowing, setIsFollowing] = useState(isSelfUser ? false : (profile.isFollowing ?? false));
   const [followersCount, setFollowersCount] = useState(profile.stats.followersCount);
   const [isSharing, setIsSharing] = useState(false);
 
   const handleFollow = () => {
+    if (isSelfUser) {
+      toast.error("O‘zingizni kuzata olmaysiz");
+      return;
+    }
     const nextState = !isFollowing;
     const nextCount = nextState ? followersCount + 1 : Math.max(0, followersCount - 1);
     setIsFollowing(nextState);
@@ -142,7 +151,7 @@ export function ProfileHeader({
 
         {/* Right: Contextual Action Buttons */}
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto w-full sm:w-auto">
-          {isSelf ? (
+          {isSelfUser ? (
             <>
               <button
                 type="button"

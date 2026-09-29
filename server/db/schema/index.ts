@@ -10,8 +10,9 @@ import {
   primaryKey,
   index,
   uniqueIndex,
+  check,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // 1. Users Table
 export const users = pgTable(
@@ -180,6 +181,7 @@ export const follows = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.followerId, table.followingId] }),
+    check("follows_no_self_follow", sql`${table.followerId} != ${table.followingId}`),
     index("idx_follows_following").on(table.followingId),
     index("idx_follows_follower").on(table.followerId),
   ]
@@ -216,6 +218,48 @@ export const verificationCodes = pgTable(
   (table) => [
     index("idx_verification_phone").on(table.phone),
   ]
+);
+
+// 10. Notifications Table (with anti-spam aggregation & read status)
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    recipientId: uuid("recipient_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    actorId: uuid("actor_id")
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: varchar("type", { length: 30 }).notNull(), // "like" | "comment" | "reply" | "follow" | "new_post"
+    targetId: uuid("target_id"),
+    targetType: varchar("target_type", { length: 20 }), // "post" | "comment" | "user"
+    title: varchar("title", { length: 255 }).notNull(),
+    message: text("message").notNull(),
+    link: varchar("link", { length: 500 }).notNull(),
+    isRead: boolean("is_read").default(false).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_notifications_recipient_read").on(table.recipientId, table.isRead, table.createdAt),
+    index("idx_notifications_recipient_type_target").on(table.recipientId, table.type, table.targetId),
+  ]
+);
+
+// 11. Notification Settings Table (Per-user preference toggles)
+export const notificationSettings = pgTable(
+  "notification_settings",
+  {
+    userId: uuid("user_id")
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    notifyLikes: boolean("notify_likes").default(true).notNull(),
+    notifyComments: boolean("notify_comments").default(true).notNull(),
+    notifyFollows: boolean("notify_follows").default(true).notNull(),
+    notifyNewPosts: boolean("notify_new_posts").default(true).notNull(),
+    pushEnabled: boolean("push_enabled").default(true).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  }
 );
 
 // Relations definition for Drizzle Relational Queries

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import type { UserSession, UserProfile, OnboardingData } from "@/types/social";
 import { api, ApiError } from "@/lib/api";
+import { isSameUser } from "@/lib/user-utils";
 
 const EMPTY_PROFILE: UserProfile = {
   id: "",
@@ -162,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Follow any selected authors if provided
       if (data.followedAuthorIds && data.followedAuthorIds.length > 0) {
         for (const authorHandle of data.followedAuthorIds) {
+          if (isSameUser(session.user, { handle: authorHandle, id: authorHandle })) continue;
           try {
             await api.users.toggleFollow(authorHandle);
           } catch {

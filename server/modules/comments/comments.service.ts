@@ -3,6 +3,7 @@ import { db } from "@/server/db";
 import { comments, posts, users, commentLikes } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import { sanitizeRichContent } from "@/server/common/sanitizer";
+import { triggerNotification } from "@/server/modules/notifications/notifications.service";
 
 export interface CommentItemResponse {
   id: string;
@@ -161,6 +162,51 @@ export async function addComment(
     });
 
     const [author] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+    // Trigger notification asynchronously
+    if (parentId) {
+      // Notify parent comment author
+      db.select({ authorId: comments.authorId })
+        .from(comments)
+        .where(eq(comments.id, parentId))
+        .limit(1)
+        .then(([parent]) => {
+          if (parent) {
+            triggerNotification({
+              recipientId: parent.authorId,
+              actorId: userId,
+              type: "reply",
+              targetId: insertedComment!.id,
+              targetType: "comment",
+              title: "Yangi javob",
+              message: `${author.name} izohingizga javob qaytardi: "${sanitized.slice(0, 50)}"`,
+              link: `/dashboard/posts/${postId}`,
+            }).catch(() => null);
+          }
+        })
+        .catch(() => null);
+    } else {
+      // Notify post author
+      db.select({ authorId: posts.authorId, title: posts.title })
+        .from(posts)
+        .where(eq(posts.id, postId))
+        .limit(1)
+        .then(([p]) => {
+          if (p) {
+            triggerNotification({
+              recipientId: p.authorId,
+              actorId: userId,
+              type: "comment",
+              targetId: insertedComment!.id,
+              targetType: "comment",
+              title: "Yangi izoh",
+              message: `${author.name} postingizga izoh qoldirdi: "${sanitized.slice(0, 50)}"`,
+              link: `/dashboard/posts/${postId}`,
+            }).catch(() => null);
+          }
+        })
+        .catch(() => null);
+    }
 
     return {
       id: insertedComment!.id,

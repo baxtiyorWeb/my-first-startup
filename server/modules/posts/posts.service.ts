@@ -3,6 +3,7 @@ import { db } from "@/server/db";
 import { posts, users, postLikes, bookmarks, postViews } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import { sanitizeRichContent, stripHtmlToPlainText } from "@/server/common/sanitizer";
+import { triggerNotification, notifyFollowersNewPost } from "@/server/modules/notifications/notifications.service";
 
 export interface PostResponse {
   id: string;
@@ -187,6 +188,9 @@ export async function createPost(
 
     // Fetch author details
     const [author] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+    // Notify all followers of this author asynchronously
+    notifyFollowersNewPost(userId, inserted.id, inserted.title || inserted.content).catch(() => null);
 
     return {
       id: inserted.id,
@@ -442,6 +446,37 @@ export async function togglePostLike(
         .select({ count: posts.likesCount })
         .from(posts)
         .where(eq(posts.id, postId));
+
+      // Trigger notification to post author asynchronously
+      db.select({ authorId: posts.authorId, title: posts.title, content: posts.content })
+        .from(posts)
+        .where(eq(posts.id, postId))
+        .limit(1)
+        .then(([p]) => {
+          if (p) {
+            db.select({ name: users.name })
+              .from(users)
+              .where(eq(users.id, userId))
+              .limit(1)
+              .then(([u]) => {
+                const actorName = u?.name || "Foydalanuvchi";
+                const postSnippet = p.title || p.content.slice(0, 40);
+                triggerNotification({
+                  recipientId: p.authorId,
+                  actorId: userId,
+                  type: "like",
+                  targetId: postId,
+                  targetType: "post",
+                  title: "Yangi like",
+                  message: `${actorName} sizning "${postSnippet}" postingizga like bosdi`,
+                  link: `/dashboard/posts/${postId}`,
+                }).catch(() => null);
+              })
+              .catch(() => null);
+          }
+        })
+        .catch(() => null);
+
       return { isLiked: true, likesCount: updated?.count ?? 1 };
     }
   } catch (err) {

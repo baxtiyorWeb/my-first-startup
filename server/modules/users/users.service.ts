@@ -2,6 +2,7 @@ import { eq, and, or, sql, desc, isNull } from "drizzle-orm";
 import { db } from "@/server/db";
 import { users, posts, comments, follows, postLikes, bookmarks } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
+import { triggerNotification } from "@/server/modules/notifications/notifications.service";
 import type { PostResponse } from "@/server/modules/posts/posts.service";
 
 export interface UserProfileResponse {
@@ -76,7 +77,7 @@ export async function getProfileByHandle(
     }
 
     const isSelf = currentUserId === row.id;
-    const isFollowing = Boolean(row.isFollowing);
+    const isFollowing = isSelf ? false : Boolean(row.isFollowing);
 
     const monthNames = [
       "yanvar", "fevral", "mart", "aprel", "may", "iyun",
@@ -269,12 +270,13 @@ export async function toggleFollow(
   currentUserId: string
 ): Promise<{ isFollowing: boolean; followersCount: number }> {
   const cleanHandle = targetHandle.startsWith("@") ? targetHandle : `@${targetHandle.trim()}`;
+  const unadornedHandle = targetHandle.replace(/^@/, "").trim();
 
   try {
     const [target] = await db
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.handle, cleanHandle))
+      .where(or(eq(users.handle, cleanHandle), eq(users.handle, unadornedHandle)))
       .limit(1);
 
     if (!target) {
@@ -303,6 +305,27 @@ export async function toggleFollow(
         followingId: target.id,
       });
       isFollowing = true;
+
+      // Trigger follow notification asynchronously
+      db.select({ name: users.name, handle: users.handle })
+        .from(users)
+        .where(eq(users.id, currentUserId))
+        .limit(1)
+        .then(([follower]) => {
+          if (follower) {
+            triggerNotification({
+              recipientId: target.id,
+              actorId: currentUserId,
+              type: "follow",
+              targetId: currentUserId,
+              targetType: "user",
+              title: "Yangi obunachi",
+              message: `${follower.name} (${follower.handle}) sizga obuna bo‘ldi`,
+              link: `/dashboard/profile?user=${encodeURIComponent(follower.handle)}`,
+            }).catch(() => null);
+          }
+        })
+        .catch(() => null);
     }
 
     // Get fresh follower count

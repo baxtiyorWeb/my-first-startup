@@ -201,3 +201,33 @@ CREATE TRIGGER trigger_comments_updated_at
     BEFORE UPDATE ON "comments"
     FOR EACH ROW
     EXECUTE FUNCTION set_updated_at();
+
+-- 10. Notifications Table
+CREATE TABLE IF NOT EXISTS "notifications" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "recipient_id" UUID NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "actor_id" UUID REFERENCES "users"("id") ON DELETE CASCADE,
+    "type" VARCHAR(30) NOT NULL,
+    "target_id" UUID,
+    "target_type" VARCHAR(20),
+    "title" VARCHAR(255) NOT NULL,
+    "message" TEXT NOT NULL,
+    "link" VARCHAR(500) NOT NULL,
+    "is_read" BOOLEAN NOT NULL DEFAULT FALSE,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS "idx_notifications_recipient_read" ON "notifications" ("recipient_id", "is_read", "created_at");
+CREATE INDEX IF NOT EXISTS "idx_notifications_recipient_type_target" ON "notifications" ("recipient_id", "type", "target_id");
+
+-- 11. Notification Settings Table
+CREATE TABLE IF NOT EXISTS "notification_settings" (
+    "user_id" UUID PRIMARY KEY REFERENCES "users"("id") ON DELETE CASCADE,
+    "notify_likes" BOOLEAN NOT NULL DEFAULT TRUE,
+    "notify_comments" BOOLEAN NOT NULL DEFAULT TRUE,
+    "notify_follows" BOOLEAN NOT NULL DEFAULT TRUE,
+    "notify_new_posts" BOOLEAN NOT NULL DEFAULT TRUE,
+    "push_enabled" BOOLEAN NOT NULL DEFAULT TRUE,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);

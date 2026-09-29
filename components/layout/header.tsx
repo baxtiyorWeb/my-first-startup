@@ -20,6 +20,7 @@ import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { LanguageSwitcher } from "./language-switcher";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 interface HeaderProps {
   title?: string;
@@ -183,8 +184,11 @@ export function Header({ title, subtitle }: HeaderProps) {
             </button>
           </div>
 
-          {/* Right: Language Switcher + Profile Dropdown (Create button hidden on phone) */}
+          {/* Right: Language Switcher + Notification Bell + Profile Dropdown */}
           <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+            {/* Notification Bell Dropdown */}
+            <NotificationBell />
+
             {/* Language Switcher Dropdown */}
             <div className="shrink-0">
               <LanguageSwitcher variant="header" />

@@ -4,6 +4,8 @@ export interface ApiSuccessResponse<T> {
   meta?: {
     total?: number;
     cursor?: string | null;
+    nextCursor?: string | null;
+    unreadCount?: number;
     hasMore?: boolean;
   };
 }

@@ -6,6 +6,7 @@ import * as bookmarks from "./bookmarks";
 import * as search from "./search";
 import * as reports from "./reports";
 import * as upload from "./upload";
+import * as notifications from "./notifications";
 
 export { ApiError } from "./client";
 
@@ -18,6 +19,7 @@ export const api = {
   search,
   reports,
   upload,
+  notifications,
 };
 
 export default api;

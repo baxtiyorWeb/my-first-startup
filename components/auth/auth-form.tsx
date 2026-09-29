@@ -21,21 +21,22 @@ export function AuthForm({ mode }: AuthFormProps) {
       const params = new URLSearchParams(window.location.search);
       const err = params.get("error");
       if (err) {
-        if (err === "google_auth_failed") {
+        setIsRedirecting(false);
+        if (err === "google_not_configured" || err === "server_config_error") {
+          setError(
+            locale === "ru"
+              ? "Google OAuth еще не настроен на сервере (.env GOOGLE_AUTH_CLIENT_ID)"
+              : locale === "en"
+              ? "Google OAuth is not configured on the server yet (.env GOOGLE_AUTH_CLIENT_ID)"
+              : "Google orqali kirish serverda hali sozlanmagan (.env faylida GOOGLE_AUTH_CLIENT_ID ni kiriting)"
+          );
+        } else if (err === "google_auth_failed") {
           setError(
             locale === "ru"
               ? "Вход через Google был отменен или произошла ошибка"
               : locale === "en"
               ? "Google sign-in was cancelled or encountered an error"
               : "Google orqali kirish bekor qilindi yoki xatolik yuz berdi"
-          );
-        } else if (err === "server_config_error") {
-          setError(
-            locale === "ru"
-              ? "Ошибка конфигурации сервера Google OAuth"
-              : locale === "en"
-              ? "Server configuration error for Google OAuth"
-              : "Serverda Google OAuth sozlamasi topilmadi"
           );
         } else if (err === "auth_internal_error") {
           setError(

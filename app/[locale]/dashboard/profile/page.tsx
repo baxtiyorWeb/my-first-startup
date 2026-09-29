@@ -13,6 +13,8 @@ import { RefreshCw } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 
+import { isSameUser } from "@/lib/user-utils";
+
 function ProfileContent() {
   const searchParams = useSearchParams();
   const { session } = useAuth();
@@ -80,7 +82,11 @@ function ProfileContent() {
     };
   }, [currentHandle, t]);
 
-  const isSelf = profile?.isSelf ?? (session.user.handle === currentHandle);
+  const isSelf = Boolean(
+    profile?.isSelf ||
+      isSameUser(session.user, profile) ||
+      isSameUser(session.user, { handle: currentHandle })
+  );
 
   const activeDiscussions = useMemo(() => {
     if (discussionPosts.length > 0) return discussionPosts;
@@ -98,6 +104,10 @@ function ProfileContent() {
 
   const handleFollowToggle = async () => {
     if (!profile) return;
+    if (isSelf) {
+      toast.error("O‘zingizni kuzata olmaysiz");
+      return;
+    }
     try {
       const data = await api.users.toggleFollow(currentHandle);
       setProfile((prev) =>

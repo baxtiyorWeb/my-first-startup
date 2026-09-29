@@ -33,6 +33,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { RichContent } from "@/components/feed/rich-content";
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
+import { isSameUser } from "@/lib/user-utils";
 
 function PostDetailInner({
   params,
@@ -352,8 +353,7 @@ function PostDetailInner({
     );
   }
 
-  const isOwnPost =
-    session.user.handle === post.author.handle || post.author.id === "me";
+  const isOwnPost = isSameUser(session.user, post.author);
 
   return (
     <div className="w-full py-4 space-y-4">
@@ -437,6 +437,10 @@ function PostDetailInner({
                       setIsMenuOpen(false);
                       if (!session.isAuthenticated) {
                         toast.info(t("auth.loginRequired") || "Kuzatish uchun tizimga kiring");
+                        return;
+                      }
+                      if (isOwnPost) {
+                        toast.error("O‘zingizni kuzata olmaysiz");
                         return;
                       }
                       try {

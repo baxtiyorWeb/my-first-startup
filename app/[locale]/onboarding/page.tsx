@@ -15,6 +15,7 @@ import { useAuth } from "@/components/auth/auth-context";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { isSameUser } from "@/lib/user-utils";
 import type { OnboardingData } from "@/types/social";
 
 interface RecommendedThinker {
@@ -332,7 +333,9 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-3">
-                {recommendedThinkers.map((author) => {
+                {recommendedThinkers
+                  .filter((author) => !isSameUser(session.user, author))
+                  .map((author) => {
                   const isFollowing = followedAuthorIds.includes(author.id);
                   return (
                     <div
