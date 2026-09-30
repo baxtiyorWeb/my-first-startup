@@ -34,7 +34,6 @@ function ProfileContent() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isFirstTimeAvatarModal, setIsFirstTimeAvatarModal] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     if (!currentHandle) return;
@@ -103,50 +102,17 @@ function ProfileContent() {
     setProfile((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
-  const currentUserId = session.user?.id;
-
-  // Check for first-time profile visit to offer avatar setup
-  useEffect(() => {
-    if (!session.isAuthenticated || !currentUserId || !profile || !isSelf) return;
-
-    const storageKey = `gogetters_avatar_welcomed_${currentUserId}`;
-    try {
-      const alreadyWelcomed = localStorage.getItem(storageKey);
-      if (!alreadyWelcomed) {
-        setIsFirstTimeAvatarModal(true);
-        setIsEditModalOpen(true);
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, [session.isAuthenticated, currentUserId, profile, isSelf]);
-
   const handleCloseEditModal = useCallback(() => {
-    if (currentUserId) {
-      try {
-        localStorage.setItem(`gogetters_avatar_welcomed_${currentUserId}`, "true");
-      } catch {
-        // Ignore localStorage errors
-      }
-    }
-    setIsFirstTimeAvatarModal(false);
     setIsEditModalOpen(false);
-  }, [currentUserId]);
+  }, []);
 
   const handleSaveProfile = useCallback(
     (updates: Partial<UserProfile>) => {
-      if (currentUserId) {
-        try {
-          localStorage.setItem(`gogetters_avatar_welcomed_${currentUserId}`, "true");
-        } catch {
-          // Ignore localStorage errors
-        }
-      }
-      setIsFirstTimeAvatarModal(false);
       handleUpdateProfile(updates);
     },
-    [currentUserId]
+    []
   );
+
 
   const handleFollowToggle = async () => {
     if (!profile) return;
@@ -249,10 +215,7 @@ function ProfileContent() {
       <ProfileHeader
         profile={profile}
         isSelf={isSelf}
-        onEditClick={() => {
-          setIsFirstTimeAvatarModal(false);
-          setIsEditModalOpen(true);
-        }}
+        onEditClick={() => setIsEditModalOpen(true)}
         onFollowToggle={handleFollowToggle}
         onTabChange={setActiveTab}
       />
@@ -342,14 +305,12 @@ function ProfileContent() {
         )}
       </div>
 
-      {/* Edit Profile Modal */}
       {profile && (
         <ProfileEditModal
           isOpen={isEditModalOpen}
           profile={profile}
           onClose={handleCloseEditModal}
           onSave={handleSaveProfile}
-          isFirstTime={isFirstTimeAvatarModal}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Camera, Trash2, Dice5, Sparkles } from "lucide-react";
+import { Camera, Trash2, Dice5 } from "lucide-react";
 import { CloseIcon, CheckIcon } from "@/components/icons";
 import { toast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
@@ -17,19 +17,16 @@ interface ProfileEditModalProps {
   profile: UserProfile;
   onClose: () => void;
   onSave: (updatedProfile: Partial<UserProfile>) => void;
-  isFirstTime?: boolean;
 }
 
 function ProfileEditForm({
   profile,
   onClose,
   onSave,
-  isFirstTime = false,
 }: {
   profile: UserProfile;
   onClose: () => void;
   onSave: (updatedProfile: Partial<UserProfile>) => void;
-  isFirstTime?: boolean;
 }) {
   const { t } = useI18n();
   const { updateCurrentUser } = useAuth();
@@ -177,21 +174,14 @@ function ProfileEditForm({
       {/* Header */}
       <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            {isFirstTime && <Sparkles className="w-4 h-4 text-violet-600 dark:text-violet-400" />}
-            <h2
-              id="edit-profile-title"
-              className="text-base font-bold text-slate-950 dark:text-white"
-            >
-              {isFirstTime
-                ? t("profile.editModal.firstTimeTitle") || "Xush kelibsiz! Avataringizni sozlang"
-                : t("profile.editModal.title")}
-            </h2>
-          </div>
+          <h2
+            id="edit-profile-title"
+            className="text-base font-bold text-slate-950 dark:text-white"
+          >
+            {t("profile.editModal.title")}
+          </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {isFirstTime
-              ? t("profile.editModal.firstTimeSubtitle") || "Sizga maxsus avatar biriktirildi. Hohlasangiz shu avatarda qoling yoki o‘zgartiring."
-              : t("profile.editModal.subtitle")}
+            {t("profile.editModal.subtitle")}
           </p>
         </div>
         <button
@@ -206,19 +196,6 @@ function ProfileEditForm({
 
       {/* Form Body */}
       <form onSubmit={handleSubmit} className="p-5 space-y-4">
-        {/* First time banner */}
-        {isFirstTime && (
-          <div className="p-3 rounded-xl bg-violet-50/70 dark:bg-violet-950/30 border border-violet-200/70 dark:border-violet-800/40 flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-violet-900 dark:text-violet-200">
-              <span className="font-semibold block">AI botlar kabi maxsus avatar biriktirildi!</span>
-              <span className="text-[11px] text-violet-700 dark:text-violet-300">
-                Ushbu avatarni saqlab qolishingiz, &ldquo;Tasodifiy avatar&rdquo; tugmasi orqali yangilarini tanlashingiz yoki o‘z rasmingizni yuklashingiz mumkin.
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* Avatar Upload / Preview */}
         <div className="flex items-center gap-4 pb-2 border-b border-slate-100 dark:border-slate-800/80">
           <div className="relative w-16 h-16 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-xl flex items-center justify-center ring-2 ring-violet-500/20 dark:ring-violet-400/20 shadow-xs overflow-hidden shrink-0 select-none">
@@ -378,7 +355,7 @@ function ProfileEditForm({
             onClick={onClose}
             className="px-3.5 py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            {isFirstTime ? (t("common.cancel") || "Keyinroq") : t("common.cancel")}
+            {t("common.cancel")}
           </button>
           <button
             type="submit"
@@ -389,8 +366,6 @@ function ProfileEditForm({
             <span>
               {isSaving
                 ? t("profile.editModal.saving")
-                : isFirstTime
-                ? (t("profile.editModal.keepAvatar") || "Shu avatarda qolish")
                 : t("profile.editModal.save")}
             </span>
           </button>
@@ -405,7 +380,6 @@ export function ProfileEditModal({
   profile,
   onClose,
   onSave,
-  isFirstTime = false,
 }: ProfileEditModalProps) {
   if (!isOpen) return null;
 
@@ -420,7 +394,6 @@ export function ProfileEditModal({
         profile={profile}
         onClose={onClose}
         onSave={onSave}
-        isFirstTime={isFirstTime}
       />
     </div>
   );

@@ -27,6 +27,15 @@ export async function completeOnboarding(
       throw AppError.conflict("Ushbu @handle allaqachon band. Boshqa nom tanlang");
     }
 
+    // Ensure the user has an avatar automatically assigned and saved in DB
+    const [existingUser] = await db
+      .select({ avatarUrl: users.avatarUrl })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    const autoAvatar = existingUser?.avatarUrl || generateRandomAvatar(cleanHandle);
+
     const [updated] = await db
       .update(users)
       .set({
@@ -34,6 +43,7 @@ export async function completeOnboarding(
         handle: cleanHandle,
         role: data.role.trim() || "Go-getter",
         bio: (data.bio || "").trim(),
+        avatarUrl: autoAvatar,
         isOnboarded: true,
         updatedAt: new Date(),
       })
