@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   AlertCircle,
   ArrowRight,
@@ -99,8 +100,24 @@ export function AuthForm({ mode }: AuthFormProps) {
     <main className="w-full">
       <div className="mx-auto w-full max-w-[430px] px-4 sm:px-0">
         <div className="mb-7 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-          </div>
+          <Link
+            href={localePath("/")}
+            className="flex items-center gap-2.5 group cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs">
+              <Image
+                src="/logo.png"
+                alt="The Go-getters"
+                width={36}
+                height={36}
+                className="w-full h-full object-contain"
+                priority
+              />
+            </div>
+            <span className="text-base font-bold tracking-tight text-slate-950 dark:text-white">
+              {t("common.brandName")}
+            </span>
+          </Link>
 
           <LanguageSwitcher variant="header" />
         </div>

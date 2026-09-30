@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
@@ -91,8 +92,15 @@ export function Sidebar() {
             className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 rounded-md p-1 transition-colors cursor-pointer"
           >
             {/* Logo Mark */}
-            <div className="w-8 h-8 shrink-0 rounded-md bg-indigo-600 text-white flex items-center justify-center font-black text-xs tracking-wider transition-transform group-hover:scale-105 shadow-xs">
-              GG
+            <div className="w-8 h-8 shrink-0 rounded-lg overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105">
+              <Image
+                src="/logo.png"
+                alt="The Go-getters"
+                width={32}
+                height={32}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             {/* Brand Name & Tagline */}
             <div

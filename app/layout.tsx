@@ -15,6 +15,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "The Go-getters — Intiluvchan insonlar, o'ziga xos g'oyalar va yangi startaplar tarmog'i",
   description: "Maqsadi baland tadbirkorlar, dasturchilar, startapchilar va g‘oya egalari uchun ijtimoiy tarmoq",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

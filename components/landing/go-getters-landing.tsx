@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -80,21 +81,15 @@ export function GoGettersLanding() {
             href={localePath("/")}
             className="flex items-center gap-2 group cursor-pointer shrink-0 min-w-0"
           >
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-900 dark:bg-white/[0.08] border border-slate-800 dark:border-white/[0.15] flex items-center justify-center shrink-0">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-white"
-              >
-                <path
-                  d="M12 2L2 22H22L12 2Z"
-                  fill="currentColor"
-                  stroke="none"
-                />
-              </svg>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+              <Image
+                src="/logo.png"
+                alt="The Go-getters"
+                width={32}
+                height={32}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             <span className="text-sm sm:text-base font-bold tracking-tight text-slate-950 dark:text-white whitespace-nowrap truncate">
               The Go-getters

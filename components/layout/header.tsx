@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   MenuIcon,
@@ -140,6 +141,24 @@ export function Header({ title, subtitle }: HeaderProps) {
                 className="text-slate-800 dark:text-slate-100 stroke-slate-800 dark:stroke-slate-100"
               />
             </button>
+
+            {/* Mobile Brand Logo */}
+            <Link
+              href={localePath("/dashboard")}
+              className="flex items-center gap-1.5 md:hidden shrink-0 group"
+              title={t("common.brandName")}
+            >
+              <div className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="The Go-getters"
+                  width={28}
+                  height={28}
+                  className="w-full h-full object-contain"
+                  priority
+                />
+              </div>
+            </Link>
 
             {/* Page Title - Desktop only */}
             <div className="hidden md:flex flex-col min-w-0">
