@@ -29,7 +29,11 @@ export async function POST(req: NextRequest) {
       }
 
       case "create_post": {
-        const newPost = await botService.generateOrganicPost();
+        const newPost = await botService.generateOrganicPost({
+          forceWithSearch: Boolean(body.withSearch),
+          topicFocus: body.topicFocus,
+          lengthTier: body.lengthTier,
+        });
         return NextResponse.json({
           success: true,
           message: `Yangi post yaratildi: "${newPost.title?.slice(0, 40)}..."`,
@@ -37,11 +41,33 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      case "create_post_search": {
+        const newPost = await botService.generateOrganicPost({
+          forceWithSearch: true,
+          topicFocus: body.topicFocus,
+          lengthTier: body.lengthTier,
+        });
+        return NextResponse.json({
+          success: true,
+          message: `Internet ma'lumotlari asosida tahliliy post yaratildi: "${newPost.title?.slice(0, 40)}..."`,
+          data: newPost,
+        });
+      }
+
       case "create_comment": {
-        const newComment = await botService.generateOrganicComment(postId);
+        const newComment = await botService.generateOrganicComment(postId, { deepReasoning: true });
         return NextResponse.json({
           success: true,
           message: "Yangi tabiiy izoh qoldirildi",
+          data: newComment,
+        });
+      }
+
+      case "create_deep_comment": {
+        const newComment = await botService.generateOrganicComment(postId, { deepReasoning: true, withSearch: true });
+        return NextResponse.json({
+          success: true,
+          message: "Internet ma'lumotlari bilan chuqur tahliliy izoh qoldirildi",
           data: newComment,
         });
       }
@@ -85,6 +111,54 @@ export async function POST(req: NextRequest) {
             ? `Avtonom sikl bajarildi: ${tickResult.action}`
             : `Sikl o'tkazib yuborildi: ${tickResult.reason}`,
           data: tickResult,
+        });
+      }
+
+      case "autonomous_cycle": {
+        const { sections, topicFocus, force } = body;
+        const cycleResult = await botService.runAutonomousCycle({
+          sections: Array.isArray(sections) ? sections : undefined,
+          topicFocus: typeof topicFocus === "string" ? topicFocus : undefined,
+          forceAction: Boolean(force),
+        });
+        return NextResponse.json({
+          success: cycleResult.executed,
+          message: cycleResult.executed
+            ? cycleResult.description
+            : (cycleResult.reason || "Sikl bajarilmadi"),
+          data: cycleResult,
+        });
+      }
+
+      case "simulate_bot_view": {
+        const { botId, postId: viewPostId } = body;
+        let targetId = viewPostId;
+        if (!targetId) {
+          const recent = await botService.getRealUsers(); // or recent posts
+        }
+        let bId = botId;
+        if (!bId) {
+          const bots = await botService.getBotUsers();
+          if (bots.length > 0) bId = bots[Math.floor(Math.random() * bots.length)].id;
+        }
+        if (!bId || !viewPostId) {
+          return NextResponse.json({ success: false, error: "bId yoki postId topilmadi" }, { status: 400 });
+        }
+        const viewResult = await botService.simulateBotPostView(bId, viewPostId);
+        return NextResponse.json({
+          success: true,
+          message: `Post bot tomonidan ko'rildi (Ko'rishlar soni: ${viewResult.viewsCount})`,
+          data: viewResult,
+        });
+      }
+
+      case "create_reply": {
+        const { postId: rPostId, commentId, botId: rBotId } = body;
+        const reply = await botService.generateOrganicReply({ postId: rPostId, commentId, botId: rBotId });
+        return NextResponse.json({
+          success: true,
+          message: "Muhokamada yangi javob qoldirildi",
+          data: reply,
         });
       }
 

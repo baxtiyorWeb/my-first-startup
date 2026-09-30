@@ -192,6 +192,12 @@ export const en: typeof uz = {
     editModal: {
       title: "Edit Profile",
       subtitle: "Update your personal details",
+      firstTimeTitle: "Welcome! Choose your avatar",
+      firstTimeSubtitle: "A unique avatar has been assigned to you. Keep it or change it as you like.",
+      randomAvatar: "Random Avatar",
+      uploadPhoto: "Upload Photo",
+      changePhoto: "Change Photo",
+      keepAvatar: "Keep this avatar",
       name: "Full Name",
       role: "Profession or field",
       bio: "Short bio",

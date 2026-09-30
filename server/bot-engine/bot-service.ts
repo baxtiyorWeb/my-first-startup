@@ -10,7 +10,13 @@ import {
   botEngineSettings,
 } from "@/server/db/schema";
 import { gemini } from "./gemini";
-import { STARTER_PERSONAS } from "./personas";
+import {
+  STARTER_PERSONAS,
+  getRandomLengthTier,
+  getRandomTopicCategory,
+  PostLengthTier,
+} from "./personas";
+import { recordPostView } from "@/server/modules/posts/posts.service";
 
 export interface BotActionLog {
   id: string;
@@ -192,16 +198,31 @@ export class BotService {
   }
 
   /**
-   * Generate an organic post from one of the bots
+   * Generate an organic post from one of the bots with deep reasoning, rich formatting,
+   * varied length tiers (short thoughts, medium posts, long guides), and broad topic coverage.
    */
-  async generateOrganicPost() {
+  async generateOrganicPost(options?: {
+    forceWithSearch?: boolean;
+    topicFocus?: string;
+    botId?: string;
+    lengthTier?: PostLengthTier;
+  }) {
     let botList = await this.getBotUsers();
     if (botList.length === 0) {
       botList = await this.seedStarterBotsIfEmpty();
     }
 
-    // Pick random bot
-    const bot = botList[Math.floor(Math.random() * botList.length)];
+    // Pick random bot or specific one
+    let bot = botList[Math.floor(Math.random() * botList.length)];
+    if (options?.botId) {
+      const found = botList.find((b) => b.id === options.botId);
+      if (found) bot = found;
+    }
+
+    // Match archetype for enhanced writing style and thinking angle
+    const archetype = STARTER_PERSONAS.find(
+      (p) => p.name === bot.name || p.handle === bot.handle
+    );
 
     // Fetch recent 5 post titles on platform for context
     const recentPosts = await db
@@ -214,11 +235,34 @@ export class BotService {
       .map((p) => p.title)
       .filter((t): t is string => Boolean(t));
 
+    // Enable search if forced or randomly 40% of the time for fresh insights
+    const shouldSearch =
+      options?.forceWithSearch !== undefined
+        ? options.forceWithSearch
+        : Math.random() < 0.4;
+
+    // Pick dynamic topic category, angle and search query
+    const topicCategory = getRandomTopicCategory(options?.topicFocus);
+    const chosenAngle =
+      topicCategory.angles[Math.floor(Math.random() * topicCategory.angles.length)];
+    const chosenSearchQuery =
+      topicCategory.searchQueries[
+        Math.floor(Math.random() * topicCategory.searchQueries.length)
+      ];
+    const lengthTier = options?.lengthTier || getRandomLengthTier();
+
     const generated = await gemini.generatePost({
       name: bot.name,
       role: bot.role,
-      persona: bot.botPersona || "Samimiy va o'ylantiruvchi postlar yozuvchi",
+      persona: bot.botPersona || archetype?.persona || "Samimiy va o'ylantiruvchi postlar yozuvchi",
+      writingStyle: archetype?.writingStyle,
+      thoughtAngle: archetype?.thoughtAngle,
       recentTopics,
+      withSearch: shouldSearch,
+      topicFocus: options?.topicFocus,
+      topicAngle: chosenAngle,
+      searchAngle: chosenSearchQuery,
+      lengthTier,
     });
 
     const [newPost] = await db
@@ -234,20 +278,30 @@ export class BotService {
       })
       .returning();
 
+    const lengthLabel =
+      lengthTier === "short" ? " [Qisqa fikr]" : lengthTier === "long" ? " [Tahliliy maqola]" : "";
+    const searchTag = shouldSearch ? " [Google tahlili]" : "";
     await db.insert(botActivities).values({
       activityType: "post",
       botId: bot.id,
       targetId: newPost.id,
-      details: `Post e'lon qilindi: "${generated.title.slice(0, 60)}" (${bot.name} tomonidan)`,
+      details: `Post e'lon qilindi${lengthLabel}${searchTag} (${topicCategory.label}): "${generated.title.slice(0, 45)}" (${bot.name})`,
     });
 
     return newPost;
   }
 
   /**
-   * Generate an organic comment on an existing post
+   * Generate an organic comment on an existing post with deep human reasoning and optional search
    */
-  async generateOrganicComment(postIdOverride?: string) {
+  async generateOrganicComment(
+    postIdOverride?: string,
+    options?: {
+      deepReasoning?: boolean;
+      withSearch?: boolean;
+      botId?: string;
+    }
+  ) {
     let botList = await this.getBotUsers();
     if (botList.length === 0) {
       botList = await this.seedStarterBotsIfEmpty();
@@ -298,9 +352,19 @@ export class BotService {
 
     // Pick a bot that is NOT the post author
     const eligibleBots = botList.filter((b) => b.id !== targetPost.authorId);
-    const chosenBot = eligibleBots.length > 0
-      ? eligibleBots[Math.floor(Math.random() * eligibleBots.length)]
-      : botList[0];
+    let chosenBot =
+      eligibleBots.length > 0
+        ? eligibleBots[Math.floor(Math.random() * eligibleBots.length)]
+        : botList[0];
+
+    if (options?.botId) {
+      const found = botList.find((b) => b.id === options.botId);
+      if (found) chosenBot = found;
+    }
+
+    const archetype = STARTER_PERSONAS.find(
+      (p) => p.name === chosenBot.name || p.handle === chosenBot.handle
+    );
 
     // Get previous comments on this post for context
     const existingComments = await db
@@ -309,13 +373,20 @@ export class BotService {
       .where(eq(comments.postId, targetPost.id))
       .limit(4);
 
+    const isDeep = options?.deepReasoning !== undefined ? options.deepReasoning : true;
+    const withSearch = options?.withSearch !== undefined ? options.withSearch : Math.random() < 0.25;
+
     const commentText = await gemini.generateComment({
       botName: chosenBot.name,
       botRole: chosenBot.role,
-      botPersona: chosenBot.botPersona || "Samimiy fikr bildiruvchi",
+      botPersona: chosenBot.botPersona || archetype?.persona || "Samimiy fikr bildiruvchi",
+      writingStyle: archetype?.writingStyle,
+      thoughtAngle: archetype?.thoughtAngle,
       postTitle: targetPost.title,
       postContent: targetPost.content,
       existingComments: existingComments.map((c) => c.content),
+      deepReasoning: isDeep,
+      withSearch,
     });
 
     const [newComment] = await db
@@ -335,11 +406,12 @@ export class BotService {
       })
       .where(eq(posts.id, targetPost.id));
 
+    const extraTag = withSearch ? " [Internet tahlili bilan]" : isDeep ? " [Chuqur mulohaza]" : "";
     await db.insert(botActivities).values({
       activityType: "comment",
       botId: chosenBot.id,
       targetId: newComment.id,
-      details: `Izoh qoldirildi: "${commentText.slice(0, 50)}..." (${chosenBot.name} tomonidan)`,
+      details: `Izoh qoldirildi${extraTag}: "${commentText.slice(0, 45)}..." (${chosenBot.name})`,
     });
 
     return newComment;
@@ -444,6 +516,337 @@ export class BotService {
     }
 
     return { likes: likesCount, follows: followsCount, views: viewsCount };
+  }
+
+  /**
+   * Determine and record a bot viewing a post.
+   * Logic:
+   * 1. Inspect post content and evaluate persona interest correlation.
+   * 2. Call recordPostView(postId, botId) to deduplicate within 24h and atomically increment posts.viewsCount.
+   * 3. Log the view action into botActivities with activityType: "view".
+   */
+  async simulateBotPostView(botId: string, postId: string): Promise<{
+    recorded: boolean;
+    viewsCount: number;
+    isInterested: boolean;
+    matchingDomain?: string;
+  }> {
+    const [bot] = await db
+      .select({ id: users.id, name: users.name, handle: users.handle, role: users.role, botPersona: users.botPersona })
+      .from(users)
+      .where(eq(users.id, botId))
+      .limit(1);
+
+    const [targetPost] = await db
+      .select({ id: posts.id, title: posts.title, content: posts.content, authorId: posts.authorId, viewsCount: posts.viewsCount })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    if (!bot || !targetPost) {
+      return { recorded: false, viewsCount: 0, isInterested: false };
+    }
+
+    // Persona-based interest correlation
+    const textToAnalyze = `${targetPost.title || ""} ${targetPost.content}`.toLowerCase();
+    const roleLower = (bot.role || "").toLowerCase();
+    const personaLower = (bot.botPersona || "").toLowerCase();
+
+    let isInterested = false;
+    let matchingDomain: string | undefined;
+
+    if (roleLower.includes("dasturchi") || personaLower.includes("arxitektura") || personaLower.includes("kod")) {
+      if (/typescript|javascript|react|next\.js|python|backend|api|sql|database|server|baza|algoritm|bug/i.test(textToAnalyze)) {
+        isInterested = true;
+        matchingDomain = "Dasturlash & Texnologiya";
+      }
+    } else if (roleLower.includes("dizayn") || personaLower.includes("ux") || personaLower.includes("figma")) {
+      if (/figma|dizayn|ui|ux|interfeys|rang|tipografika|foydalanuvchi|mobil|layout/i.test(textToAnalyze)) {
+        isInterested = true;
+        matchingDomain = "UI/UX & Mahsulot Dizayni";
+      }
+    } else if (roleLower.includes("asoschi") || roleLower.includes("pm") || personaLower.includes("biznes")) {
+      if (/startap|investitsiya|mvp|mijoz|monetizatsiya|bozor|daromad|foyda|custdev|pmf/i.test(textToAnalyze)) {
+        isInterested = true;
+        matchingDomain = "Startap & Biznes Model";
+      }
+    } else {
+      isInterested = Math.random() < 0.5;
+      matchingDomain = "Umumiy tahlil";
+    }
+
+    // Record legitimate view with 24h deduplication in database
+    const viewResult = await recordPostView(targetPost.id, bot.id);
+
+    // Audit in bot activities
+    const interestTag = isInterested ? ` [Sohasi: ${matchingDomain}]` : "";
+    await db.insert(botActivities).values({
+      activityType: "view",
+      botId: bot.id,
+      targetId: targetPost.id,
+      details: `${bot.name} postni ko'rdi va o'qib chiqdi${interestTag}: "${targetPost.title?.slice(0, 40) || targetPost.content.slice(0, 40)}..."`,
+    });
+
+    return {
+      recorded: viewResult.incremented,
+      viewsCount: viewResult.viewsCount,
+      isInterested,
+      matchingDomain,
+    };
+  }
+
+  /**
+   * Generate an organic reply to an existing comment.
+   */
+  async generateOrganicReply(options?: {
+    postId?: string;
+    commentId?: string;
+    botId?: string;
+  }) {
+    let botList = await this.getBotUsers();
+    if (botList.length === 0) {
+      botList = await this.seedStarterBotsIfEmpty();
+    }
+
+    // Find comments to reply to
+    const candidateComments = await db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        authorId: comments.authorId,
+        content: comments.content,
+        authorName: users.name,
+      })
+      .from(comments)
+      .innerJoin(users, eq(comments.authorId, users.id))
+      .where(sql`${comments.parentId} IS NULL AND ${comments.deletedAt} IS NULL`)
+      .orderBy(desc(comments.createdAt))
+      .limit(10);
+
+    if (candidateComments.length === 0) {
+      return this.generateOrganicComment(options?.postId);
+    }
+
+    const targetComment = options?.commentId
+      ? candidateComments.find((c) => c.id === options.commentId) || candidateComments[0]
+      : candidateComments[Math.floor(Math.random() * candidateComments.length)];
+
+    const [parentPost] = await db
+      .select({ id: posts.id, title: posts.title, content: posts.content, authorId: posts.authorId })
+      .from(posts)
+      .where(eq(posts.id, targetComment.postId))
+      .limit(1);
+
+    if (!parentPost) {
+      return this.generateOrganicComment();
+    }
+
+    // Pick a bot that is neither the comment author nor the post author
+    const eligibleBots = botList.filter((b) => b.id !== targetComment.authorId && b.id !== parentPost.authorId);
+    const chosenBot = eligibleBots.length > 0
+      ? eligibleBots[Math.floor(Math.random() * eligibleBots.length)]
+      : botList[0];
+
+    // Bot views the post before replying!
+    await this.simulateBotPostView(chosenBot.id, parentPost.id).catch(() => {});
+
+    const archetype = STARTER_PERSONAS.find((p) => p.name === chosenBot.name || p.handle === chosenBot.handle);
+
+    const replyText = await gemini.generateReply({
+      botName: chosenBot.name,
+      botRole: chosenBot.role,
+      botPersona: chosenBot.botPersona || archetype?.persona || "Mulohazali suhbatdosh",
+      writingStyle: archetype?.writingStyle,
+      thoughtAngle: archetype?.thoughtAngle,
+      postTitle: parentPost.title,
+      postContent: parentPost.content,
+      parentCommentAuthor: targetComment.authorName,
+      parentCommentContent: targetComment.content,
+    });
+
+    const [newReply] = await db
+      .insert(comments)
+      .values({
+        postId: parentPost.id,
+        authorId: chosenBot.id,
+        parentId: targetComment.id,
+        content: replyText,
+      })
+      .returning();
+
+    await db
+      .update(posts)
+      .set({ commentsCount: sql`${posts.commentsCount} + 1` })
+      .where(eq(posts.id, parentPost.id));
+
+    await db.insert(botActivities).values({
+      activityType: "reply",
+      botId: chosenBot.id,
+      targetId: newReply.id,
+      details: `${chosenBot.name} ${targetComment.authorName} ning izohiga javob yozdi: "${replyText.slice(0, 45)}..."`,
+    });
+
+    return newReply;
+  }
+
+  /**
+   * Run one autonomous cycle according to selected sections and topic focus.
+   * sections: ["thoughts", "search_thoughts", "comments", "replies", "views", "likes"]
+   */
+  async runAutonomousCycle(options: {
+    sections?: string[];
+    topicFocus?: string;
+    forceAction?: boolean;
+  }): Promise<{
+    executed: boolean;
+    actionType: string;
+    description: string;
+    data?: any;
+    reason?: string;
+  }> {
+    const settings = await this.getSettings();
+    if (!settings.isActive && !options.forceAction) {
+      return {
+        executed: false,
+        actionType: "none",
+        description: "Bot tizimi faol emas",
+        reason: "Bot tizimi hozirda to'xtatilgan (pauza)",
+      };
+    }
+
+    if (!options.forceAction) {
+      const todayCount = await this.getTodayActivityCount();
+      if (todayCount >= settings.dailyLimit) {
+        return {
+          executed: false,
+          actionType: "none",
+          description: "Kunlik limitga yetildi",
+          reason: `Kunlik limitga yetildi (${todayCount}/${settings.dailyLimit})`,
+        };
+      }
+    }
+
+    const availableSections = options.sections && options.sections.length > 0
+      ? options.sections
+      : ["thoughts", "comments", "views", "likes"];
+
+    // Pick one of the active sections
+    const chosenSection = availableSections[Math.floor(Math.random() * availableSections.length)];
+
+    let actionType = chosenSection;
+    let description = "";
+    let data: any = null;
+
+    switch (chosenSection) {
+      case "thoughts": {
+        const post = await this.generateOrganicPost({
+          forceWithSearch: false,
+          topicFocus: options.topicFocus && options.topicFocus !== "all" ? options.topicFocus : undefined,
+        });
+        try {
+          const botList = await this.getBotUsers();
+          if (botList.length > 1) {
+            const viewer = botList.find((b) => b.id !== post.authorId) || botList[0];
+            await this.simulateBotPostView(viewer.id, post.id);
+          }
+        } catch {}
+        description = `Yangi fikr chop etildi: "${post.title?.slice(0, 45)}..."`;
+        data = post;
+        break;
+      }
+
+      case "search_thoughts": {
+        const post = await this.generateOrganicPost({
+          forceWithSearch: true,
+          topicFocus: options.topicFocus && options.topicFocus !== "all" ? options.topicFocus : undefined,
+        });
+        try {
+          const botList = await this.getBotUsers();
+          if (botList.length > 1) {
+            const viewer = botList.find((b) => b.id !== post.authorId) || botList[0];
+            await this.simulateBotPostView(viewer.id, post.id);
+          }
+        } catch {}
+        description = `Google tahlili bilan post chiqdi: "${post.title?.slice(0, 45)}..."`;
+        data = post;
+        break;
+      }
+
+      case "comments": {
+        const comment = await this.generateOrganicComment(undefined, {
+          deepReasoning: true,
+          withSearch: Math.random() < 0.35,
+        });
+        if (comment?.postId) {
+          try {
+            const botList = await this.getBotUsers();
+            if (botList.length > 0) {
+              const liker = botList[Math.floor(Math.random() * botList.length)];
+              await db.insert(postLikes).values({ postId: comment.postId, userId: liker.id }).onConflictDoNothing();
+              await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, comment.postId));
+            }
+          } catch {}
+        }
+        description = `Mavjud postga tahliliy izoh va layk qoldirildi`;
+        data = comment;
+        break;
+      }
+
+      case "replies": {
+        const reply = await this.generateOrganicReply();
+        description = `Muhokamadagi izohga jonli javob yozildi`;
+        data = reply;
+        break;
+      }
+
+      case "views": {
+        const botList = await this.getBotUsers();
+        const recentPosts = await db.select({ id: posts.id }).from(posts).orderBy(desc(posts.createdAt)).limit(8);
+        if (botList.length > 0 && recentPosts.length > 0) {
+          const randomBot = botList[Math.floor(Math.random() * botList.length)];
+          const randomPost = recentPosts[Math.floor(Math.random() * recentPosts.length)];
+          const viewRes = await this.simulateBotPostView(randomBot.id, randomPost.id);
+          if (Math.random() < 0.6) {
+            try {
+              await db.insert(postLikes).values({ postId: randomPost.id, userId: randomBot.id }).onConflictDoNothing();
+              await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, randomPost.id));
+            } catch {}
+          }
+          description = `${randomBot.name} postni ko'rdi va munosabat bildirdi (Ko'rishlar: ${viewRes.viewsCount})`;
+          data = viewRes;
+        } else {
+          description = `Postlar skanerlandi`;
+        }
+        break;
+      }
+
+      case "likes": {
+        const socialResult = await this.simulateSocialInteractions();
+        description = `Ijtimoiy munosabat: +${socialResult.views} ko'rish, +${socialResult.likes} like, +${socialResult.follows} obuna`;
+        data = socialResult;
+        break;
+      }
+
+      default: {
+        const defaultPost = await this.generateOrganicPost();
+        description = `Yangi post yaratildi: "${defaultPost.title}"`;
+        data = defaultPost;
+      }
+    }
+
+    // Touch lastActivityAt in settings
+    await db
+      .update(botEngineSettings)
+      .set({ lastActivityAt: new Date() })
+      .where(eq(botEngineSettings.id, "default"))
+      .catch(() => {});
+
+    return {
+      executed: true,
+      actionType,
+      description,
+      data,
+    };
   }
 
   /**

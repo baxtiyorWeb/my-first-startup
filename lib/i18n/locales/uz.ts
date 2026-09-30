@@ -190,6 +190,12 @@ export const uz = {
     editModal: {
       title: "Profilni tahrirlash",
       subtitle: "Shaxsiy ma’lumotlaringizni yangilang",
+      firstTimeTitle: "Xush kelibsiz! Avataringizni sozlang",
+      firstTimeSubtitle: "Sizga maxsus avatar biriktirildi. Hohlasangiz shu avatarda qoling yoki o‘zgartiring.",
+      randomAvatar: "Tasodifiy avatar",
+      uploadPhoto: "Rasm yuklash",
+      changePhoto: "Rasm almashtirish",
+      keepAvatar: "Shu avatarda qolish",
       name: "To‘liq ism",
       role: "Kasb yoki faoliyat sohasi",
       bio: "Qisqacha bio",

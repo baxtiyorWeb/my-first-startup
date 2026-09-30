@@ -17,7 +17,6 @@ export default function SettingsPage() {
     session.user.handle.replace(/^@/, "") || ""
   );
   const [role, setRole] = useState(session.user.role || "");
-  const [phone, setPhone] = useState(session.phoneNumber || "");
   const [bio, setBio] = useState(session.user.bio || "");
   const [alphabet, setAlphabet] = useState<string>(() => {
     if (typeof window === "undefined") return "latin";
@@ -37,7 +36,6 @@ export default function SettingsPage() {
     setName(session.user.name || "");
     setHandle(session.user.handle.replace(/^@/, "") || "");
     setRole(session.user.role || "");
-    setPhone(session.phoneNumber || "");
     setBio(session.user.bio || "");
   }
 
@@ -144,14 +142,14 @@ export default function SettingsPage() {
 
             <div>
               <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                {t("settings.phone")}
+                Google hisobi (Email)
               </label>
               <input
                 type="text"
-                value={phone}
+                value={session.user.email || "Google orqali ulangan"}
                 disabled
                 readOnly
-                title={t("settings.phoneHint")}
+                title="Google OAuth orqali tasdiqlangan hisob"
                 className="w-full h-8 px-2.5 text-xs bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-md text-slate-500 dark:text-slate-400 cursor-not-allowed select-none"
               />
             </div>

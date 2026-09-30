@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import type { UserSession, UserProfile, OnboardingData } from "@/types/social";
 import { api, ApiError } from "@/lib/api";
-import { isSameUser } from "@/lib/user-utils";
 
 const EMPTY_PROFILE: UserProfile = {
   id: "",
@@ -35,11 +34,6 @@ const EMPTY_SESSION: UserSession = {
 interface AuthContextType {
   session: UserSession;
   isLoaded: boolean;
-  pendingPhone: string;
-  setPendingPhone: (phone: string) => void;
-  loginWithPhone: (phone: string) => Promise<{ success: boolean; code?: string }>;
-  verifyOtp: (code: string) => Promise<{ success: boolean; isOnboarded?: boolean; error?: string }>;
-  resendOtp: () => Promise<{ success: boolean; code?: string }>;
   completeOnboarding: (data: OnboardingData) => Promise<void>;
   logout: () => Promise<void>;
   updateCurrentUser: (updates: Partial<UserProfile>) => Promise<void>;
@@ -50,7 +44,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<UserSession>(EMPTY_SESSION);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [pendingPhone, setPendingPhone] = useState("+998 90 123 45 67");
 
   // Load session from server HttpOnly cookie on mount
   useEffect(() => {
@@ -103,53 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const loginWithPhone = useCallback(async (phone: string): Promise<{ success: boolean; code?: string }> => {
-    setPendingPhone(phone);
-    const res = await api.auth.requestOtp(phone);
-    return { success: true, code: res?.code };
-  }, []);
-
-  const verifyOtp = useCallback(
-    async (code: string): Promise<{ success: boolean; isOnboarded?: boolean; error?: string }> => {
-      try {
-        const data = await api.auth.verifyOtp(pendingPhone, code);
-        const authUser = data.user;
-
-        const newSession: UserSession = {
-          phoneNumber: authUser.phone,
-          user: {
-            ...EMPTY_PROFILE,
-            id: authUser.userId,
-            name: authUser.name,
-            handle: authUser.handle.startsWith("@") ? authUser.handle : `@${authUser.handle}`,
-            role: authUser.role,
-            bio: authUser.bio || "",
-            avatarUrl: authUser.avatarUrl || undefined,
-            verified: true,
-          },
-          isAuthenticated: true,
-          isOnboarded: authUser.isOnboarded,
-        };
-
-        setSession(newSession);
-        return { success: true, isOnboarded: authUser.isOnboarded };
-      } catch (err) {
-        const message =
-          err instanceof ApiError
-            ? err.message
-            : "Tasdiqlash kodini tekshirishda xatolik yuz berdi";
-        return { success: false, error: message };
-      }
-    },
-    [pendingPhone]
-  );
-
-  const resendOtp = useCallback(async (): Promise<{ success: boolean; code?: string }> => {
-    if (!pendingPhone) return { success: false };
-    const res = await api.auth.requestOtp(pendingPhone);
-    return { success: true, code: res?.code };
-  }, [pendingPhone]);
-
   const completeOnboarding = useCallback(
     async (data: OnboardingData) => {
       const cleanHandle = data.handle.replace(/^@/, "");
@@ -160,20 +106,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         bio: data.bio,
       });
 
-      // Follow any selected authors if provided
-      if (data.followedAuthorIds && data.followedAuthorIds.length > 0) {
-        for (const authorHandle of data.followedAuthorIds) {
-          if (isSameUser(session.user, { handle: authorHandle, id: authorHandle })) continue;
-          try {
-            await api.users.toggleFollow(authorHandle);
-          } catch {
-            // Ignore non-blocking follow error during onboarding
-          }
-        }
-      }
-
+      // Synchronously promote the user to authenticated & onboarded in client context
       setSession((prev) => ({
         ...prev,
+        isOnboarded: true,
         user: {
           ...prev.user,
           name: updatedUser.name,
@@ -181,34 +117,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: updatedUser.role,
           bio: updatedUser.bio || "",
         },
-        isAuthenticated: true,
-        isOnboarded: true,
       }));
+
+      // Follow selected initial authors if any
+      if (data.followedAuthorIds && data.followedAuthorIds.length > 0) {
+        for (const authorId of data.followedAuthorIds) {
+          try {
+            await api.users.toggleFollow(authorId);
+          } catch {
+            // Ignore individual follow errors during onboarding
+          }
+        }
+      }
     },
-    [session.user]
+    []
   );
 
   const logout = useCallback(async () => {
     try {
       await api.auth.logout();
-    } catch {
-      // Ignore
+    } finally {
+      setSession(EMPTY_SESSION);
+      window.location.href = "/auth/login";
     }
-    setSession(EMPTY_SESSION);
   }, []);
 
   const updateCurrentUser = useCallback(
     async (updates: Partial<UserProfile>) => {
-      // Optimistic instant local session update
-      setSession((prev) => ({
-        ...prev,
-        user: {
-          ...prev.user,
-          ...updates,
-          avatarUrl: updates.avatarUrl !== undefined ? (updates.avatarUrl || undefined) : prev.user.avatarUrl,
-        },
-      }));
-
       try {
         const result = await api.users.updateProfile({
           name: updates.name,
@@ -242,11 +177,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         session,
         isLoaded,
-        pendingPhone,
-        setPendingPhone,
-        loginWithPhone,
-        verifyOtp,
-        resendOtp,
         completeOnboarding,
         logout,
         updateCurrentUser,

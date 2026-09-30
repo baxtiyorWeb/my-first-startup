@@ -15,6 +15,7 @@ export interface Author {
   name: string;
   handle: string;
   role: string;
+  email?: string;
   avatarUrl?: string;
   verified: boolean;
   intent?: UserIntent;

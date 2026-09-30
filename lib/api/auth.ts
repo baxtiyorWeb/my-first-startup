@@ -2,7 +2,8 @@ import { apiClient } from "./client";
 
 export interface AuthUser {
   userId: string;
-  phone: string;
+  phone?: string | null;
+  email?: string | null;
   handle: string;
   name: string;
   role: string;
@@ -16,28 +17,6 @@ export interface OnboardingPayload {
   handle: string;
   role: string;
   bio?: string;
-}
-
-export interface RequestOtpResponse {
-  success: boolean;
-  message: string;
-  code?: string;
-}
-
-export async function requestOtp(phone: string): Promise<RequestOtpResponse> {
-  const res = await apiClient<RequestOtpResponse>("/api/auth/otp", {
-    method: "POST",
-    body: JSON.stringify({ phone }),
-  });
-  return res.data;
-}
-
-export async function verifyOtp(phone: string, code: string) {
-  const res = await apiClient<{ user: AuthUser }>("/api/auth/verify", {
-    method: "POST",
-    body: JSON.stringify({ phone, code }),
-  });
-  return res.data;
 }
 
 export interface SessionResponse {
