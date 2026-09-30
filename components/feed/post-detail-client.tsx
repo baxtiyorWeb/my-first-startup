@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   UserPlus,
+  Edit2,
 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import type { Post, CommentThreadItem } from "@/types/social";
@@ -29,6 +30,7 @@ import { toast } from "@/components/ui/toast";
 import { VerifiedBadgeIcon } from "@/components/icons";
 import { ReportModal } from "@/components/ui/report-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EditPostModal } from "@/components/feed/edit-post-modal";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { RichContent } from "@/components/feed/rich-content";
 import { HighlightText } from "@/lib/highlight";
@@ -146,6 +148,7 @@ function PostDetailInner({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Load post and record view
   useEffect(() => {
@@ -481,17 +484,30 @@ function PostDetailInner({
                   <span>{t("post.report")}</span>
                 </button>
                 {isOwnPost && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsConfirmDeleteOpen(true);
-                    }}
-                    className="w-full px-3 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2"
-                  >
-                    <Trash2 size={14} />
-                    <span>{t("post.delete")}</span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setIsEditModalOpen(true);
+                      }}
+                      className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                    >
+                      <Edit2 size={14} className="text-indigo-500" />
+                      <span>Tahrirlash</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setIsConfirmDeleteOpen(true);
+                      }}
+                      className="w-full px-3 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2 cursor-pointer"
+                    >
+                      <Trash2 size={14} />
+                      <span>{t("post.delete")}</span>
+                    </button>
+                  </>
                 )}
               </div>
             )}
@@ -768,6 +784,18 @@ function PostDetailInner({
         title={t("post.deleteTitle") || "Postni o‘chirish"}
         description={t("post.deleteConfirm") || "Ushbu postni haqiqatan ham o‘chirmoqchimisiz?"}
         confirmText={t("post.delete") || "O‘chirish"}
+      />
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        postId={post.id}
+        initialTitle={post.title}
+        initialContent={post.content}
+        onSuccess={({ title, content }) => {
+          setPost((prev) => (prev ? { ...prev, title: title || undefined, content } : null));
+        }}
       />
 
       {/* Lightbox Modal */}

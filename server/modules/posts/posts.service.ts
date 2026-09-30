@@ -264,6 +264,62 @@ export async function deletePost(postId: string, userId: string): Promise<void> 
 }
 
 /**
+ * Update a post (BOLA / IDOR protected)
+ */
+export async function updatePost(
+  postId: string,
+  userId: string,
+  data: {
+    title?: string | null;
+    content: string;
+    postType?: string;
+  }
+): Promise<PostResponse> {
+  try {
+    const [existing] = await db
+      .select({ id: posts.id, authorId: posts.authorId })
+      .from(posts)
+      .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
+      .limit(1);
+
+    if (!existing) {
+      throw AppError.notFound("Tahrirlanmoqchi bo‘lgan post topilmadi");
+    }
+
+    if (existing.authorId !== userId) {
+      throw AppError.forbidden("Siz faqat o‘zingiz yozgan postlarni tahrirlashingiz mumkin");
+    }
+
+    const trimmedContent = data.content.trim();
+    if (!trimmedContent) {
+      throw AppError.badRequest("Post matni bo‘sh bo‘lishi mumkin emas");
+    }
+
+    const sanitizedContent = sanitizeRichContent(trimmedContent);
+    const plainText = stripHtmlToPlainText(sanitizedContent);
+    const wordCount = plainText.split(/\s+/).filter(Boolean).length;
+    const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
+
+    await db
+      .update(posts)
+      .set({
+        title: data.title !== undefined ? (data.title?.trim() || null) : undefined,
+        content: sanitizedContent,
+        readingTimeMinutes,
+        updatedAt: new Date(),
+      })
+      .where(eq(posts.id, postId));
+
+    return await getPostById(postId, userId);
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    console.error("[POSTS] Error updating post:", err);
+    throw AppError.internal("Postni tahrirlashda xatolik yuz berdi");
+  }
+}
+
+
+/**
  * Get a single post by ID with author and viewer interaction flags
  */
 export async function getPostById(

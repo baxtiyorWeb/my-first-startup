@@ -9,12 +9,13 @@ import {
   ShareIcon,
   VerifiedBadgeIcon,
 } from "@/components/icons";
-import { MoreHorizontal, Flag, Trash2, UserPlus, UserCheck, Link as LinkIcon, Eye, ExternalLink, Rocket, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreHorizontal, Flag, Trash2, Edit2, UserPlus, UserCheck, Link as LinkIcon, Eye, ExternalLink, Rocket, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import type { Post } from "@/types/social";
 import { DiscussionDrawer } from "@/components/discussion/discussion-drawer";
 import { ReportModal } from "@/components/ui/report-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EditPostModal } from "./edit-post-modal";
 import { useAuth } from "@/components/auth/auth-context";
 import { api } from "@/lib/api";
 import { RichContent } from "./rich-content";
@@ -85,6 +86,16 @@ export function PostCard({
   // Discussion Drawer State
   const [isDiscussionOpen, setIsDiscussionOpen] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.commentsCount);
+
+  // Editable Post Content States
+  const [currentTitle, setCurrentTitle] = useState(post.title);
+  const [currentContent, setCurrentContent] = useState(post.content);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  useEffect(() => {
+    setCurrentTitle(post.title);
+    setCurrentContent(post.content);
+  }, [post.title, post.content]);
 
   // Options Menu & Dialog States
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -346,17 +357,31 @@ export function PostCard({
                   </button>
 
                   {isOwnPost && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        setIsConfirmDeleteOpen(true);
-                      }}
-                      className="w-full px-3 py-2 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>{t("post.deleteConfirm")}</span>
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                      >
+                        <Edit2 className="w-3.5 h-3.5 text-indigo-500" />
+                        <span>Tahrirlash</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsConfirmDeleteOpen(true);
+                        }}
+                        className="w-full px-3 py-2 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>{t("post.deleteConfirm")}</span>
+                      </button>
+                    </>
                   )}
                 </div>
               )}
@@ -366,16 +391,16 @@ export function PostCard({
 
         {/* 2. Content: Title (optional) + Body */}
         <div className="mt-3 space-y-1.5">
-          {post.title && (
+          {currentTitle && (
             <Link href={localePath(`/dashboard/posts/${post.id}`)}>
               <h2 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 tracking-tight leading-snug hover:underline cursor-pointer">
-                <HighlightText text={post.title} query={activeSearchQuery} />
+                <HighlightText text={currentTitle} query={activeSearchQuery} />
               </h2>
             </Link>
           )}
           <Link href={localePath(`/dashboard/posts/${post.id}`)} className="block group">
             <RichContent
-              content={post.content}
+              content={currentContent}
               searchQuery={activeSearchQuery}
               className="text-xs sm:text-[13.5px] group-hover:text-slate-950 dark:group-hover:text-slate-100 transition-colors"
             />
@@ -568,6 +593,19 @@ export function PostCard({
         confirmText={t("post.deleteConfirm")}
         cancelText={t("post.deleteCancel")}
         variant="danger"
+      />
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        postId={post.id}
+        initialTitle={currentTitle}
+        initialContent={currentContent}
+        onSuccess={({ title, content }) => {
+          setCurrentTitle(title || undefined);
+          setCurrentContent(content);
+        }}
       />
 
       {/* Lightbox Modal */}

@@ -9,7 +9,7 @@ import {
   UserIcon,
   SettingsIcon,
 } from "@/components/icons";
-import { LogOut } from "lucide-react";
+import { LogOut, Shield } from "lucide-react";
 import {
   useShell,
   SIDEBAR_EXPANDED_WIDTH,
@@ -51,6 +51,11 @@ export function Sidebar() {
       label: t("nav.settings"),
       rawHref: "/dashboard/settings",
       icon: SettingsIcon,
+    },
+    {
+      label: "Admin Panel",
+      rawHref: "/dashboard/admin",
+      icon: Shield,
     },
   ];
 

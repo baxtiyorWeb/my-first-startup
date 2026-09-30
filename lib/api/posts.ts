@@ -119,6 +119,17 @@ export async function createPost(payload: CreatePostPayload) {
   return mapPostResponseToPost(res.data);
 }
 
+export async function updatePost(
+  id: string,
+  payload: { title?: string; content: string }
+) {
+  const res = await apiClient<PostResponse>(`/api/posts/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+  return mapPostResponseToPost(res.data);
+}
+
 export async function deletePost(id: string) {
   const res = await apiClient<{ success: boolean }>(`/api/posts/${id}`, {
     method: "DELETE",

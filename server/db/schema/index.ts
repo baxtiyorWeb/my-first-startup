@@ -32,6 +32,8 @@ export const users = pgTable(
     intent: varchar("intent", { length: 50 }).default("none").notNull(),
     verified: boolean("verified").default(false).notNull(),
     isOnboarded: boolean("is_onboarded").default(false).notNull(),
+    isBot: boolean("is_bot").default(false).notNull(),
+    botPersona: text("bot_persona"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -299,3 +301,33 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
   replies: many(comments, { relationName: "replies" }),
   likes: many(commentLikes),
 }));
+
+// 10. Bot Activities Log
+export const botActivities = pgTable(
+  "bot_activities",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    activityType: varchar("activity_type", { length: 50 }).notNull(),
+    botId: uuid("bot_id").references(() => users.id, { onDelete: "set null" }),
+    targetId: uuid("target_id"),
+    details: text("details"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_bot_activities_created").on(table.createdAt),
+    index("idx_bot_activities_type").on(table.activityType),
+  ]
+);
+
+// 11. Bot Engine Global Settings
+export const botEngineSettings = pgTable(
+  "bot_engine_settings",
+  {
+    id: varchar("id", { length: 50 }).primaryKey().default("default"),
+    isActive: boolean("is_active").default(true).notNull(),
+    dailyLimit: integer("daily_limit").default(30).notNull(),
+    currentDailyCount: integer("current_daily_count").default(0).notNull(),
+    lastActivityAt: timestamp("last_activity_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  }
+);
