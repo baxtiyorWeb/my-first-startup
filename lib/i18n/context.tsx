@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useMemo, useCallback, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link, { type LinkProps } from "next/link";
-import { Locale, DEFAULT_LOCALE, LOCALES, isValidLocale } from "./config";
+import { Locale, DEFAULT_LOCALE, isValidLocale } from "./config";
 import { dictionaries, getDictionary, type TranslationDictionary } from "./dictionaries";
 import { formatRelativeTime as formatRelativeTimeI18n } from "./format-date";
 

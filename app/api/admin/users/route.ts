@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq, desc, ilike, or, and, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { users, posts } from "@/server/db/schema";
+import { users } from "@/server/db/schema";
+import { enforceAdminGuard } from "@/server/common/admin-guard";
 
 export async function GET(req: NextRequest) {
+  const guardResponse = enforceAdminGuard();
+  if (guardResponse) return guardResponse;
   try {
     const { searchParams } = new URL(req.url);
     const filter = searchParams.get("filter") || "all"; // 'all' | 'real' | 'bots'

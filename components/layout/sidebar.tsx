@@ -45,6 +45,10 @@ export function Sidebar() {
     },
   ];
 
+  const isAdminAllowed =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_ENABLE_ADMIN === "true";
+
   const secondaryNavItems = [
     { label: t("nav.profile"), rawHref: "/dashboard/profile", icon: UserIcon },
     {
@@ -52,11 +56,15 @@ export function Sidebar() {
       rawHref: "/dashboard/settings",
       icon: SettingsIcon,
     },
-    {
-      label: "Admin Panel",
-      rawHref: "/dashboard/admin",
-      icon: Shield,
-    },
+    ...(isAdminAllowed
+      ? [
+          {
+            label: "Admin Panel",
+            rawHref: "/dashboard/admin",
+            icon: Shield,
+          },
+        ]
+      : []),
   ];
 
   const handleConfirmLogout = () => {

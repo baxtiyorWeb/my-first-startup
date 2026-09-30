@@ -21,11 +21,8 @@ import { LanguageSwitcher } from "./language-switcher";
 import { UserAvatar } from "@/components/ui/user-avatar";
 
 export function MobileBottomNav() {
-  const pathname = usePathname();
   const { session } = useAuth();
   const { t, localePath } = useI18n();
-
-  const normalizedPath = pathname.replace(/^\/(uz|ru|en)(\/|$)/, "/$2").replace(/\/+/g, "/") || "/dashboard";
 
   return (
     <nav

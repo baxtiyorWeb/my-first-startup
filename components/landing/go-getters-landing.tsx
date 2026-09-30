@@ -10,7 +10,6 @@ import {
   Sparkles,
   CheckCircle2,
   ArrowRight,
-  Globe,
   Compass,
   ShieldCheck,
   UserPlus,

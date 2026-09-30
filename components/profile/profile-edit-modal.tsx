@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Camera, Loader2, Trash2 } from "lucide-react";
+import { Camera, Trash2 } from "lucide-react";
 import { CloseIcon, CheckIcon } from "@/components/icons";
 import { toast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
 import { compressAvatarImage } from "@/lib/image-compressor";
 import type { UserProfile, UserIntent } from "@/types/social";
 import { useI18n } from "@/lib/i18n/context";
-import { CustomSelect, type CustomSelectOption } from "@/components/ui/custom-select";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { useAuth } from "@/components/auth/auth-context";
 
 interface ProfileEditModalProps {

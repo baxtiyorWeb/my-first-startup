@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isOnboarded: true,
       }));
     },
-    []
+    [session.user]
   );
 
   const logout = useCallback(async () => {

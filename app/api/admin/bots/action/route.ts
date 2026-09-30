@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { botService } from "@/server/bot-engine/bot-service";
+import { enforceAdminGuard } from "@/server/common/admin-guard";
 
 export async function POST(req: NextRequest) {
+  const guardResponse = enforceAdminGuard();
+  if (guardResponse) return guardResponse;
   try {
     const body = await req.json();
     const { action, postId, dailyLimit, isActive } = body;

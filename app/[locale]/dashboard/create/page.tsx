@@ -686,7 +686,9 @@ export default function CreatePostPage() {
             |
           </span>
 
-          
+          <span className="hidden sm:inline-block text-[11px] text-slate-400">
+            {draftSavedTime}
+          </span>
         </div>
 
         <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-800/60 px-2 py-0.5 rounded-md">

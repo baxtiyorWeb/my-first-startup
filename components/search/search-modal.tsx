@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
-  User,
   MessageSquare,
   ArrowRight,
   X,

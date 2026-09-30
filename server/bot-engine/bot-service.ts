@@ -1,4 +1,4 @@
-import { eq, desc, and, sql, not, inArray } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import {
   users,

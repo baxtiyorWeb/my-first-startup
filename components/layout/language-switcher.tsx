@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Globe, Check } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
-import { LOCALES, LOCALES_META, type Locale } from "@/lib/i18n/config";
+import { LOCALES, LOCALES_META } from "@/lib/i18n/config";
 
 interface HeaderLanguageSwitcherProps {
   variant?: "header" | "compact" | "segmented";

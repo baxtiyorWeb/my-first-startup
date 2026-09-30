@@ -8,14 +8,10 @@ import {
   User,
   MessageSquare,
   ArrowRight,
-  Sparkles,
   X,
-  Loader2,
-  Calendar,
-  Filter,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import type { SearchItem, SearchCategory, SearchResponse } from "@/types/social";
+import type { SearchCategory, SearchResponse } from "@/types/social";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";

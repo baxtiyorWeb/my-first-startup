@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { LOCALES, isValidLocale, type Locale } from "@/lib/i18n/config";
+import { LOCALES, isValidLocale } from "@/lib/i18n/config";
 import { I18nProvider } from "@/lib/i18n/context";
 
 export async function generateStaticParams() {

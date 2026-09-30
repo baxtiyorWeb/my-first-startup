@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   AlertCircle,
   ArrowRight,
-  CheckCircle2,
   Loader2,
   ShieldCheck,
 } from "lucide-react";

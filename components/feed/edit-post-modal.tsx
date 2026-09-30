@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { X, Loader2, Edit3 } from "lucide-react";
 import { api } from "@/lib/api";
 import { toast } from "@/components/ui/toast";
-import { useI18n } from "@/lib/i18n/context";
 
 interface EditPostModalProps {
   isOpen: boolean;
@@ -42,7 +41,6 @@ export function EditPostModal({
   initialContent,
   onSuccess,
 }: EditPostModalProps) {
-  const { t } = useI18n();
   const [title, setTitle] = useState(initialTitle || "");
   const [content, setContent] = useState(() => htmlToCleanPlainText(initialContent));
   const [isSubmitting, setIsSubmitting] = useState(false);

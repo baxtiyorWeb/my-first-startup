@@ -195,7 +195,7 @@ function PostDetailInner({
     return () => {
       isMounted = false;
     };
-  }, [postId]);
+  }, [postId, t]);
 
   const handleLike = async () => {
     const nextState = !isLiked;

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { BellIcon } from "@/components/icons";
-import { Check, Heart, MessageSquare, UserPlus, FileText, Loader2, RefreshCw } from "lucide-react";
+import { Check, Heart, MessageSquare, UserPlus, FileText, RefreshCw } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import type { NotificationItem } from "@/lib/api/notifications";
 import { useI18n } from "@/lib/i18n/context";

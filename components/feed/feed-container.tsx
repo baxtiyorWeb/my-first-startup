@@ -16,7 +16,7 @@ export function FeedContainer() {
   const { t } = useI18n();
 
   const [posts, setPosts] = useState<Post[]>([]);
-  const [filterType, setFilterType] = useState<"all" | "project">("all");
+  const [filterType, _setFilterType] = useState<"all" | "project">("all");
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,12 +86,6 @@ export function FeedContainer() {
     };
   }, [t]);
 
-  const handleFilterChange = (type: "all" | "project") => {
-    if (type === filterType) return;
-    setFilterType(type);
-    setIsLoading(true);
-    fetchFeed(type);
-  };
 
   const handleLoadMore = async () => {
     if (!cursor || isLoadingMore) return;

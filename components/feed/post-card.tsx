@@ -9,7 +9,7 @@ import {
   ShareIcon,
   VerifiedBadgeIcon,
 } from "@/components/icons";
-import { MoreHorizontal, Flag, Trash2, Edit2, UserPlus, UserCheck, Link as LinkIcon, Eye, ExternalLink, Rocket, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreHorizontal, Flag, Trash2, Edit2, UserPlus, UserCheck, Link as LinkIcon, Eye, ExternalLink, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import type { Post } from "@/types/social";
 import { DiscussionDrawer } from "@/components/discussion/discussion-drawer";
@@ -635,6 +635,7 @@ export function PostCard({
             className="relative max-w-5xl max-h-[90vh] flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={mediaList[lightboxIndex]}
               alt={post.title || "Preview"}

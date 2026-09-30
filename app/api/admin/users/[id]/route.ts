@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/db";
 import { users } from "@/server/db/schema";
+import { enforceAdminGuard } from "@/server/common/admin-guard";
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const guardResponse = enforceAdminGuard();
+  if (guardResponse) return guardResponse;
   try {
     const { id } = await params;
     if (!id) {

@@ -5,6 +5,22 @@ import { LOCALES, DEFAULT_LOCALE, isValidLocale } from "./lib/i18n/config";
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // Block admin panel and admin APIs in production unless explicitly enabled
+  const isProduction = process.env.NODE_ENV === "production";
+  const isExplicitlyAllowed = process.env.ENABLE_ADMIN_PANEL === "true";
+
+  if (isProduction && !isExplicitlyAllowed) {
+    if (pathname.startsWith("/api/admin")) {
+      return NextResponse.json(
+        { success: false, error: "Not found" },
+        { status: 404 }
+      );
+    }
+    if (pathname.includes("/dashboard/admin")) {
+      return NextResponse.rewrite(new URL("/_not-found", request.url));
+    }
+  }
+
   // 0. Handle CORS and Preflight for all API routes
   if (pathname.startsWith("/api")) {
     const origin = request.headers.get("origin") || "*";

@@ -1,6 +1,4 @@
-import { gemini } from '../bot-engine/gemini.ts';
-
-// Wait, let's test directly with fetch
+// Test directly with fetch
 const key = process.env.GOOGLE_GEMINI_API_KEY;
 const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key, {
   method: 'POST',
