@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/components/auth/auth-context";
+import { ThemeProvider } from "@/components/theme/theme-context";
 import { OneSignalInitializer } from "@/components/notifications/onesignal-initializer";
 
 const inter = Inter({
@@ -23,26 +24,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`h-full antialiased font-sans ${inter.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('gogetters_theme');if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');document.documentElement.style.colorScheme='light';}else{document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';}}catch(e){document.documentElement.classList.add('dark');}})();`,
+          }}
+        />
+      </head>
       <body className={`${inter.className} min-h-full flex flex-col font-sans`}>
-        <svg
-          width="0"
-          height="0"
-          className="absolute w-0 h-0 overflow-hidden"
-          style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#818cf8" />
-              <stop offset="50%" stopColor="#22d3ee" />
-              <stop offset="100%" stopColor="#34d399" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <AuthProvider>
-          <OneSignalInitializer />
-          <ToastProvider>{children}</ToastProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <OneSignalInitializer />
+            <ToastProvider>{children}</ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

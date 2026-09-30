@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* iOS Safe Area support for bottom nav */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
@@ -14,6 +23,33 @@
   --border-strong: #94a3b8;
 }
 
+.dark,
+:root[class~="dark"] {
+  --background: #000000;
+  --foreground: #ededed;
+  --surface-0: #000000;
+  --surface-1: #0a0a0a;
+  --surface-2: #121212;
+  --surface-subtle: #18181b;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  /* Map Tailwind slate palette to deep Vercel monochrome in dark mode */
+  --color-slate-950: #000000;
+  --color-slate-900: #0a0a0a;
+  --color-slate-850: #121212;
+  --color-slate-800: #171717;
+  --color-slate-700: #262626;
+  --color-slate-600: #52525b;
+  --color-slate-500: #71717a;
+  --color-slate-400: #a1a1aa;
+  --color-slate-300: #d4d4d8;
+  --color-slate-200: #e4e4e7;
+  --color-slate-100: #f4f4f5;
+  --color-slate-50: #fafafa;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -21,18 +57,38 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #020617;
-    --foreground: #f8fafc;
-    --surface-0: #020617;
-    --surface-1: #0f172a;
-    --surface-2: #1e293b;
-    --surface-subtle: #334155;
-    --border-subtle: #1e293b;
-    --border-default: #334155;
-    --border-strong: #475569;
-  }
+/* Vercel Deep Black Palette for entire dark application */
+.dark .dark\:bg-slate-950 {
+  background-color: #000000 !important;
+}
+.dark .dark\:bg-slate-900 {
+  background-color: #0a0a0a !important;
+}
+.dark .dark\:bg-slate-900\/80,
+.dark .dark\:bg-slate-900\/90 {
+  background-color: rgba(10, 10, 10, 0.85) !important;
+}
+.dark .dark\:bg-slate-800 {
+  background-color: #141414 !important;
+}
+.dark .dark\:bg-slate-800\/80 {
+  background-color: rgba(20, 20, 20, 0.8) !important;
+}
+.dark .dark\:border-slate-800 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.dark .dark\:border-slate-700,
+.dark .dark\:border-slate-700\/80 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.dark .dark\:text-slate-100,
+.dark .dark\:text-white,
+.dark .dark\:text-slate-50 {
+  color: #ededed !important;
+}
+.dark .dark\:text-slate-300,
+.dark .dark\:text-slate-400 {
+  color: #a1a1aa !important;
 }
 
 body {
@@ -348,22 +404,19 @@ body {
   transform: translateY(0);
 }
 
-/* Global Icon Gradient: bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400 */
-svg:not(.no-gradient),
-svg:not(.no-gradient) line,
-svg:not(.no-gradient) polyline,
-svg:not(.no-gradient) path {
-  stroke: url(#icon-gradient) !important;
-}
-
-svg:not(.no-gradient) path[fill="currentColor"],
-svg:not(.no-gradient) circle[fill="currentColor"],
-svg:not(.no-gradient) polygon[fill="currentColor"],
-svg:not(.no-gradient) rect[fill="currentColor"] {
-  fill: url(#icon-gradient) !important;
+/* Clean SVG icon strokes — default to currentColor without rainbow gradients */
+svg {
+  stroke: currentColor;
 }
 
 
+@keyframes vercel-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.02); }
+}
 
-
+@keyframes vercel-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 

@@ -43,6 +43,7 @@ export const en: typeof uz = {
     notifications: "Notifications",
     reels: "Reels",
     explore: "Explore",
+    search: "Search",
     login: "Log In",
     logout: "Log Out",
     register: "Register",

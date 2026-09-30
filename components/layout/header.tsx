@@ -18,9 +18,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useAuth } from "@/components/auth/auth-context";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
-import { LanguageSwitcher } from "./language-switcher";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { NotificationBell } from "@/components/notifications/notification-bell";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 interface HeaderProps {
   title?: string;
@@ -142,12 +141,13 @@ export function Header({ title, subtitle }: HeaderProps) {
               />
             </button>
 
-            <div className="flex flex-col min-w-0 max-w-[100px] xs:max-w-[140px] sm:max-w-[200px] md:max-w-none">
-              <h1 className="text-xs xs:text-sm sm:text-base font-bold text-slate-900 dark:text-slate-50 tracking-tight truncate leading-tight">
+            {/* Page Title - Desktop only */}
+            <div className="hidden md:flex flex-col min-w-0">
+              <h1 className="text-sm lg:text-base font-bold text-slate-900 dark:text-slate-50 tracking-tight truncate leading-tight">
                 {displayTitle}
               </h1>
               {displaySubtitle && (
-                <span className="hidden xl:inline-block text-xs font-normal text-slate-500 dark:text-slate-400 truncate max-w-[180px]">
+                <span className="hidden xl:inline-block text-xs font-normal text-slate-500 dark:text-slate-400 truncate max-w-[220px]">
                   • {displaySubtitle}
                 </span>
               )}
@@ -155,7 +155,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           </div>
 
           {/* Center: Spotlight Search Bar */}
-          <div className="flex-1 min-w-0 max-w-[180px] xs:max-w-[240px] sm:max-w-md lg:max-w-xl mx-0.5 sm:mx-2">
+          <div className="flex-1 min-w-0 max-w-md lg:max-w-xl mx-1.5 sm:mx-2">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
@@ -184,15 +184,10 @@ export function Header({ title, subtitle }: HeaderProps) {
             </button>
           </div>
 
-          {/* Right: Language Switcher + Notification Bell + Profile Dropdown */}
-          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
-            {/* Notification Bell Dropdown */}
-            <NotificationBell />
-
-            {/* Language Switcher Dropdown */}
-            <div className="shrink-0">
-              <LanguageSwitcher variant="header" />
-            </div>
+          {/* Right: Actions + Profile Dropdown */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Theme Toggle (Light / Dark) */}
+            <ThemeToggle size="sm" />
 
             {/* Primary Create Thought Action - HIDDEN ON MOBILE/PHONES */}
             {!normalizedPath.startsWith("/dashboard/create") && (

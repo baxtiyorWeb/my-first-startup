@@ -106,16 +106,6 @@ function SearchContent() {
     <div className="space-y-6 w-full max-w-4xl mx-auto pb-12">
       {/* Search Header Card */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-slate-950 dark:text-white tracking-tight flex items-center gap-2">
-            <Search className="w-5 h-5 text-indigo-500" />
-            <span>{t("search.resultsFor")}</span>
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {t("search.searchDescription")}
-          </p>
-        </div>
-
         {/* Search Input Bar */}
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <div className="relative flex-1">

@@ -1,8 +1,17 @@
 /**
- * Google Gemini API Client for Autonomous Bot Engine
- * Supports deep contextual reasoning, real-time Google Search grounding,
- * and hyper-realistic, human-like Uzbek conversation generation.
+ * AI Client: Google Gemini (primary) + OpenRouter multi-model fallback
+ *
+ * Fallback chain (all free-tier or near-free):
+ *  1. gemini-3.5-flash          (Google Gemini, primary)
+ *  2. gemini-flash-latest       (Google Gemini, secondary)
+ *  3. meta-llama/llama-3.3-70b-instruct:free  (Meta, 70B, excellent reasoning)
+ *  4. deepseek/deepseek-chat:free             (DeepSeek, top-tier text & code)
+ *  5. qwen/qwen-2.5-72b-instruct:free         (Alibaba Qwen 72B, multilingual)
+ *  6. google/gemini-2.0-flash-exp:free        (Gemini via OpenRouter, free quota)
+ *  7. mistralai/mistral-7b-instruct:free      (Mistral, fast lightweight fallback)
  */
+
+// ─── Gemini types ────────────────────────────────────────────────────────────
 
 interface GeminiPart {
   text?: string;
@@ -16,26 +25,37 @@ interface GroundingMetadata {
 }
 
 interface GeminiCandidate {
-  content?: {
-    parts?: GeminiPart[];
-  };
+  content?: { parts?: GeminiPart[] };
   finishReason?: string;
   groundingMetadata?: GroundingMetadata;
 }
 
 interface GeminiResponse {
   candidates?: GeminiCandidate[];
-  error?: {
-    code: number;
-    message: string;
-    status?: string;
-  };
+  error?: { code: number; message: string; status?: string };
   usageMetadata?: {
     promptTokenCount?: number;
     candidatesTokenCount?: number;
     thoughtsTokenCount?: number;
   };
 }
+
+// ─── OpenRouter (OpenAI-compatible) types ────────────────────────────────────
+
+interface OpenRouterMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+interface OpenRouterResponse {
+  choices?: Array<{
+    message?: { content?: string };
+    finish_reason?: string;
+  }>;
+  error?: { message: string; code?: number };
+}
+
+// ─── Shared options ───────────────────────────────────────────────────────────
 
 export interface CallGeminiOptions {
   modelOverride?: string;
@@ -45,34 +65,168 @@ export interface CallGeminiOptions {
   retries?: number;
 }
 
+// ─── OpenRouter free models (fallback chain) ──────────────────────────────────
+
+/**
+ * Ordered list of OpenRouter free models.
+ * Each is tried in sequence if the previous one fails.
+ */
+const OPENROUTER_FREE_MODELS = [
+  "meta-llama/llama-3.3-70b-instruct:free",  // Meta 70B — excellent multilingual reasoning
+  "deepseek/deepseek-chat:free",              // DeepSeek — top-tier text quality
+  "qwen/qwen-2.5-72b-instruct:free",          // Alibaba Qwen 72B — strong multilingual
+  "google/gemini-2.0-flash-exp:free",         // Gemini via OpenRouter — familiar quality
+  "mistralai/mistral-7b-instruct:free",       // Mistral 7B — fastest lightweight fallback
+] as const;
+
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+// ─── GeminiClient ─────────────────────────────────────────────────────────────
+
 export class GeminiClient {
-  private apiKey: string;
+  private geminiKey: string;
+  private openRouterKey: string;
   private primaryModel: string;
-  private fallbackModel: string;
+  private geminiSecondary: string;
 
   constructor() {
-    this.apiKey = process.env.GOOGLE_GEMINI_API_KEY || "";
+    this.geminiKey = process.env.GOOGLE_GEMINI_API_KEY || "";
+    this.openRouterKey = process.env.OPEN_ROUTER_API_KEY || "";
     this.primaryModel = "gemini-3.5-flash";
-    this.fallbackModel = "gemini-flash-latest";
+    this.geminiSecondary = "gemini-flash-latest";
   }
 
-  /**
-   * Helper delay for rate limits & exponential backoff
-   */
+  // ── helpers ──────────────────────────────────────────────────────────────────
+
   private delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise<void>((resolve) => setTimeout(resolve, ms));
+  }
+
+  private parseJsonSafe<T>(raw: string, fallback: T): T {
+    const attempts = [
+      () => JSON.parse(raw.trim()),
+      () => JSON.parse(raw.replace(/^```json\s*/gi, "").replace(/```\s*$/gi, "").trim()),
+      () => {
+        const first = raw.indexOf("{");
+        const last = raw.lastIndexOf("}");
+        if (first !== -1 && last !== -1 && last > first) {
+          return JSON.parse(raw.slice(first, last + 1));
+        }
+        throw new Error("no JSON object found");
+      },
+    ];
+    for (const attempt of attempts) {
+      try {
+        return attempt() as T;
+      } catch {
+        // try next
+      }
+    }
+    return fallback;
+  }
+
+  // ── OpenRouter call ───────────────────────────────────────────────────────────
+
+  /**
+   * Call a specific OpenRouter model (OpenAI-compatible API).
+   * Returns raw text. Throws on HTTP/API error.
+   */
+  private async callOpenRouterModel(
+    model: string,
+    prompt: string,
+    systemInstruction: string | undefined,
+    temperature: number
+  ): Promise<string> {
+    if (!this.openRouterKey) {
+      throw new Error("OPEN_ROUTER_API_KEY is not set");
+    }
+
+    const messages: OpenRouterMessage[] = [];
+    if (systemInstruction) {
+      messages.push({ role: "system", content: systemInstruction });
+    }
+    messages.push({ role: "user", content: prompt });
+
+    const response = await fetch(OPENROUTER_BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.openRouterKey}`,
+        "HTTP-Referer": "https://thego-getters.vercel.app",
+        "X-Title": "GoGetters Bot Engine",
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature,
+        max_tokens: 2048,
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`OpenRouter [${model}] HTTP ${response.status}: ${errText.slice(0, 200)}`);
+    }
+
+    const data = (await response.json()) as OpenRouterResponse;
+
+    if (data.error) {
+      throw new Error(`OpenRouter [${model}] error: ${data.error.message}`);
+    }
+
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error(`OpenRouter [${model}] returned empty content`);
+    }
+
+    return content.trim();
   }
 
   /**
-   * Core call to Gemini API with robust retry and error handling
+   * Try all OpenRouter free models in sequence until one succeeds.
+   * Logs which model eventually responded.
+   */
+  private async callOpenRouterFallback(
+    prompt: string,
+    systemInstruction: string | undefined,
+    temperature: number
+  ): Promise<string> {
+    const errors: string[] = [];
+
+    for (const model of OPENROUTER_FREE_MODELS) {
+      try {
+        const result = await this.callOpenRouterModel(model, prompt, systemInstruction, temperature);
+        console.log(`[AI] OpenRouter fallback succeeded with model: ${model}`);
+        return result;
+      } catch (err) {
+        const msg = (err as Error).message;
+        errors.push(`${model}: ${msg}`);
+        console.warn(`[AI] OpenRouter model ${model} failed: ${msg}`);
+        // Small delay between models to avoid bursting
+        await this.delay(800);
+      }
+    }
+
+    throw new Error(
+      `All OpenRouter fallback models failed:\n${errors.join("\n")}`
+    );
+  }
+
+  // ── Gemini call ───────────────────────────────────────────────────────────────
+
+  /**
+   * Core Gemini API call with retry and Gemini-to-Gemini fallback.
+   * If both Gemini models fail, throws — caller should then try OpenRouter.
    */
   async callGemini(
     prompt: string,
     systemInstruction?: string,
     options: CallGeminiOptions = {}
   ): Promise<string> {
-    if (!this.apiKey) {
-      throw new Error("GOOGLE_GEMINI_API_KEY is not set in environment variables");
+    if (!this.geminiKey) {
+      // Skip Gemini entirely, go straight to OpenRouter
+      console.warn("[AI] GOOGLE_GEMINI_API_KEY not set, going straight to OpenRouter");
+      return this.callOpenRouterFallback(prompt, systemInstruction, options.temperature ?? 0.82);
     }
 
     const {
@@ -84,7 +238,7 @@ export class GeminiClient {
     } = options;
 
     const model = modelOverride || this.primaryModel;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.geminiKey}`;
 
     const generationConfig: Record<string, unknown> = {
       temperature,
@@ -92,35 +246,21 @@ export class GeminiClient {
       maxOutputTokens: 4096,
     };
 
-    // Google Search Grounding tool
     const tools: Array<Record<string, unknown>> = [];
     if (enableSearch) {
       tools.push({ googleSearch: {} });
     }
-
-    // Only set responseMimeType when Search is NOT used, to prevent API conflicts
     if (isJson && !enableSearch) {
       generationConfig.responseMimeType = "application/json";
     }
 
     const body: Record<string, unknown> = {
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ],
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig,
     };
-
-    if (tools.length > 0) {
-      body.tools = tools;
-    }
-
+    if (tools.length > 0) body.tools = tools;
     if (systemInstruction) {
-      body.systemInstruction = {
-        parts: [{ text: systemInstruction }],
-      };
+      body.systemInstruction = { parts: [{ text: systemInstruction }] };
     }
 
     try {
@@ -131,28 +271,28 @@ export class GeminiClient {
       });
 
       if (!response.ok) {
-        // If rate limited (429) and has retries left, wait and retry
         if (response.status === 429 && retries > 0) {
-          console.warn(`[GEMINI] Rate limited (429) on ${model}, waiting 2.5s and retrying...`);
+          console.warn(`[AI] Gemini rate limited (429) on ${model}, waiting 2.5s...`);
           await this.delay(2500);
-          return this.callGemini(prompt, systemInstruction, {
-            ...options,
-            retries: retries - 1,
-          });
+          return this.callGemini(prompt, systemInstruction, { ...options, retries: retries - 1 });
         }
 
-        // If primary model failed with any other error, try fallback
-        if (model === this.primaryModel && this.fallbackModel !== this.primaryModel) {
-          console.warn(`[GEMINI] Model ${model} failed (${response.status}), switching to fallback ${this.fallbackModel}...`);
-          return this.callGemini(prompt, systemInstruction, {
-            ...options,
-            modelOverride: this.fallbackModel,
-            retries: 0,
-          });
+        // Try Gemini secondary model first
+        if (model === this.primaryModel) {
+          console.warn(`[AI] Gemini ${model} failed (${response.status}), trying secondary ${this.geminiSecondary}...`);
+          try {
+            return await this.callGemini(prompt, systemInstruction, {
+              ...options,
+              modelOverride: this.geminiSecondary,
+              retries: 0,
+            });
+          } catch {
+            // Secondary also failed, go to OpenRouter
+          }
         }
 
-        const errText = await response.text();
-        throw new Error(`Gemini API error (${response.status}): ${errText}`);
+        console.warn(`[AI] All Gemini models failed, switching to OpenRouter...`);
+        return this.callOpenRouterFallback(prompt, systemInstruction, temperature);
       }
 
       const data = (await response.json()) as GeminiResponse;
@@ -161,30 +301,41 @@ export class GeminiClient {
         throw new Error(`Gemini error: ${data.error.message}`);
       }
 
-      // Collect text across all parts (handles multiple parts generated with Search/Grounding)
       const parts = data.candidates?.[0]?.content?.parts || [];
-      const text = parts
-        .map((p) => p.text || "")
-        .join("\n")
-        .trim();
-
+      const text = parts.map((p) => p.text || "").join("\n").trim();
       return text;
     } catch (error) {
-      if (model === this.primaryModel && this.fallbackModel !== this.primaryModel) {
-        console.warn(`[GEMINI] Error on ${model}: ${(error as Error).message}. Trying fallback ${this.fallbackModel}...`);
-        return this.callGemini(prompt, systemInstruction, {
-          ...options,
-          modelOverride: this.fallbackModel,
-          retries: 0,
-        });
+      const msg = (error as Error).message;
+
+      // If it's already an OpenRouter error re-thrown, don't recurse
+      if (msg.startsWith("All OpenRouter fallback models failed")) {
+        throw error;
       }
-      throw error;
+
+      // If Gemini primary threw a network/parse error, try secondary then OpenRouter
+      if (model === this.primaryModel) {
+        console.warn(`[AI] Gemini ${model} threw error: ${msg}. Trying secondary...`);
+        try {
+          return await this.callGemini(prompt, systemInstruction, {
+            ...options,
+            modelOverride: this.geminiSecondary,
+            retries: 0,
+          });
+        } catch {
+          // Both Gemini models failed
+        }
+      }
+
+      console.warn(`[AI] Gemini completely failed, switching to OpenRouter...`);
+      return this.callOpenRouterFallback(prompt, systemInstruction, temperature);
     }
   }
 
+  // ── High-level generation methods ─────────────────────────────────────────────
+
   /**
-   * Generate an organic, deeply reasoned post in Uzbek with balanced lengths, rich formatting,
-   * and diverse topics (productivity, business, habits, life balance, books, tech).
+   * Generate an organic, deeply reasoned post in Uzbek with balanced lengths,
+   * rich formatting, and diverse topics.
    */
   async generatePost(options: {
     persona: string;
@@ -316,7 +467,7 @@ Ushbu mavzuni o'zingizning shaxsiyatingiz, insoniy tajribangiz va dunyoqarashing
       });
     } catch (err) {
       if (withSearch) {
-        console.warn("[GEMINI] Search generation failed, falling back to standard generation:", err);
+        console.warn("[AI] Search generation failed, falling back to standard generation:", err);
         raw = await this.callGemini(userPrompt, systemPrompt, {
           enableSearch: false,
           isJson: true,
@@ -339,21 +490,20 @@ Ushbu mavzuni o'zingizning shaxsiyatingiz, insoniy tajribangiz va dunyoqarashing
     title = title
       .replace(/^"(?:title|content)":\s*"?/i, "")
       .replace(/^title":\s*"?/i, "")
-      .replace(/^["']|["']$/g, "")
+      .replace(/^[\"']|[\"']$/g, "")
       .trim();
 
     content = content
       .replace(/^"(?:title|content)":\s*"?/i, "")
       .replace(/^title":\s*"?/i, "")
       .replace(/^content":\s*"?/i, "")
-      .replace(/^["']|["']$/g, "")
+      .replace(/^[\"']|[\"']$/g, "")
       .trim();
 
     if (!content || content.length < 25) {
       content = `<p>Ko'pincha biz katta maqsadlar haqida o'ylaymiz, ammo natijani <strong>kundalik mayda odatlar</strong> hal qiladi.</p><blockquote>Har kuni atigi 1% yaxshiroq bo'lish — bir yilda 37 barobar o'sish degani.</blockquote><p>Sizda oxirgi 1 oy ichida eng ko'p foyda bergan odat qaysi bo'ldi?</p>`;
     }
 
-    // If Gemini returned pure plain text without HTML tags, wrap into semantic <p> tags
     if (!content.includes("<p>") && !content.includes("<h2") && !content.includes("<blockquote")) {
       content = content
         .split(/\n\s*\n/)
@@ -373,8 +523,7 @@ Ushbu mavzuni o'zingizning shaxsiyatingiz, insoniy tajribangiz va dunyoqarashing
   }
 
   /**
-   * Generate an intelligent, human-like comment on a post with deep reasoning.
-   * Can employ critical thinking, real experience, or search grounding.
+   * Generate an intelligent, human-like comment on a post.
    */
   async generateComment(options: {
     botName: string;
@@ -443,7 +592,7 @@ Post matni:
       });
     } catch (err) {
       if (withSearch) {
-        console.warn("[GEMINI] Search comment generation failed, falling back to standard:", err);
+        console.warn("[AI] Search comment generation failed, falling back to standard:", err);
         comment = await this.callGemini(userPrompt, systemPrompt, {
           enableSearch: false,
           isJson: false,
@@ -455,7 +604,7 @@ Post matni:
     }
 
     return comment
-      .replace(/^["']|["']$/g, "")
+      .replace(/^[\"']|[\"']$/g, "")
       .replace(/^(?:Komment|Izoh|Fikr):\s*/i, "")
       .trim();
   }
@@ -499,14 +648,14 @@ MUHIM QOIDALAR:
 4. Qisqa va lo'nda bo'lsin: 1-3 ta ixcham jumla.
 5. Soxta maqtov ("Qo'shilaman!", "Ajoyib!") yozmang, to'g'ridan-to'g'ri mavzuga kiring.`;
 
-    const userPrompt = `Mavzu (Post): "${postTitle || 'Fikr'}"
+    const userPrompt = `Mavzu (Post): "${postTitle || "Fikr"}"
 Post mazmuni: "${postContent.slice(0, 400)}"
 ${parentCommentAuthor} ning izohi: "${parentCommentContent}"
 
 Sizning javobingiz:`;
 
     const raw = await this.callGemini(userPrompt, systemPrompt);
-    return raw.replace(/^["']|["']$/g, "").trim() || "Fikringizga qo'shilaman, ayniqsa amaliyotda bu juda seziladi.";
+    return raw.replace(/^[\"']|[\"']$/g, "").trim() || "Fikringizga qo'shilaman, ayniqsa amaliyotda bu juda seziladi.";
   }
 
   /**
@@ -546,7 +695,6 @@ QAT'IY JSON FORMATIDA QAYTARING:
       persona: "Samimiy, do'stona va fikr almashishga ochiq.",
     });
 
-    // Generate reliable avatar URL based on gender/seed
     const seed = parsed.handle || Math.random().toString(36).substring(7);
     const avatarCollection = parsed.gender === "female" ? "personas" : "micah";
     const avatarUrl = `https://api.dicebear.com/7.x/${avatarCollection}/svg?seed=${encodeURIComponent(seed)}`;
@@ -559,29 +707,6 @@ QAT'IY JSON FORMATIDA QAYTARING:
       avatarUrl,
       persona: parsed.persona,
     };
-  }
-
-  private parseJsonSafe<T>(raw: string, fallback: T): T {
-    try {
-      return JSON.parse(raw.trim()) as T;
-    } catch {
-      try {
-        const cleaned = raw.replace(/^```json\s*/gi, "").replace(/```\s*$/gi, "").trim();
-        return JSON.parse(cleaned) as T;
-      } catch {
-        try {
-          const firstBrace = raw.indexOf("{");
-          const lastBrace = raw.lastIndexOf("}");
-          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-            const jsonSubstring = raw.slice(firstBrace, lastBrace + 1);
-            return JSON.parse(jsonSubstring) as T;
-          }
-        } catch {
-          // ignore
-        }
-        return fallback;
-      }
-    }
   }
 }
 

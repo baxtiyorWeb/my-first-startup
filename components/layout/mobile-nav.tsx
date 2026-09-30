@@ -6,80 +6,134 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
   UserIcon,
-  BookmarkIcon,
+  SearchIcon,
   SettingsIcon,
   CloseIcon,
   PlusIcon,
 } from "@/components/icons";
-import { LogOut } from "lucide-react";
+import { LogOut, Bookmark, Bell, Plus } from "lucide-react";
 import { useShell } from "./shell-context";
 import { useAuth } from "@/components/auth/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
-import { LanguageSwitcher } from "./language-switcher";
 import { UserAvatar } from "@/components/ui/user-avatar";
 
 export function MobileBottomNav() {
   const { session } = useAuth();
   const { t, localePath } = useI18n();
+  const pathname = usePathname();
+
+  const normalizedPath =
+    pathname.replace(/^\/(uz|ru|en)(\/|$)/, "/$2").replace(/\/+/g, "/") ||
+    "/dashboard";
+
+  const isHome = normalizedPath === "/dashboard" || normalizedPath === "/";
+  const isSearch = normalizedPath.startsWith("/dashboard/search");
+  const isNotifications = normalizedPath.startsWith("/dashboard/notifications");
+  const isProfile = normalizedPath.startsWith("/dashboard/profile");
+
+  const tabCls = (active: boolean) =>
+    `relative flex flex-col items-center justify-center gap-0.5 py-2 px-1 min-w-0 flex-1 cursor-pointer transition-colors ${
+      active
+        ? "text-slate-950 dark:text-white font-bold"
+        : "text-slate-500 dark:text-zinc-500 font-medium"
+    }`;
 
   return (
     <nav
       aria-label="Mobil pastki navigatsiya"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 h-14 px-2 grid grid-cols-5 items-center select-none shadow-lg"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-t border-slate-200 dark:border-white/[0.08] h-[58px] flex items-stretch select-none"
     >
       {/* 1. Home */}
       <Link
         href={localePath("/dashboard")}
         aria-label={t("nav.home")}
-        className="flex items-center justify-center py-2 cursor-pointer"
+        aria-current={isHome ? "page" : undefined}
+        className={tabCls(isHome)}
       >
-        <HomeIcon size={22} />
-      </Link>
-
-      {/* 2. Bookmarks */}
-      <Link
-        href={localePath("/dashboard/bookmarks")}
-        aria-label={t("nav.bookmarks")}
-        className="flex items-center justify-center py-2 cursor-pointer"
-      >
-        <BookmarkIcon size={22} />
-      </Link>
-
-      {/* 3. Create Thought Prominent Action */}
-      <Link
-        href={localePath("/dashboard/create")}
-        aria-label={t("nav.createThought")}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400 text-slate-950 font-bold active:scale-95 transition-transform mx-auto"
-      >
-        <PlusIcon size={22} className="stroke-[2.5] stroke-slate-950 no-gradient" />
-      </Link>
-
-      {/* 4. Profile */}
-      <Link
-        href={localePath("/dashboard/profile")}
-        aria-label={t("nav.profile")}
-        className="flex items-center justify-center py-2 cursor-pointer"
-      >
-        {session.isAuthenticated ? (
-          <UserAvatar
-            name={session.user.name}
-            avatarUrl={session.user.avatarUrl}
-            size="xs"
-          />
-        ) : (
-          <UserIcon size={22} />
+        <span className={`transition-transform ${isHome ? "scale-110" : ""}`}>
+          <HomeIcon size={22} />
+        </span>
+        <span className="text-[9px] font-semibold tracking-tight leading-none truncate">
+          {t("nav.home")}
+        </span>
+        {isHome && (
+          <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-slate-950 dark:bg-white" />
         )}
       </Link>
 
-      {/* 5. Settings */}
+      {/* 2. Search */}
       <Link
-        href={localePath("/dashboard/settings")}
-        aria-label={t("nav.settings")}
-        className="flex items-center justify-center py-2 cursor-pointer"
+        href={localePath("/dashboard/search")}
+        aria-label={t("nav.search")}
+        aria-current={isSearch ? "page" : undefined}
+        className={tabCls(isSearch)}
       >
-        <SettingsIcon size={22} />
+        <span className={`transition-transform ${isSearch ? "scale-110" : ""}`}>
+          <SearchIcon size={22} />
+        </span>
+        <span className="text-[9px] font-semibold tracking-tight leading-none truncate">
+          {t("nav.search")}
+        </span>
+        {isSearch && (
+          <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-slate-950 dark:bg-white" />
+        )}
+      </Link>
+
+      {/* 3. Create — Center FAB */}
+      <div className="flex items-center justify-center flex-1">
+        <Link
+          href={localePath("/dashboard/create")}
+          aria-label={t("nav.createThought")}
+          className="flex items-center justify-center w-11 h-11 rounded-full bg-slate-950 dark:bg-white text-white dark:text-black shadow-md shadow-black/20 dark:shadow-white/10 active:scale-95 transition-transform"
+        >
+          <PlusIcon size={20} className="stroke-[2.5]" />
+        </Link>
+      </div>
+
+      {/* 4. Notifications */}
+      <Link
+        href={localePath("/dashboard/notifications")}
+        aria-label={t("nav.notifications")}
+        aria-current={isNotifications ? "page" : undefined}
+        className={tabCls(isNotifications)}
+      >
+        <span className={`transition-transform ${isNotifications ? "scale-110" : ""}`}>
+          <Bell size={21} />
+        </span>
+        <span className="text-[9px] font-semibold tracking-tight leading-none truncate">
+          {t("nav.notifications")}
+        </span>
+        {isNotifications && (
+          <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-slate-950 dark:bg-white" />
+        )}
+      </Link>
+
+      {/* 5. Profile */}
+      <Link
+        href={localePath("/dashboard/profile")}
+        aria-label={t("nav.profile")}
+        aria-current={isProfile ? "page" : undefined}
+        className={tabCls(isProfile)}
+      >
+        <span className={`transition-transform ${isProfile ? "scale-110" : ""}`}>
+          {session.isAuthenticated ? (
+            <UserAvatar
+              name={session.user.name}
+              avatarUrl={session.user.avatarUrl}
+              size="xs"
+            />
+          ) : (
+            <UserIcon size={22} />
+          )}
+        </span>
+        <span className="text-[9px] font-semibold tracking-tight leading-none truncate">
+          {t("nav.profile")}
+        </span>
+        {isProfile && (
+          <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-slate-950 dark:bg-white" />
+        )}
       </Link>
     </nav>
   );
@@ -108,8 +162,9 @@ export function MobileDrawer() {
 
   const navLinks = [
     { label: t("nav.home"), rawHref: "/dashboard", icon: HomeIcon },
-    { label: t("nav.createThought"), rawHref: "/dashboard/create", icon: PlusIcon },
-    { label: t("nav.bookmarks"), rawHref: "/dashboard/bookmarks", icon: BookmarkIcon },
+    { label: t("nav.search"), rawHref: "/dashboard/search", icon: SearchIcon },
+    { label: t("nav.createThought"), rawHref: "/dashboard/create", icon: Plus },
+    { label: t("nav.bookmarks"), rawHref: "/dashboard/bookmarks", icon: Bookmark },
     { label: t("nav.profile"), rawHref: "/dashboard/profile", icon: UserIcon },
     { label: t("nav.settings"), rawHref: "/dashboard/settings", icon: SettingsIcon },
   ];
@@ -125,23 +180,23 @@ export function MobileDrawer() {
 
       {/* Drawer */}
       <div
-        className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out"
+        className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-black border-r border-slate-200 dark:border-white/[0.08] p-4 flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out"
         role="dialog"
         aria-modal="true"
         aria-label="Mobil navigatsiya menyusi"
       >
         <div className="space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/[0.08]">
             <Link
               href={localePath("/dashboard")}
               onClick={closeMobileNav}
               className="flex items-center gap-2.5"
             >
-              <div className="w-7 h-7 rounded-md bg-slate-900 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900 font-bold text-sm">
-                F
+              <div className="w-7 h-7 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-black flex items-center justify-center font-bold text-xs">
+                GG
               </div>
-              <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              <span className="text-sm font-bold tracking-tight text-slate-950 dark:text-white">
                 {t("common.brandName")}
               </span>
             </Link>
@@ -156,16 +211,8 @@ export function MobileDrawer() {
             </button>
           </div>
 
-          {/* Language Switcher Segment in Drawer */}
-          <div className="space-y-1.5 pt-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
-              Til / Язык / Language
-            </span>
-            <LanguageSwitcher variant="segmented" />
-          </div>
-
           {/* Navigation Links */}
-          <nav className="space-y-1 pt-2">
+          <nav className="space-y-1 pt-1">
             {navLinks.map((item) => {
               const isActive =
                 item.rawHref === "/dashboard"
@@ -180,8 +227,8 @@ export function MobileDrawer() {
                   onClick={closeMobileNav}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
                     isActive
-                      ? "bg-slate-100 dark:bg-slate-800 text-slate-950 dark:text-white font-semibold"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
+                      ? "bg-slate-100 dark:bg-white/[0.08] text-slate-950 dark:text-white font-bold"
+                      : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-slate-950 dark:hover:text-white"
                   }`}
                 >
                   <IconComponent size={18} />
@@ -193,7 +240,7 @@ export function MobileDrawer() {
         </div>
 
         {/* Bottom User Area */}
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+        <div className="pt-3 border-t border-slate-200 dark:border-white/[0.08]">
           {session.isAuthenticated ? (
             <div className="space-y-2">
               <Link

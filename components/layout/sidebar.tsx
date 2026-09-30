@@ -19,7 +19,6 @@ import { useAuth } from "@/components/auth/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
-import { LanguageSwitcher } from "./language-switcher";
 import { UserAvatar } from "@/components/ui/user-avatar";
 
 export function Sidebar() {
@@ -212,12 +211,6 @@ export function Sidebar() {
               })}
             </div>
 
-            {/* Language Selector in Sidebar */}
-            <div className={`px-1 ${isCollapsed ? "flex justify-center" : ""}`}>
-              <LanguageSwitcher
-                variant={isCollapsed ? "compact" : "segmented"}
-              />
-            </div>
 
             {/* User card + quick logout OR Guest sign in button */}
             <div className="pt-1">

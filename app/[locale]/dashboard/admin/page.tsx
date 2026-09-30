@@ -267,7 +267,7 @@ export default function AdminPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "update_settings", isActive: true }),
         });
-      } catch {}
+      } catch { }
 
       // Execute first action immediately so user doesn't wait in silence
       setTimeout(() => {
@@ -279,7 +279,7 @@ export default function AdminPage() {
 
     try {
       localStorage.setItem("gogetters_bot_scheduler_active", String(nextState));
-    } catch {}
+    } catch { }
   };
 
   const handleIntervalChange = (secs: number) => {
@@ -287,7 +287,7 @@ export default function AdminPage() {
     setSecondsUntilNextTick(secs);
     try {
       localStorage.setItem("gogetters_bot_scheduler_interval_seconds", String(secs));
-    } catch {}
+    } catch { }
   };
 
   const toggleSection = (sectionKey: string) => {
@@ -298,7 +298,7 @@ export default function AdminPage() {
       const finalSections = next.length > 0 ? next : [sectionKey];
       try {
         localStorage.setItem("gogetters_bot_scheduler_sections", JSON.stringify(finalSections));
-      } catch {}
+      } catch { }
       return finalSections;
     });
   };
@@ -307,7 +307,7 @@ export default function AdminPage() {
     setSelectedTopicFocus(topic);
     try {
       localStorage.setItem("gogetters_bot_scheduler_topic", topic);
-    } catch {}
+    } catch { }
   };
 
   const handleOpenEditBot = (u: AdminUser) => {
@@ -512,9 +512,8 @@ export default function AdminPage() {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
                   <span
-                    className={`inline-block w-2.5 h-2.5 rounded-full ${
-                      stats.engine.isActive ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
-                    }`}
+                    className={`inline-block w-2.5 h-2.5 rounded-full ${stats.engine.isActive ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                      }`}
                   />
                   <span>
                     Bot Tizimi:{" "}
@@ -526,11 +525,10 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => handleBotAction("toggle_active")}
                   disabled={actionLoading === "toggle_active"}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                    stats.engine.isActive
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${stats.engine.isActive
                       ? "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200"
                       : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  }`}
+                    }`}
                 >
                   {stats.engine.isActive ? (
                     <>
@@ -563,11 +561,10 @@ export default function AdminPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`flex items-center gap-2 pb-2 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                    isActive
+                  className={`flex items-center gap-2 pb-2 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer ${isActive
                       ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
                       : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                  }`}
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{tab.label}</span>
@@ -727,11 +724,10 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={toggleAutoScheduler}
-                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer ${
-                      isAutoSchedulerActive
+                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer ${isAutoSchedulerActive
                         ? "bg-rose-500 hover:bg-rose-600 text-white"
                         : "bg-indigo-600 hover:bg-indigo-700 text-white"
-                    }`}
+                      }`}
                   >
                     {isAutoSchedulerActive ? (
                       <>
@@ -772,19 +768,17 @@ export default function AdminPage() {
                         key={item.secs}
                         type="button"
                         onClick={() => handleIntervalChange(item.secs)}
-                        className={`py-2 px-1.5 rounded-lg text-xs font-semibold border transition-all text-center cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
-                          schedulerIntervalSeconds === item.secs
+                        className={`py-2 px-1.5 rounded-lg text-xs font-semibold border transition-all text-center cursor-pointer flex flex-col items-center justify-center gap-0.5 ${schedulerIntervalSeconds === item.secs
                             ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
                             : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
-                        }`}
+                          }`}
                       >
                         <span>{item.label}</span>
                         <span
-                          className={`text-[9px] font-normal ${
-                            schedulerIntervalSeconds === item.secs
+                          className={`text-[9px] font-normal ${schedulerIntervalSeconds === item.secs
                               ? "text-indigo-100"
                               : "text-slate-400 dark:text-slate-500"
-                          }`}
+                            }`}
                         >
                           {item.tag}
                         </span>
@@ -878,18 +872,16 @@ export default function AdminPage() {
                       <div
                         key={sec.id}
                         onClick={() => toggleSection(sec.id)}
-                        className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                          isChecked
+                        className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isChecked
                             ? "border-indigo-500/60 bg-indigo-50/20 dark:bg-indigo-950/20 shadow-xs"
                             : "border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-800/30 opacity-60 hover:opacity-85"
-                        }`}
+                          }`}
                       >
                         <div
-                          className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border transition-colors ${
-                            isChecked
+                          className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border transition-colors ${isChecked
                               ? "bg-indigo-600 border-indigo-600 text-white"
                               : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700"
-                          }`}
+                            }`}
                         >
                           {isChecked && <CheckSquare className="w-3 h-3 fill-current" />}
                         </div>
@@ -1176,11 +1168,10 @@ export default function AdminPage() {
                     key={f.id}
                     type="button"
                     onClick={() => setUserFilter(f.id as UserFilter)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                      userFilter === f.id
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${userFilter === f.id
                         ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900"
                         : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     {f.label}
                   </button>
@@ -1246,9 +1237,8 @@ export default function AdminPage() {
                             {/* Subtle minimal text with dot - NO BADGES */}
                             <div className="flex items-center gap-1.5 font-medium text-[11px]">
                               <span
-                                className={`w-2 h-2 rounded-full ${
-                                  u.isBot ? "bg-indigo-500" : "bg-emerald-500"
-                                }`}
+                                className={`w-2 h-2 rounded-full ${u.isBot ? "bg-indigo-500" : "bg-emerald-500"
+                                  }`}
                               />
                               <span
                                 className={
@@ -1333,11 +1323,10 @@ export default function AdminPage() {
                     key={f.id}
                     type="button"
                     onClick={() => setPostFilter(f.id as PostFilter)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                      postFilter === f.id
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${postFilter === f.id
                         ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900"
                         : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     {f.label}
                   </button>
@@ -1376,11 +1365,10 @@ export default function AdminPage() {
                             <span className="text-slate-400">@{p.author.handle}</span>
                             <span className="text-slate-300 dark:text-slate-700">•</span>
                             <span
-                              className={`text-[11px] font-medium ${
-                                p.author.isBot
+                              className={`text-[11px] font-medium ${p.author.isBot
                                   ? "text-indigo-600 dark:text-indigo-400"
                                   : "text-emerald-600 dark:text-emerald-400"
-                              }`}
+                                }`}
                             >
                               {p.author.isBot ? "AI Bot" : "Haqiqiy"}
                             </span>
@@ -1477,7 +1465,7 @@ export default function AdminPage() {
                 <input
                   type="number"
                   min={1}
-                  max={200}
+                  max={1000}
                   value={dailyLimitInput}
                   onChange={(e) => setDailyLimitInput(Number(e.target.value))}
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"

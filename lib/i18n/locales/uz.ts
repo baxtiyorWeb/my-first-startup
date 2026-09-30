@@ -41,6 +41,7 @@ export const uz = {
     notifications: "Xabarnomalar",
     reels: "Qisqa videolar",
     explore: "Kashf qilish",
+    search: "Qidirish",
     login: "Kirish",
     logout: "Hisobdan chiqish",
     register: "Ro‘yxatdan o‘tish",

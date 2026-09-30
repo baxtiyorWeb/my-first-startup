@@ -70,7 +70,7 @@ function ShellLayoutInner({
 
       {/* Main App Container: dynamically adjusts margin to match sidebar width smoothly */}
       <div
-        className="flex-1 flex flex-col min-w-0 transition-[margin-left] duration-250 ease-out pb-16 md:pb-0"
+        className="flex-1 flex flex-col min-w-0 transition-[margin-left] duration-250 ease-out pb-[58px] md:pb-0"
         style={{
           marginLeft: "var(--sidebar-offset, 0px)",
         }}
@@ -109,8 +109,39 @@ function ShellLayoutInner({
         <Footer />
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
+      {/* Mobile Bottom Navigation (Authenticated) */}
+      {session.isAuthenticated && <MobileBottomNav />}
+
+      {/* Guest Conversion Banner (Threads/Twitter style) */}
+      {!session.isAuthenticated && (
+        <aside
+          aria-label="Ro‘yxatdan o‘tish taklifi"
+          className="fixed bottom-0 md:bottom-4 left-0 right-0 md:left-1/2 md:-translate-x-1/2 md:max-w-2xl z-50 bg-slate-950/95 dark:bg-white/95 text-white dark:text-black py-2.5 px-4 md:rounded-2xl shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 border-t md:border border-white/[0.1] dark:border-black/[0.1] select-none"
+        >
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs sm:text-sm font-bold tracking-tight truncate">
+              The Go-getters tarmog‘iga xush kelibsiz!
+            </span>
+            <span className="text-[11px] opacity-75 truncate">
+              Fikr bildirish va jamoa tuzish uchun hisob oching.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => router.push(localePath("/auth/login"))}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold opacity-85 hover:opacity-100 transition-opacity cursor-pointer"
+            >
+              Kirish
+            </button>
+            <button
+              onClick={() => router.push(localePath("/auth/register"))}
+              className="px-3.5 py-1.5 rounded-full bg-white dark:bg-black text-black dark:text-white text-xs font-bold shadow-xs hover:opacity-95 active:scale-95 transition-all cursor-pointer"
+            >
+              Ro‘yxatdan o‘tish
+            </button>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

@@ -43,6 +43,7 @@ export const ru: typeof uz = {
     notifications: "Уведомления",
     reels: "Рилс",
     explore: "Обзор",
+    search: "Поиск",
     login: "Войти",
     logout: "Выйти из системы",
     register: "Регистрация",

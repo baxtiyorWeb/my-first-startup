@@ -1,8 +1,10 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { GoGettersLanding } from "@/components/landing/go-getters-landing";
-
-export default function LocaleHome() {
-  return <GoGettersLanding />;
+export default async function LocaleHome({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/dashboard`);
 }
-
