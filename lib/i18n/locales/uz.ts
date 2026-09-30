@@ -81,6 +81,8 @@ export const uz = {
   discussion: {
     title: "Munozara",
     placeholder: "Mulohazangiz, taklifingiz yoki savolingizni yozing...",
+    writeComment: "Mulohazangiz, taklifingiz yoki savolingizni yozing...",
+    noCommentsYet: "Hozircha hech qanday izoh yo‘q. Birinchi bo‘lib o‘z fikringizni bildiring!",
     replyPlaceholder: "Javobingizni yozing...",
     send: "Yuborish",
     reply: "Javob berish",
@@ -462,6 +464,4 @@ export const uz = {
     projects: "🚀 Loyiha & Startaplar",
     cofounders: "🤝 Hammuassis qidirayotganlar",
   },
-  
-
 };

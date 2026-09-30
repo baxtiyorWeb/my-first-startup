@@ -15,6 +15,25 @@ interface EditPostModalProps {
   onSuccess: (updated: { title: string | null; content: string }) => void;
 }
 
+function htmlToCleanPlainText(input: string): string {
+  if (!input) return "";
+  if (!/<[a-z][\s\S]*>/i.test(input)) {
+    return input;
+  }
+  return input
+    .replace(/<\/p>|<\/div>|<\/li>|<\/blockquote>|<\/h[1-6]>/gi, "\n\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;/gi, "&")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export function EditPostModal({
   isOpen,
   onClose,
@@ -25,13 +44,13 @@ export function EditPostModal({
 }: EditPostModalProps) {
   const { t } = useI18n();
   const [title, setTitle] = useState(initialTitle || "");
-  const [content, setContent] = useState(initialContent);
+  const [content, setContent] = useState(() => htmlToCleanPlainText(initialContent));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setTitle(initialTitle || "");
-      setContent(initialContent);
+      setContent(htmlToCleanPlainText(initialContent));
     }
   }, [isOpen, initialTitle, initialContent]);
 

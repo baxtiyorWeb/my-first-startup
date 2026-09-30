@@ -83,6 +83,8 @@ export const ru: typeof uz = {
   discussion: {
     title: "Обсуждение",
     placeholder: "Напишите ваше мнение, анализ или вопрос...",
+    writeComment: "Напишите ваше мнение, анализ или вопрос...",
+    noCommentsYet: "Пока нет комментариев. Будьте первым, кто выскажет свое мнение!",
     replyPlaceholder: "Напишите ответ...",
     send: "Отправить",
     reply: "Ответить",

@@ -83,6 +83,8 @@ export const en: typeof uz = {
   discussion: {
     title: "Discussion",
     placeholder: "Write your perspective, insight, or question...",
+    writeComment: "Write your perspective, insight, or question...",
+    noCommentsYet: "No comments yet. Be the first to share your thoughts!",
     replyPlaceholder: "Write a reply...",
     send: "Send",
     reply: "Reply",

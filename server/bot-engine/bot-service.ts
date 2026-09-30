@@ -221,9 +221,6 @@ export class BotService {
       recentTopics,
     });
 
-    // Random initial views count (between 8 and 35) to feel natural
-    const initialViews = Math.floor(8 + Math.random() * 28);
-
     const [newPost] = await db
       .insert(posts)
       .values({
@@ -231,7 +228,7 @@ export class BotService {
         title: generated.title,
         content: generated.content,
         postType: generated.postType || "thought",
-        viewsCount: initialViews,
+        viewsCount: 0,
         likesCount: 0,
         commentsCount: 0,
       })
@@ -359,22 +356,26 @@ export class BotService {
     let followsCount = 0;
     let viewsCount = 0;
 
-    // 1. Simulate Views: increment views on last 5 posts
+    // 1. Simulate Views: increment organically, bounded by total users
+    const [userCountRow] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
+    const maxRealisticViews = Math.max(2, Math.min(userCountRow?.count || 8, 8));
+
     const recentPosts = await db
-      .select({ id: posts.id })
+      .select({ id: posts.id, viewsCount: posts.viewsCount })
       .from(posts)
       .orderBy(desc(posts.createdAt))
       .limit(5);
 
     for (const p of recentPosts) {
-      const addedViews = Math.floor(3 + Math.random() * 8);
-      await db
-        .update(posts)
-        .set({
-          viewsCount: sql`${posts.viewsCount} + ${addedViews}`,
-        })
-        .where(eq(posts.id, p.id));
-      viewsCount += addedViews;
+      if (p.viewsCount < maxRealisticViews && Math.random() > 0.5) {
+        await db
+          .update(posts)
+          .set({
+            viewsCount: sql`${posts.viewsCount} + 1`,
+          })
+          .where(eq(posts.id, p.id));
+        viewsCount += 1;
+      }
     }
 
     // 2. Simulate Likes: random bot likes recent post

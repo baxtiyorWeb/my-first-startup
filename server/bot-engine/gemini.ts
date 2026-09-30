@@ -47,7 +47,8 @@ export class GeminiClient {
     const generationConfig: Record<string, unknown> = {
       temperature: 0.85,
       topP: 0.95,
-      maxOutputTokens: 1024,
+      maxOutputTokens: 4096,
+      thinkingConfig: { thinkingBudget: 0 },
     };
 
     if (isJson) {
@@ -121,19 +122,19 @@ Shaxsiyatingiz va dunyoqarashingiz: ${options.persona}
 
 MUHIM QOIDALAR:
 1. AI yoki bot ekanligingizni hecham bildirmang. Siz haqiqiy insonsiz.
-2. Rasmiy, kitobiy, ma'ruzanamo tildan mutlaqo qoching ("Hurmatli do'stlar", "Bugun biz ko'rib chiqamiz" kabi gaplar TAQIQLANADI).
-3. Jonli, samimiy o'zbek tilida, qiziqarli so'zlashuv uslubida yozing (masalan: "kecha shunaqa holat bo'ldi", "menimcha", "sizda ham shunaqa bo'lganmi?", "rostan qiziq").
-4. Post hajmi: 2 tadan 4 tagacha ixcham abzas. O'qishga juda qulay, foydali, o'ylantiradigan yoki samimiy savol bilan yakunlanuvchi bo'lsin.
-5. Javobni FAQAT toza JSON formatida qaytaring, boshqa hech qanday so'z qo'shmang:
+2. Rasmiy, kitobiy, ma'ruzanamo tildan mutlaqo qoching.
+3. Jonli, samimiy o'zbek tilida, qiziqarli so'zlashuv uslubida yozing.
+4. Post hajmi: 2 tadan 3 tagacha to'liq va tugallangan abzas. O'rtasida hech qachon to'xtab yoki uzilib qolmasin! Fikr oxiriga yetkazilsin.
+5. QAT'IY TOZA JSON FORMATIDA QAYTARING:
 {
-  "title": "Jozibador, qisqa sarlavha (1 qator)",
-  "content": "Postning asosiy mazmuni (2-3 abzas)",
+  "title": "Jozibador qisqa sarlavha (1 qator)",
+  "content": "Postning to'liq tugallangan mazmuni (2-3 abzas)",
   "postType": "thought"
 }`;
 
     const contextText = options.recentTopics && options.recentTopics.length > 0
       ? `Platformada hozir aylanayotgan oxirgi mavzular: ${options.recentTopics.join(", ")}. Bunga mos, yangicha fikr yoki savol o'rtaga tashlang.`
-      : `O'zingizning kasbingiz (${options.role}) va hayotiy/kasbiy tajribangizdan kelib chiqib, odamlarni fikr bildirishga chorlaydigan qiziqarli post yozing.`;
+      : `O'zingizning kasbingiz (${options.role}) va hayotiy/kasbiy tajribangizdan kelib chiqib, odamlarni fikr bildirishga chorlaydigan qiziqarli to'liq post yozing.`;
 
     const raw = await this.callGemini(contextText, systemPrompt, undefined, true);
     const parsed = this.parseJsonSafe<{
@@ -142,27 +143,34 @@ MUHIM QOIDALAR:
       postType?: "thought" | "project";
     }>(raw, {});
 
-    let title = parsed.title?.trim() || "";
-    let content = parsed.content?.trim() || "";
+    let title = (parsed.title || "").trim();
+    let content = (parsed.content || "").trim();
 
-    // If parsing failed or JSON syntax leaked, cleanly strip JSON artifacts
-    if (!content || content.includes('"content":') || content.includes('{"title":')) {
-      content = raw
-        .replace(/\{[\s\S]*?"content"\s*:\s*"/, "")
-        .replace(/"\s*,?\s*"postType"[\s\S]*$/, "")
-        .replace(/\\"/g, '"')
-        .replace(/\\n/g, "\n")
-        .replace(/[\{\}\[\]]/g, "")
-        .trim();
+    // Sanitize any accidental JSON key remnants or leaked quotes
+    title = title
+      .replace(/^"(?:title|content)":\s*"?/i, "")
+      .replace(/^title":\s*"?/i, "")
+      .replace(/^["']|["']$/g, "")
+      .trim();
+
+    content = content
+      .replace(/^"(?:title|content)":\s*"?/i, "")
+      .replace(/^title":\s*"?/i, "")
+      .replace(/^content":\s*"?/i, "")
+      .replace(/^["']|["']$/g, "")
+      .trim();
+
+    if (!content || content.length < 25) {
+      content = `Har doim yangi loyiha yoki g'oyani boshlashda eng qiyini – birinchi qadamni tashlash bo'ladi.\n\nAyniqsa jamoa yig'ish, birinchi foydalanuvchilarni topish oson kechmaydi. Lekin to'xtamasdan harakat qilish baribir o'z samarasini beradi. Sizda bu jarayon qanday kechgan?`;
     }
 
-    if (!title || title.includes('"title":')) {
-      title = `${options.role} sifatida bir fikr`;
+    if (!title || title.length < 5) {
+      title = `${options.role} sifatida bir mulohaza`;
     }
 
     return {
-      title: title.replace(/^["']|["']$/g, "").trim(),
-      content: content.replace(/^["']|["']$/g, "").trim(),
+      title,
+      content,
       postType: parsed.postType || "thought",
     };
   }
@@ -258,16 +266,24 @@ QAT'IY JSON FORMATIDA QAYTARING:
 
   private parseJsonSafe<T>(raw: string, fallback: T): T {
     try {
-      const firstBrace = raw.indexOf("{");
-      const lastBrace = raw.lastIndexOf("}");
-      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        const jsonSubstring = raw.slice(firstBrace, lastBrace + 1);
-        return JSON.parse(jsonSubstring) as T;
-      }
-      const cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*$/gi, "").trim();
-      return JSON.parse(cleaned) as T;
+      return JSON.parse(raw.trim()) as T;
     } catch {
-      return fallback;
+      try {
+        const cleaned = raw.replace(/^```json\s*/gi, "").replace(/```\s*$/gi, "").trim();
+        return JSON.parse(cleaned) as T;
+      } catch {
+        try {
+          const firstBrace = raw.indexOf("{");
+          const lastBrace = raw.lastIndexOf("}");
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            const jsonSubstring = raw.slice(firstBrace, lastBrace + 1);
+            return JSON.parse(jsonSubstring) as T;
+          }
+        } catch {
+          // ignore
+        }
+        return fallback;
+      }
     }
   }
 }
