@@ -15,6 +15,8 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 
 import { useAuth } from "@/components/auth/auth-context";
 import { isSameUser } from "@/lib/user-utils";
+import { Settings } from "lucide-react";
+import { ProfileMenuModal } from "./profile-menu-modal";
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -37,6 +39,7 @@ export function ProfileHeader({
   const [isFollowing, setIsFollowing] = useState(isSelfUser ? false : (profile.isFollowing ?? false));
   const [followersCount, setFollowersCount] = useState(profile.stats.followersCount);
   const [isSharing, setIsSharing] = useState(false);
+  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
   const handleFollow = () => {
     if (isSelfUser) {
@@ -161,6 +164,17 @@ export function ProfileHeader({
                 <span>{t("profile.editProfile")}</span>
               </button>
 
+              {/* Menu & Settings Button (Modal Sheet) */}
+              <button
+                type="button"
+                onClick={() => setIsMenuModalOpen(true)}
+                aria-label="Menyu va sozlamalar"
+                title="Menyu va sozlamalar"
+                className="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <Settings size={15} />
+              </button>
+
               <button
                 type="button"
                 onClick={handleShare}
@@ -172,6 +186,12 @@ export function ProfileHeader({
               >
                 <ShareIcon size={15} />
               </button>
+
+              {/* Profile Menu Modal */}
+              <ProfileMenuModal
+                isOpen={isMenuModalOpen}
+                onClose={() => setIsMenuModalOpen(false)}
+              />
             </>
           ) : (
             <>

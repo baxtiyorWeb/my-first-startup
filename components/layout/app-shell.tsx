@@ -14,7 +14,7 @@ import {
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { Footer } from "./footer";
-import { MobileDrawer, MobileBottomNav } from "./mobile-nav";
+import { MobileBottomNav } from "./mobile-nav";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -64,9 +64,6 @@ function ShellLayoutInner({
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased">
       {/* Desktop Fixed Navigation */}
       <Sidebar />
-
-      {/* Mobile Drawer (Accessible modal overlay) */}
-      <MobileDrawer />
 
       {/* Main App Container: dynamically adjusts margin to match sidebar width smoothly */}
       <div

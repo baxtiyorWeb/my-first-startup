@@ -128,13 +128,14 @@ export function Header({ title, subtitle }: HeaderProps) {
         <div className="h-full px-2.5 sm:px-5 lg:px-7 flex items-center justify-between gap-1.5 sm:gap-4 max-w-full">
           {/* Left: Burger button + Page Title */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
+            {/* Desktop Burger button for sidebar toggle */}
             <button
               type="button"
               onClick={handleBurgerClick}
               aria-label={
                 isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")
               }
-              className="p-1.5 sm:p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:scale-95 cursor-pointer focus-visible:outline-none transition-all shrink-0 touch-manipulation"
+              className="hidden md:flex p-1.5 sm:p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:scale-95 cursor-pointer focus-visible:outline-none transition-all shrink-0 touch-manipulation"
             >
               <MenuIcon
                 size={20}
@@ -142,10 +143,10 @@ export function Header({ title, subtitle }: HeaderProps) {
               />
             </button>
 
-            {/* Mobile Brand Logo */}
+            {/* Mobile Brand Logo & Name */}
             <Link
               href={localePath("/dashboard")}
-              className="flex items-center gap-1.5 md:hidden shrink-0 group"
+              className="flex items-center gap-2 md:hidden shrink-0 group"
               title={t("common.brandName")}
             >
               <div className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
