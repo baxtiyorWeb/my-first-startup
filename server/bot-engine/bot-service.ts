@@ -1,4 +1,4 @@
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, isNull, and } from "drizzle-orm";
 import { db } from "@/server/db";
 import {
   users,
@@ -228,6 +228,7 @@ export class BotService {
     const recentPosts = await db
       .select({ title: posts.title })
       .from(posts)
+      .where(isNull(posts.deletedAt))
       .orderBy(desc(posts.createdAt))
       .limit(5);
 
@@ -251,7 +252,7 @@ export class BotService {
       ];
     const lengthTier = options?.lengthTier || getRandomLengthTier();
 
-    const generated = await gemini.generatePost({
+    let generated = await gemini.generatePost({
       name: bot.name,
       role: bot.role,
       persona: bot.botPersona || archetype?.persona || "Samimiy va o'ylantiruvchi postlar yozuvchi",
@@ -265,6 +266,31 @@ export class BotService {
       lengthTier,
     });
 
+    // Enforce strict uniqueness against existing DB records
+    const existingSameTitle = await db
+      .select({ id: posts.id })
+      .from(posts)
+      .where(and(eq(posts.title, generated.title), isNull(posts.deletedAt)))
+      .limit(1);
+
+    if (existingSameTitle.length > 0) {
+      const roleTag = bot.role ? bot.role.trim() : "Go-getter";
+      generated.title = `${generated.title} (${roleTag} nigohi)`;
+    }
+
+    const existingSameContent = await db
+      .select({ id: posts.id })
+      .from(posts)
+      .where(and(eq(posts.content, generated.content), isNull(posts.deletedAt)))
+      .limit(1);
+
+    if (existingSameContent.length > 0) {
+      generated.content = `<p><em>${bot.name} (${bot.role}) kuzatuvi:</em></p>` + generated.content;
+    }
+
+    const coverImage = gemini.getTopicCoverImage(topicCategory.label, bot.role);
+    const mediaUrls = [coverImage];
+
     const [newPost] = await db
       .insert(posts)
       .values({
@@ -272,6 +298,7 @@ export class BotService {
         title: generated.title,
         content: generated.content,
         postType: generated.postType || "thought",
+        mediaUrls,
         viewsCount: 0,
         likesCount: 0,
         commentsCount: 0,
@@ -301,7 +328,7 @@ export class BotService {
       withSearch?: boolean;
       botId?: string;
     }
-  ) {
+  ): Promise<typeof comments.$inferSelect> {
     let botList = await this.getBotUsers();
     if (botList.length === 0) {
       botList = await this.seedStarterBotsIfEmpty();
@@ -320,6 +347,7 @@ export class BotService {
           commentsCount: posts.commentsCount,
         })
         .from(posts)
+        .where(isNull(posts.deletedAt))
         .orderBy(desc(posts.createdAt))
         .limit(10);
 
@@ -343,11 +371,12 @@ export class BotService {
         content: posts.content,
       })
       .from(posts)
-      .where(eq(posts.id, targetPostId))
+      .where(and(eq(posts.id, targetPostId), isNull(posts.deletedAt)))
       .limit(1);
 
     if (!targetPost) {
-      throw new Error("Maqsadli post topilmadi");
+      const createdPost = await this.generateOrganicPost();
+      return this.generateOrganicComment(createdPost.id, options);
     }
 
     // Pick a bot that is NOT the post author
@@ -376,7 +405,7 @@ export class BotService {
     const isDeep = options?.deepReasoning !== undefined ? options.deepReasoning : true;
     const withSearch = options?.withSearch !== undefined ? options.withSearch : Math.random() < 0.25;
 
-    const commentText = await gemini.generateComment({
+    let commentText = await gemini.generateComment({
       botName: chosenBot.name,
       botRole: chosenBot.role,
       botPersona: chosenBot.botPersona || archetype?.persona || "Samimiy fikr bildiruvchi",
@@ -388,6 +417,17 @@ export class BotService {
       deepReasoning: isDeep,
       withSearch,
     });
+
+    // Enforce comment uniqueness on post
+    const existingSameComment = await db
+      .select({ id: comments.id })
+      .from(comments)
+      .where(and(eq(comments.postId, targetPost.id), eq(comments.content, commentText), isNull(comments.deletedAt)))
+      .limit(1);
+
+    if (existingSameComment.length > 0) {
+      commentText = `${commentText} — ${chosenBot.name} (${chosenBot.role})`;
+    }
 
     const [newComment] = await db
       .insert(comments)
@@ -435,6 +475,7 @@ export class BotService {
     const recentPosts = await db
       .select({ id: posts.id, viewsCount: posts.viewsCount })
       .from(posts)
+      .where(isNull(posts.deletedAt))
       .orderBy(desc(posts.createdAt))
       .limit(5);
 
@@ -540,7 +581,7 @@ export class BotService {
     const [targetPost] = await db
       .select({ id: posts.id, title: posts.title, content: posts.content, authorId: posts.authorId, viewsCount: posts.viewsCount })
       .from(posts)
-      .where(eq(posts.id, postId))
+      .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
       .limit(1);
 
     if (!bot || !targetPost) {
@@ -576,7 +617,12 @@ export class BotService {
     }
 
     // Record legitimate view with 24h deduplication in database
-    const viewResult = await recordPostView(targetPost.id, bot.id);
+    let viewResult = { incremented: false, viewsCount: targetPost.viewsCount };
+    try {
+      viewResult = await recordPostView(targetPost.id, bot.id);
+    } catch (err) {
+      console.warn(`[BotService] recordPostView skipped for post ${targetPost.id}:`, err);
+    }
 
     // Audit in bot activities
     const interestTag = isInterested ? ` [Sohasi: ${matchingDomain}]` : "";
@@ -634,7 +680,7 @@ export class BotService {
     const [parentPost] = await db
       .select({ id: posts.id, title: posts.title, content: posts.content, authorId: posts.authorId })
       .from(posts)
-      .where(eq(posts.id, targetComment.postId))
+      .where(and(eq(posts.id, targetComment.postId), isNull(posts.deletedAt)))
       .limit(1);
 
     if (!parentPost) {
@@ -652,7 +698,7 @@ export class BotService {
 
     const archetype = STARTER_PERSONAS.find((p) => p.name === chosenBot.name || p.handle === chosenBot.handle);
 
-    const replyText = await gemini.generateReply({
+    let replyText = await gemini.generateReply({
       botName: chosenBot.name,
       botRole: chosenBot.role,
       botPersona: chosenBot.botPersona || archetype?.persona || "Mulohazali suhbatdosh",
@@ -663,6 +709,17 @@ export class BotService {
       parentCommentAuthor: targetComment.authorName,
       parentCommentContent: targetComment.content,
     });
+
+    // Enforce reply uniqueness on post
+    const existingSameReply = await db
+      .select({ id: comments.id })
+      .from(comments)
+      .where(and(eq(comments.postId, parentPost.id), eq(comments.content, replyText), isNull(comments.deletedAt)))
+      .limit(1);
+
+    if (existingSameReply.length > 0) {
+      replyText = `${replyText} (${chosenBot.name})`;
+    }
 
     const [newReply] = await db
       .insert(comments)
@@ -737,101 +794,123 @@ export class BotService {
     let description = "";
     let data: any = null;
 
-    switch (chosenSection) {
-      case "thoughts": {
-        const post = await this.generateOrganicPost({
-          forceWithSearch: false,
-          topicFocus: options.topicFocus && options.topicFocus !== "all" ? options.topicFocus : undefined,
-        });
-        try {
-          const botList = await this.getBotUsers();
-          if (botList.length > 1) {
-            const viewer = botList.find((b) => b.id !== post.authorId) || botList[0];
-            await this.simulateBotPostView(viewer.id, post.id);
-          }
-        } catch {}
-        description = `Yangi fikr chop etildi: "${post.title?.slice(0, 45)}..."`;
-        data = post;
-        break;
-      }
-
-      case "search_thoughts": {
-        const post = await this.generateOrganicPost({
-          forceWithSearch: true,
-          topicFocus: options.topicFocus && options.topicFocus !== "all" ? options.topicFocus : undefined,
-        });
-        try {
-          const botList = await this.getBotUsers();
-          if (botList.length > 1) {
-            const viewer = botList.find((b) => b.id !== post.authorId) || botList[0];
-            await this.simulateBotPostView(viewer.id, post.id);
-          }
-        } catch {}
-        description = `Google tahlili bilan post chiqdi: "${post.title?.slice(0, 45)}..."`;
-        data = post;
-        break;
-      }
-
-      case "comments": {
-        const comment = await this.generateOrganicComment(undefined, {
-          deepReasoning: true,
-          withSearch: Math.random() < 0.35,
-        });
-        if (comment?.postId) {
+    try {
+      switch (chosenSection) {
+        case "thoughts": {
+          const post = await this.generateOrganicPost({
+            forceWithSearch: false,
+            topicFocus: options.topicFocus && options.topicFocus !== "all" ? options.topicFocus : undefined,
+          });
           try {
             const botList = await this.getBotUsers();
-            if (botList.length > 0) {
-              const liker = botList[Math.floor(Math.random() * botList.length)];
-              await db.insert(postLikes).values({ postId: comment.postId, userId: liker.id }).onConflictDoNothing();
-              await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, comment.postId));
+            if (botList.length > 1) {
+              const viewer = botList.find((b) => b.id !== post.authorId) || botList[0];
+              await this.simulateBotPostView(viewer.id, post.id);
             }
           } catch {}
+          description = `Yangi fikr chop etildi: "${post.title?.slice(0, 45)}..."`;
+          data = post;
+          break;
         }
-        description = `Mavjud postga tahliliy izoh va layk qoldirildi`;
-        data = comment;
-        break;
-      }
 
-      case "replies": {
-        const reply = await this.generateOrganicReply();
-        description = `Muhokamadagi izohga jonli javob yozildi`;
-        data = reply;
-        break;
-      }
+        case "search_thoughts": {
+          const post = await this.generateOrganicPost({
+            forceWithSearch: true,
+            topicFocus: options.topicFocus && options.topicFocus !== "all" ? options.topicFocus : undefined,
+          });
+          try {
+            const botList = await this.getBotUsers();
+            if (botList.length > 1) {
+              const viewer = botList.find((b) => b.id !== post.authorId) || botList[0];
+              await this.simulateBotPostView(viewer.id, post.id);
+            }
+          } catch {}
+          description = `Google tahlili bilan post chiqdi: "${post.title?.slice(0, 45)}..."`;
+          data = post;
+          break;
+        }
 
-      case "views": {
-        const botList = await this.getBotUsers();
-        const recentPosts = await db.select({ id: posts.id }).from(posts).orderBy(desc(posts.createdAt)).limit(8);
-        if (botList.length > 0 && recentPosts.length > 0) {
-          const randomBot = botList[Math.floor(Math.random() * botList.length)];
-          const randomPost = recentPosts[Math.floor(Math.random() * recentPosts.length)];
-          const viewRes = await this.simulateBotPostView(randomBot.id, randomPost.id);
-          if (Math.random() < 0.6) {
+        case "comments": {
+          const comment = await this.generateOrganicComment(undefined, {
+            deepReasoning: true,
+            withSearch: Math.random() < 0.35,
+          });
+          if (comment?.postId) {
             try {
-              await db.insert(postLikes).values({ postId: randomPost.id, userId: randomBot.id }).onConflictDoNothing();
-              await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, randomPost.id));
+              const botList = await this.getBotUsers();
+              if (botList.length > 0) {
+                const liker = botList[Math.floor(Math.random() * botList.length)];
+                await db.insert(postLikes).values({ postId: comment.postId, userId: liker.id }).onConflictDoNothing();
+                await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, comment.postId));
+              }
             } catch {}
           }
-          description = `${randomBot.name} postni ko'rdi va munosabat bildirdi (Ko'rishlar: ${viewRes.viewsCount})`;
-          data = viewRes;
-        } else {
-          description = `Postlar skanerlandi`;
+          description = `Mavjud postga tahliliy izoh va layk qoldirildi`;
+          data = comment;
+          break;
         }
-        break;
-      }
 
-      case "likes": {
-        const socialResult = await this.simulateSocialInteractions();
-        description = `Ijtimoiy munosabat: +${socialResult.views} ko'rish, +${socialResult.likes} like, +${socialResult.follows} obuna`;
-        data = socialResult;
-        break;
-      }
+        case "replies": {
+          const reply = await this.generateOrganicReply();
+          description = `Muhokamadagi izohga jonli javob yozildi`;
+          data = reply;
+          break;
+        }
 
-      default: {
-        const defaultPost = await this.generateOrganicPost();
-        description = `Yangi post yaratildi: "${defaultPost.title}"`;
-        data = defaultPost;
+        case "views": {
+          const botList = await this.getBotUsers();
+          const recentPosts = await db
+            .select({ id: posts.id })
+            .from(posts)
+            .where(isNull(posts.deletedAt))
+            .orderBy(desc(posts.createdAt))
+            .limit(8);
+          if (botList.length > 0 && recentPosts.length > 0) {
+            const randomBot = botList[Math.floor(Math.random() * botList.length)];
+            const randomPost = recentPosts[Math.floor(Math.random() * recentPosts.length)];
+            const viewRes = await this.simulateBotPostView(randomBot.id, randomPost.id);
+            if (Math.random() < 0.6) {
+              try {
+                await db.insert(postLikes).values({ postId: randomPost.id, userId: randomBot.id }).onConflictDoNothing();
+                await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, randomPost.id));
+              } catch {}
+            }
+            description = `${randomBot.name} postni ko'rdi va munosabat bildirdi (Ko'rishlar: ${viewRes.viewsCount})`;
+            data = viewRes;
+          } else {
+            description = `Postlar skanerlandi`;
+          }
+          break;
+        }
+
+        case "likes": {
+          const socialResult = await this.simulateSocialInteractions();
+          description = `Ijtimoiy munosabat: +${socialResult.views} ko'rish, +${socialResult.likes} like, +${socialResult.follows} obuna`;
+          data = socialResult;
+          break;
+        }
+
+        case "refine": {
+          const refineResult = await this.auditAndRefineBotContent();
+          description = `Avtonom audit va tahrirlash: ${refineResult.refinedPosts} ta post va ${refineResult.refinedComments} ta izoh tekshirildi hamda tahrirlandi`;
+          data = refineResult;
+          break;
+        }
+
+        default: {
+          const defaultPost = await this.generateOrganicPost();
+          description = `Yangi post yaratildi: "${defaultPost.title}"`;
+          data = defaultPost;
+        }
       }
+    } catch (err) {
+      console.error("[BotService] Autonomous cycle action failed:", err);
+      return {
+        executed: false,
+        actionType,
+        description: "Avtonom sikl bajarilishida xatolik yuz berdi",
+        reason: (err as Error).message || "Noma'lum xatolik",
+      };
     }
 
     // Touch lastActivityAt in settings
@@ -846,6 +925,120 @@ export class BotService {
       actionType,
       description,
       data,
+    };
+  }
+
+  /**
+   * Autonomous audit and self-correction engine for bot posts & comments.
+   * Scans existing posts and comments, fixes identity/name mismatches, formatting issues,
+   * enriches with cover images, and refines text quality.
+   */
+  async auditAndRefineBotContent(): Promise<{
+    refinedPosts: number;
+    refinedComments: number;
+    details: string[];
+  }> {
+    const detailsList: string[] = [];
+    let refinedPostsCount = 0;
+    let refinedCommentsCount = 0;
+
+    // 1. Audit comments for bot users
+    const botComments = await db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        authorId: comments.authorId,
+        content: comments.content,
+        authorName: users.name,
+      })
+      .from(comments)
+      .innerJoin(users, eq(comments.authorId, users.id))
+      .where(and(eq(users.isBot, true), isNull(comments.deletedAt)))
+      .orderBy(desc(comments.createdAt))
+      .limit(30);
+
+    for (const c of botComments) {
+      // Check if comment text contains hallucinated names like "Men Usmonov Abdulaziz..."
+      const sanitized = gemini.sanitizeAuthorIdentity(c.content, c.authorName);
+      if (sanitized !== c.content) {
+        await db
+          .update(comments)
+          .set({ content: sanitized, updatedAt: new Date() })
+          .where(eq(comments.id, c.id));
+
+        refinedCommentsCount++;
+        detailsList.push(`Izohdagi ism xatoligi tuzatildi (${c.authorName})`);
+
+        await db.insert(botActivities).values({
+          activityType: "refine",
+          botId: c.authorId,
+          targetId: c.id,
+          details: `Bot o'z izohidagi ism xatoligini avtonom tuzatdi (${c.authorName})`,
+        });
+      }
+    }
+
+    // 2. Audit posts for bot users
+    const botPosts = await db
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        title: posts.title,
+        content: posts.content,
+        mediaUrls: posts.mediaUrls,
+        authorName: users.name,
+        authorRole: users.role,
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .where(and(eq(users.isBot, true), isNull(posts.deletedAt)))
+      .orderBy(desc(posts.createdAt))
+      .limit(20);
+
+    for (const p of botPosts) {
+      let needsUpdate = false;
+      let newTitle = p.title ? gemini.sanitizeAuthorIdentity(p.title, p.authorName) : p.title;
+      let newContent = gemini.sanitizeAuthorIdentity(p.content, p.authorName);
+      let mediaList = (p.mediaUrls as string[]) || [];
+
+      if (newContent !== p.content || newTitle !== p.title) {
+        needsUpdate = true;
+      }
+
+      // Check if post is missing mediaUrls image and enrich it
+      if (mediaList.length === 0 && Math.random() < 0.8) {
+        const coverImg = gemini.getTopicCoverImage(p.title || p.content, p.authorRole || undefined);
+        mediaList = [coverImg];
+        needsUpdate = true;
+      }
+
+      if (needsUpdate) {
+        await db
+          .update(posts)
+          .set({
+            title: newTitle,
+            content: newContent,
+            mediaUrls: mediaList,
+            updatedAt: new Date(),
+          })
+          .where(eq(posts.id, p.id));
+
+        refinedPostsCount++;
+        detailsList.push(`Post tahrirlandi va rasm bilan boyitildi (${p.authorName})`);
+
+        await db.insert(botActivities).values({
+          activityType: "refine",
+          botId: p.authorId,
+          targetId: p.id,
+          details: `Bot o'z postini tahrirladi va muqova rasmini qo'shdi (${p.authorName})`,
+        });
+      }
+    }
+
+    return {
+      refinedPosts: refinedPostsCount,
+      refinedComments: refinedCommentsCount,
+      details: detailsList,
     };
   }
 

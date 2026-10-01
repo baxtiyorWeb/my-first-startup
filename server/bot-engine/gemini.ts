@@ -72,11 +72,11 @@ export interface CallGeminiOptions {
  * Each is tried in sequence if the previous one fails.
  */
 const OPENROUTER_FREE_MODELS = [
-  "meta-llama/llama-3.3-70b-instruct:free",  // Meta 70B — excellent multilingual reasoning
-  "deepseek/deepseek-chat:free",              // DeepSeek — top-tier text quality
-  "qwen/qwen-2.5-72b-instruct:free",          // Alibaba Qwen 72B — strong multilingual
-  "google/gemini-2.0-flash-exp:free",         // Gemini via OpenRouter — familiar quality
-  "mistralai/mistral-7b-instruct:free",       // Mistral 7B — fastest lightweight fallback
+  "google/gemma-2-9b-it:free",               // Gemma 2 9B (Free on OpenRouter)
+  "meta-llama/llama-3.1-8b-instruct:free",   // Llama 3.1 8B (Free on OpenRouter)
+  "meta-llama/llama-3.3-70b-instruct",       // Meta Llama 3.3 70B
+  "deepseek/deepseek-chat",                   // DeepSeek V3 Chat
+  "qwen/qwen-2.5-72b-instruct",               // Alibaba Qwen 2.5 72B
 ] as const;
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -92,14 +92,90 @@ export class GeminiClient {
   constructor() {
     this.geminiKey = process.env.GOOGLE_GEMINI_API_KEY || "";
     this.openRouterKey = process.env.OPEN_ROUTER_API_KEY || "";
-    this.primaryModel = "gemini-3.5-flash";
-    this.geminiSecondary = "gemini-flash-latest";
+    this.primaryModel = "gemini-2.0-flash";
+    this.geminiSecondary = "gemini-1.5-flash";
   }
 
   // ── helpers ──────────────────────────────────────────────────────────────────
 
   private delay(ms: number) {
     return new Promise<void>((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Guarantee identity consistency and strip hallucinated author names.
+   */
+  public sanitizeAuthorIdentity(text: string, botName: string): string {
+    if (!text || !botName) return text;
+
+    const firstName = botName.split(" ")[0] || botName;
+
+    // Pattern 1: "Men [Other Name], ..." or "Men [Other Name] ..."
+    let cleaned = text.replace(/Men\s+([A-ZÀ-Ўa-zà-ў']+(?:\s+[A-ZÀ-Ўa-zà-ў']+)?)(?=,|\s+—|\s+sun'iy|\s+dasturchi|\s+mutaxassis|\s+va\b)/g, (match, capturedName) => {
+      if (capturedName.toLowerCase().includes(firstName.toLowerCase()) || botName.toLowerCase().includes(capturedName.toLowerCase())) {
+        return match;
+      }
+      return `Men ${botName}`;
+    });
+
+    // Pattern 2: "Ismim [Other Name]"
+    cleaned = cleaned.replace(/Ismim\s+([A-ZÀ-Ўa-zà-ў']+(?:\s+[A-ZÀ-Ўa-zà-ў']+)?)/g, (match, capturedName) => {
+      if (capturedName.toLowerCase().includes(firstName.toLowerCase())) {
+        return match;
+      }
+      return `Ismim ${botName}`;
+    });
+
+    // Pattern 3: Trailing signature mismatch (e.g. "— Abdulaziz", "- Sardor Rahimov")
+    cleaned = cleaned.replace(/(?:—|-)\s*([A-ZÀ-Ўa-zà-ў']+(?:\s+[A-ZÀ-Ўa-zà-ў']+)?)$/g, (match, capturedName) => {
+      if (capturedName.toLowerCase().includes(firstName.toLowerCase())) {
+        return match;
+      }
+      return `— ${botName}`;
+    });
+
+    return cleaned;
+  }
+
+  /**
+   * Curated high quality Unsplash images for post enhancement.
+   */
+  public getTopicCoverImage(topicFocus?: string, role?: string): string {
+    const text = `${topicFocus || ""} ${role || ""}`.toLowerCase();
+
+    if (/dizayn|ui|ux|figma|interfeys/i.test(text)) {
+      const designImages = [
+        "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=1200&auto=format&fit=crop",
+      ];
+      return designImages[Math.floor(Math.random() * designImages.length)];
+    }
+
+    if (/startap|biznes|pm|investitsiya|mvp/i.test(text)) {
+      const startupImages = [
+        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop",
+      ];
+      return startupImages[Math.floor(Math.random() * startupImages.length)];
+    }
+
+    if (/kod|dastur|dev|backend|frontend|ai|sun'iy|algoritm/i.test(text)) {
+      const techImages = [
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1677442136019-21780efad99a?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop",
+      ];
+      return techImages[Math.floor(Math.random() * techImages.length)];
+    }
+
+    const defaultImages = [
+      "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop",
+    ];
+    return defaultImages[Math.floor(Math.random() * defaultImages.length)];
   }
 
   private parseJsonSafe<T>(raw: string, fallback: T): T {
@@ -468,13 +544,19 @@ Ushbu mavzuni o'zingizning shaxsiyatingiz, insoniy tajribangiz va dunyoqarashing
     } catch (err) {
       if (withSearch) {
         console.warn("[AI] Search generation failed, falling back to standard generation:", err);
-        raw = await this.callGemini(userPrompt, systemPrompt, {
-          enableSearch: false,
-          isJson: true,
-          temperature: 0.85,
-        });
+        try {
+          raw = await this.callGemini(userPrompt, systemPrompt, {
+            enableSearch: false,
+            isJson: true,
+            temperature: 0.85,
+          });
+        } catch (innerErr) {
+          console.warn("[AI] Standard generation also failed, using offline post template:", innerErr);
+          return this.getOfflineFallbackPost(role, topicFocus || topicAngle);
+        }
       } else {
-        throw err;
+        console.warn("[AI] Post generation failed, using offline post template:", err);
+        return this.getOfflineFallbackPost(role, topicFocus || topicAngle);
       }
     }
 
@@ -501,7 +583,9 @@ Ushbu mavzuni o'zingizning shaxsiyatingiz, insoniy tajribangiz va dunyoqarashing
       .trim();
 
     if (!content || content.length < 25) {
-      content = `<p>Ko'pincha biz katta maqsadlar haqida o'ylaymiz, ammo natijani <strong>kundalik mayda odatlar</strong> hal qiladi.</p><blockquote>Har kuni atigi 1% yaxshiroq bo'lish — bir yilda 37 barobar o'sish degani.</blockquote><p>Sizda oxirgi 1 oy ichida eng ko'p foyda bergan odat qaysi bo'ldi?</p>`;
+      const fallback = this.getOfflineFallbackPost(role, topicFocus || topicAngle);
+      title = title || fallback.title;
+      content = fallback.content;
     }
 
     if (!content.includes("<p>") && !content.includes("<h2") && !content.includes("<blockquote")) {
@@ -566,7 +650,8 @@ MUHIM QOIDALAR (TABIIYLIK VA CHUQUR FIKRLASH):
    - C) Do'stona, ammo konstruktiv muqobil fikr bildiring ("Lekin har doim ham bu qoida ishlamasa kerak, ayniqsa B2B sohasida...")
    - D) Noodatiy va foydali kuzatuv qo'shing ("Aynan shu masalada ko'pchilik e'tibordan chetda qoldiradigan 1 ta nozik joyi bor...")
 3. HAJMI: Qisqa va o'tkir bo'lsin: 1 tadan 3 tagacha qisqa, ta'sirchan gap. Odamlar kommentga maqola yozmaydi!
-4. FAQAT va FAQAT sharh matnini qaytaring. Qo'shtirnoqsiz, prefikssiz, izohlarsiz.`;
+4. FAQAT va FAQAT sharh matnini qaytaring. Qo'shtirnoqsiz, prefikssiz, izohlarsiz.
+5. QAT'IY SHAXSIYAT QOIDASI: Sizning yagona va haqiqiy ismingiz FAQAT "${botName}". Siz HECH QACHON o'zingizni boshqa ism bilan tanishtirmaysiz (masalan, Abdulaziz, Sardor, Jasur deb yozish MUTLAQO TAQIQLANADI). Matnda ismingizni aytish lozim bo'lsa, FAQAT "${botName}" ismini ishlating.`;
 
     let userPrompt = `Post sarlavhasi: "${postTitle || "Mulohaza"}"
 Post matni:
@@ -593,20 +678,31 @@ Post matni:
     } catch (err) {
       if (withSearch) {
         console.warn("[AI] Search comment generation failed, falling back to standard:", err);
-        comment = await this.callGemini(userPrompt, systemPrompt, {
-          enableSearch: false,
-          isJson: false,
-          temperature: deepReasoning ? 0.78 : 0.85,
-        });
+        try {
+          comment = await this.callGemini(userPrompt, systemPrompt, {
+            enableSearch: false,
+            isJson: false,
+            temperature: deepReasoning ? 0.78 : 0.85,
+          });
+        } catch (innerErr) {
+          console.warn("[AI] Comment generation failed, using offline fallback comment:", innerErr);
+          const fallback = this.getOfflineFallbackComment(postTitle, postContent);
+          return this.sanitizeAuthorIdentity(fallback, botName);
+        }
       } else {
-        throw err;
+        console.warn("[AI] Comment generation failed, using offline fallback comment:", err);
+        const fallback = this.getOfflineFallbackComment(postTitle, postContent);
+        return this.sanitizeAuthorIdentity(fallback, botName);
       }
     }
 
-    return comment
+    const trimmed = comment
       .replace(/^[\"']|[\"']$/g, "")
       .replace(/^(?:Komment|Izoh|Fikr):\s*/i, "")
       .trim();
+
+    const finalResult = trimmed || this.getOfflineFallbackComment(postTitle, postContent);
+    return this.sanitizeAuthorIdentity(finalResult, botName);
   }
 
   /**
@@ -646,7 +742,8 @@ MUHIM QOIDALAR:
 2. Agar savol berilgan bo'lsa, amaliy misol bilan javob bering.
 3. Agar fikr bildirilgan bo'lsa, qo'shimcha bir nozik jihatni ochib bering yoki qiziqarli qarshi savol bering.
 4. Qisqa va lo'nda bo'lsin: 1-3 ta ixcham jumla.
-5. Soxta maqtov ("Qo'shilaman!", "Ajoyib!") yozmang, to'g'ridan-to'g'ri mavzuga kiring.`;
+5. Soxta maqtov ("Qo'shilaman!", "Ajoyib!") yozmang, to'g'ridan-to'g'ri mavzuga kiring.
+6. QAT'IY SHAXSIYAT QOIDASI: Sizning yagona va haqiqiy ismingiz FAQAT "${botName}". Siz HECH QACHON o'zingizni boshqa ism bilan tanishtirmaysiz.`;
 
     const userPrompt = `Mavzu (Post): "${postTitle || "Fikr"}"
 Post mazmuni: "${postContent.slice(0, 400)}"
@@ -654,8 +751,18 @@ ${parentCommentAuthor} ning izohi: "${parentCommentContent}"
 
 Sizning javobingiz:`;
 
-    const raw = await this.callGemini(userPrompt, systemPrompt);
-    return raw.replace(/^[\"']|[\"']$/g, "").trim() || "Fikringizga qo'shilaman, ayniqsa amaliyotda bu juda seziladi.";
+    let raw = "";
+    try {
+      raw = await this.callGemini(userPrompt, systemPrompt);
+    } catch (err) {
+      console.warn("[AI] Reply generation failed, using offline fallback reply:", err);
+      const fallback = this.getOfflineFallbackReply(parentCommentContent);
+      return this.sanitizeAuthorIdentity(fallback, botName);
+    }
+
+    const trimmed = raw.replace(/^[\"']|[\"']$/g, "").trim();
+    const finalResult = trimmed || this.getOfflineFallbackReply(parentCommentContent);
+    return this.sanitizeAuthorIdentity(finalResult, botName);
   }
 
   /**
@@ -684,16 +791,27 @@ QAT'IY JSON FORMATIDA QAYTARING:
 }`;
 
     const userPrompt = `Yangi qiziqarli o'zbek foydalanuvchisi profilini yarating. Mavjud band username-lar: ${existingHandles.slice(0, 30).join(", ")}. Ularni takrorlamang.`;
-    const raw = await this.callGemini(userPrompt, systemPrompt, { isJson: true });
+
+    let raw = "";
+    try {
+      raw = await this.callGemini(userPrompt, systemPrompt, { isJson: true });
+    } catch (err) {
+      console.warn("[AI] Profile generation failed, using offline fallback profile:", err);
+      return this.getOfflineFallbackProfile(existingHandles);
+    }
 
     const parsed = this.parseJsonSafe(raw, {
-      name: "Sardor Rahimov",
-      handle: `user_${Math.floor(1000 + Math.random() * 9000)}`,
-      role: "Go-getter",
-      bio: "Yangi imkoniyatlar va startaplar sari intiluvchi.",
+      name: "",
+      handle: "",
+      role: "",
+      bio: "",
       gender: "male",
-      persona: "Samimiy, do'stona va fikr almashishga ochiq.",
+      persona: "",
     });
+
+    if (!parsed.name || !parsed.handle) {
+      return this.getOfflineFallbackProfile(existingHandles);
+    }
 
     const seed = parsed.handle || Math.random().toString(36).substring(7);
     const avatarCollection = parsed.gender === "female" ? "personas" : "micah";
@@ -702,10 +820,198 @@ QAT'IY JSON FORMATIDA QAYTARING:
     return {
       name: parsed.name,
       handle: parsed.handle.toLowerCase().replace(/[^a-z0-9_]/g, ""),
-      role: parsed.role,
-      bio: parsed.bio,
+      role: parsed.role || "Go-getter",
+      bio: parsed.bio || "Yangi imkoniyatlar va startaplar sari intiluvchi.",
       avatarUrl,
-      persona: parsed.persona,
+      persona: parsed.persona || "Samimiy, do'stona va fikr almashishga ochiq.",
+    };
+  }
+
+  // ── Offline Fallbacks ────────────────────────────────────────────────────────
+
+  private getOfflineFallbackPost(role?: string, topic?: string): {
+    title: string;
+    content: string;
+    postType: "thought";
+  } {
+    const roles = role || "Go-getter";
+
+    const topicsList = [
+      {
+        tag: "Arxitektura va Texnologiya",
+        titles: [
+          `Kod arxitekturasida soddalik: ${roles} nigohi`,
+          `Overengineering tuzog'idan saqlanish usullari`,
+          `Loyiha masshtablashganda texnik qarzdorlikni kamaytirish`,
+          `Toza kod va modul strukturasining haqiqiy qiymati`,
+          `Dasturlashda samaradorlikni oshirish: amaliy kuzatuvlar`,
+          `Murakkab tizimlarni optimallashtirishda eng muhim qadamlar`
+        ],
+        intros: [
+          `Katta loyihalar bilan ishlash jarayonida shunga amin bo'ldimki, eng yaxshi arxitektura — bu <strong>tushunish va saqlash oson bo'lgan</strong> yechimdir.`,
+          `Ko'pincha biz hali muammo paydo bo'lmasdan turib uni ortiqcha murakkablashtirishga (overengineering) kirishamiz.`,
+          `Dasturchi va muhandislar uchun eng muhim ko'nikmalardan biri — bu muammoning tub ildizini topish va eng sodda yo'l bilan yechishdir.`
+        ],
+        bodies: [
+          `<p>Har bir modul va funksiya bitta aniq mas'uliyatni (KISS prinsipi) o'z bo'yniga olishi kerak. Ortiqcha qatlamlarni olib tashlash loyiha tezligini 30-40% ga oshiradi.</p><blockquote>Dizayn va kodda mukammallik nimadir qo'shishda emas, balki ortiqcha narsani olib tashlashda namoyon bo'ladi.</blockquote>`,
+          `<p>Tizimni kichik va mustaqil qismlarga bo'lib ishlash kelajakdagi <code>bug</code>larni 2 barobar kamaytiradi. <mark>Asosiy urg'uni barqarorlikka bering.</mark></p>`
+        ],
+        outros: [
+          `<p>Sizda loyihalaringizda kod murakkablashib ketishining oldini olish uchun qanday shaxsiy oltin qoidalaringiz bor?</p>`,
+          `<p>Jamoangizda kod sifatini nazorat qilishda eng samarali yondashuv qaysi bo'ldi?</p>`
+        ]
+      },
+      {
+        tag: "Startap va Mahsulot",
+        titles: [
+          `MVP yaratishda birinchi 30 kun nimaga diqqat qaratish kerak?`,
+          `Foydalanuvchilar bilan muloqot (CustDev) va mahsulot mosligi`,
+          `Startapda birinchi daromadni shakllantirish va o'sish`,
+          `G'oyadan haqiqiy mahsulotgacha: ${roles} tajribasidan`,
+          `Raqamli mahsulotlarda foydalanuvchi ishonchini qozonish`,
+          `O'zbekiston bozorida raqamli startapni yo'lga qo'yish saboqlari`
+        ],
+        intros: [
+          `Startaplar olamida statistikaga ko'ra ko'plab loyihalar bozorda haqiqiy talab bo'lmagani uchun muvaffaqiyatsizlikka uchraydi.`,
+          `Mahsulot yaratayotganda eng birinchi savol: <strong>"Biz kimning qaysi aniq og'riqli muammosini hal qilyapmiz?"</strong>`,
+          `Ajoyib texnologiya qurish yetarli emas. Undan odamlar foydalanishi va real qiymat ko'rishi shart.`
+        ],
+        bodies: [
+          `<p>Imkon qadar tezroq prototip (MVP) tayyorlab, uni <strong>real foydalanuvchilar qo'liga berish</strong> lozim. Murojaat va fikrlar (feedback) asosida takomillashtirish eng to'g'ri yo'ldir.</p><ul><li>Mijoz muammosini chuqur o'rganish</li><li>Funktsional doirani minimallashtirish</li><li>Tezkor iteratsiyalar o'tkazish</li></ul>`,
+          `<p>Metriklarni to'g'ri kuzatish o'sishning asosidir. Qaysi xususiyat (feature) foydalanuvchilar tomonidan eng ko'p ishlatilayotganini tahlil qiling.</p><blockquote>Haqiqiy qiymat — bu mahsulotga foydalanuvchi qayta-qayta qaytib kelishidir.</blockquote>`
+        ],
+        outros: [
+          `<p>O'z loyihangizda birinchi g'oyani bozorda qanday sinab ko'rgansiz?</p>`,
+          `<p>Mahsulotingizda eng muhim burilish nuqtasi (pivot) nima bo'lgan?</p>`
+        ]
+      },
+      {
+        tag: "Mahsuldorlik va Shaxsiy Odatlar",
+        titles: [
+          `Ish tartibida 80/20 qoidasi (Pareto prinsipi) va diqqatni saqlash`,
+          `Mutaxassislar uchun ertalabki tartib va energiya boshqaruvi`,
+          `Ruhiy charchoq (Burnout) oldini olish: ${roles} maslahatlari`,
+          `Kundalik 1% o'sish odati va vaqt taym-menedjmenti`,
+          `Masofaviy ish (Remote work) sharoitida diqqatni jamlash`,
+          `Shovqinli axborot makonida diqqatni saqlash san'ati`
+        ],
+        intros: [
+          `Kun davomida doimiy band bo'lish — bu har doim ham samarali ishlashni anglatmaydi.`,
+          `Zamonaviy axborot shovqinida eng muhim resurs bu vaqt emas, balki <strong>diqqat-e'tibor va ichki energiya</strong>dir.`,
+          `Karyerada va shaxsiy rivojlanishda barqarorlik va intizom har qanday bir martalik turtkidan ustundir.`
+        ],
+        bodies: [
+          `<p>Kunni eng qiyin va muhim 1 ta vazifa bilan boshlash (Eat that frog) qolgan barcha ishlarni yengillashtiradi.</p><blockquote>Har bir bildirishnoma (notification) miyaning fokusini buzadi va qayta tiklashga 20 daqiqa vaqt ketadi.</blockquote><p>Ish va dam olish orasida aniq chegaralarni belgilash uzoq masofada yuqori mahsuldorlikni ta'minlaydi.</p>`,
+          `<p>Har kuni kamida 30-45 minut yangi bilim o'rganishga vaqt ajrating. <mark>Yillar davomida bu sizni o'z sohangizda yetakchiga aylantiradi.</mark></p>`
+        ],
+        outros: [
+          `<p>Kunlik ish rejangizda diqqatingizni bo'ladigan eng katta omil nima?</p>`,
+          `<p>Sizda mahsuldorlikni oshiradigan eng sevimli ilova yoki odatingiz qaysi?</p>`
+        ]
+      }
+    ];
+
+    const category = topicsList[Math.floor(Math.random() * topicsList.length)];
+    const titleBase = category.titles[Math.floor(Math.random() * category.titles.length)];
+    const intro = category.intros[Math.floor(Math.random() * category.intros.length)];
+    const body = category.bodies[Math.floor(Math.random() * category.bodies.length)];
+    const outro = category.outros[Math.floor(Math.random() * category.outros.length)];
+
+    return {
+      title: titleBase,
+      content: `<p>${intro}</p>${body}${outro}`,
+      postType: "thought" as const,
+    };
+  }
+
+  private getOfflineFallbackComment(postTitle?: string | null, postContent?: string): string {
+    const intros = [
+      "Juda teran va o'ylantiruvchi fikr bildiribsiz.",
+      "Aynan shu masalaga alohida urg'u berganingiz juda o'rinli bo'libdi.",
+      "Mavzuga tajribangiz prizmasidan qaraganingiz juda qiziqarli.",
+      "Amaliyotda ham bu yondashuv sezilarli natija beradi.",
+      "Ushbu qarashga to'liq qo'shilaman."
+    ];
+
+    const observations = [
+      "Biz ham yaqinda o'z loyihamizda shunga o'xshash vaziyatga duch kelgandik.",
+      "Ko'pincha ko'pchilik bu nozik jihatni e'tibordan chetda qoldirib ketadi.",
+      "Ayniqsa masshtablash bosqichida bu omil hal qiluvchi rol o'ynaydi.",
+      "Aynan shu nuqtada to'g'ri qaror qabul qilish vaqt va resursni tejaydi.",
+      "Tizimli yondashuv bo'lmasa, bu muammo keyinchalik murakkablashadi."
+    ];
+
+    const questionsOrConclusions = [
+      "Kelgusida bu bo'yicha batafsil amaliy keyslarni ham kutib qolamiz!",
+      "Sizningcha, bunga erishishda eng birinchi qadam nima bo'lishi kerak?",
+      "Tajribangiz bilan bo'lishganingiz uchun rahmat!",
+      "Keyingi postlaringizda ham shunday chuqur tahlillarni kutamiz.",
+      "Shu masalada sizda yana qanday muqobil yechimlar bor?"
+    ];
+
+    const i = intros[Math.floor(Math.random() * intros.length)];
+    const o = observations[Math.floor(Math.random() * observations.length)];
+    const q = questionsOrConclusions[Math.floor(Math.random() * questionsOrConclusions.length)];
+
+    return `${i} ${o} ${q}`;
+  }
+
+  private getOfflineFallbackReply(parentCommentContent?: string): string {
+    const intros = [
+      "Javobingiz va fikringiz uchun rahmat!",
+      "O'rinli nuqtaga e'tibor qaratdingiz.",
+      "Fikringizga to'liq qo'shilaman.",
+      "Bu holatda yondashuv haqiqatdan ham muhim."
+    ];
+
+    const details = [
+      "Ayniqsa amaliyotda bu sezilarli darajada ijobiy ta'sir ko'rsatadi.",
+      "Bu masala bo'yicha turli qarashlar bor, lekin siz aytgan variant eng maqbuli.",
+      "Shu bilan birga, jamoaviy muvofiqlik ham hal qiluvchi rol o'ynaydi.",
+      "Kelajakda bu tajribani o'z ish jarayonimizda ham qo'llab ko'ramiz."
+    ];
+
+    const i = intros[Math.floor(Math.random() * intros.length)];
+    const d = details[Math.floor(Math.random() * details.length)];
+
+    return `${i} ${d}`;
+  }
+
+  private getOfflineFallbackProfile(existingHandles: string[]): {
+    name: string;
+    handle: string;
+    role: string;
+    bio: string;
+    avatarUrl: string;
+    persona: string;
+  } {
+    const profiles = [
+      { name: "Sardor Rahimov", role: "Full-Stack Dasturchi", bio: "Yangi texnologiyalar va kod arxitekturasi bilan qiziquvchi.", gender: "male", persona: "Tahliliy va samimiy" },
+      { name: "Madina Karimova", role: "UI/UX Dizayner", bio: "Foydalanuvchilarga qulay va chiroyli interfeyslar yarataman.", gender: "female", persona: "Ijodkor va diqqatli" },
+      { name: "Temur Po'latov", role: "Mahsulot Menejeri", bio: "Startaplar, mahsulot metrikalari va jamoa boshqaruvi.", gender: "male", persona: "Tadbirkor va yetakchi" },
+      { name: "Dilnoza Aliyeva", role: "Growth Marketolog", bio: "Raqamli marketing va mijozlarni jalb qilish strategiyalari.", gender: "female", persona: "Faol va kirishuvchan" },
+      { name: "Azizbek Yoqubov", role: "Backend Injener", bio: "Yuqori yuklamali tizimlar va ma'lumotlar bazasi optimallashuvi.", gender: "male", persona: "Jiddiy va mantiqiy" },
+      { name: "Kamola Ismoilova", role: "Frontend Dasturchi", bio: "React, Next.js va zamonaviy web interfeyslar ishqibozi.", gender: "female", persona: "Samimiy va izlanuvchan" },
+      { name: "Umidjon Saidov", role: "Startap Asoschisi", bio: "Muammolarga innovatsion yechimlar izlash va jamoa shakllantirish.", gender: "male", persona: "Tadbirkor va jasur" },
+    ];
+
+    const chosen = profiles[Math.floor(Math.random() * profiles.length)];
+    let handle = chosen.name.toLowerCase().replace(/[^a-z0-9]/g, "_");
+    let count = 1;
+    while (existingHandles.includes(handle)) {
+      handle = `${chosen.name.toLowerCase().replace(/[^a-z0-9]/g, "_")}_${count++}`;
+    }
+
+    const avatarCollection = chosen.gender === "female" ? "personas" : "micah";
+    const avatarUrl = `https://api.dicebear.com/7.x/${avatarCollection}/svg?seed=${encodeURIComponent(handle)}`;
+
+    return {
+      name: chosen.name,
+      handle,
+      role: chosen.role,
+      bio: chosen.bio,
+      avatarUrl,
+      persona: chosen.persona,
     };
   }
 }

@@ -198,6 +198,15 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      case "refine_content": {
+        const refineResult = await botService.auditAndRefineBotContent();
+        return NextResponse.json({
+          success: true,
+          message: `Avtonom tahrirlash yakunlandi: ${refineResult.refinedPosts} ta post va ${refineResult.refinedComments} ta izoh tekshirildi va tahrirlandi`,
+          data: refineResult,
+        });
+      }
+
       default:
         return NextResponse.json(
           { success: false, error: `Noma'lum amal: ${action}` },

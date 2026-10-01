@@ -31,6 +31,7 @@ export async function PATCH(
       title: body.title,
       content: body.content,
       postType: body.postType,
+      mediaUrls: body.mediaUrls,
     });
 
     return successResponse(updated);

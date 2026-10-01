@@ -273,6 +273,7 @@ export async function updatePost(
     title?: string | null;
     content: string;
     postType?: string;
+    mediaUrls?: string[];
   }
 ): Promise<PostResponse> {
   try {
@@ -300,11 +301,18 @@ export async function updatePost(
     const wordCount = plainText.split(/\s+/).filter(Boolean).length;
     const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
+    const sanitizedMediaUrls = Array.isArray(data.mediaUrls)
+      ? data.mediaUrls
+          .filter((u) => typeof u === "string" && (u.startsWith("http://") || u.startsWith("https://")))
+          .slice(0, 3)
+      : undefined;
+
     await db
       .update(posts)
       .set({
         title: data.title !== undefined ? (data.title?.trim() || null) : undefined,
         content: sanitizedContent,
+        mediaUrls: sanitizedMediaUrls !== undefined ? sanitizedMediaUrls : undefined,
         readingTimeMinutes,
         updatedAt: new Date(),
       })
