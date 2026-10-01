@@ -11,6 +11,14 @@ export interface BackendUserProfile {
   location?: string | null;
   website?: string | null;
   avatarUrl?: string | null;
+  coverPhotoUrl?: string | null;
+  socialLinks?: { github?: string; linkedin?: string; twitter?: string; website?: string } | null;
+  isPrivate?: boolean;
+  dmPermission?: "everyone" | "followed" | "nobody";
+  showOnlineStatus?: boolean;
+  twoFactorEnabled?: boolean;
+  twoFactorType?: "authenticator" | "sms";
+  theme?: "dark" | "light" | "system";
   verified: boolean;
   intent?: UserIntent;
   joinedDate: string;
@@ -42,6 +50,14 @@ export function mapBackendProfileToUserProfile(p: BackendUserProfile): {
     location: p.location || undefined,
     website: p.website || undefined,
     avatarUrl: p.avatarUrl || undefined,
+    coverPhotoUrl: p.coverPhotoUrl || undefined,
+    socialLinks: p.socialLinks || undefined,
+    isPrivate: p.isPrivate,
+    dmPermission: p.dmPermission,
+    showOnlineStatus: p.showOnlineStatus,
+    twoFactorEnabled: p.twoFactorEnabled,
+    twoFactorType: p.twoFactorType,
+    theme: p.theme,
     verified: p.verified,
     intent: p.intent || "none",
     joinedDate: p.joinedDate,
@@ -69,6 +85,14 @@ export async function updateProfile(payload: {
   location?: string;
   website?: string;
   avatarUrl?: string;
+  coverPhotoUrl?: string;
+  socialLinks?: { github?: string; linkedin?: string; twitter?: string; website?: string };
+  isPrivate?: boolean;
+  dmPermission?: "everyone" | "followed" | "nobody";
+  showOnlineStatus?: boolean;
+  twoFactorEnabled?: boolean;
+  twoFactorType?: "authenticator" | "sms";
+  theme?: "dark" | "light" | "system";
   intent?: UserIntent;
 }) {
   const res = await apiClient<BackendUserProfile>("/api/users/me", {

@@ -92,6 +92,19 @@ export interface UserProfile extends Author {
   location?: string;
   joinedDate: string;
   website?: string;
+  coverPhotoUrl?: string;
+  socialLinks?: {
+    github?: string;
+    linkedin?: string;
+    twitter?: string;
+    website?: string;
+  };
+  isPrivate?: boolean;
+  dmPermission?: "everyone" | "followed" | "nobody";
+  showOnlineStatus?: boolean;
+  twoFactorEnabled?: boolean;
+  twoFactorType?: "authenticator" | "sms";
+  theme?: "dark" | "light" | "system";
   primaryTopics?: ContentTopic[];
   stats: {
     postsCount: number;

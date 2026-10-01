@@ -14,6 +14,14 @@ export interface UserProfileResponse {
   location?: string | null;
   website?: string | null;
   avatarUrl?: string | null;
+  coverPhotoUrl?: string | null;
+  socialLinks?: { github?: string; linkedin?: string; twitter?: string; website?: string } | null;
+  isPrivate?: boolean;
+  dmPermission?: string;
+  showOnlineStatus?: boolean;
+  twoFactorEnabled?: boolean;
+  twoFactorType?: string;
+  theme?: string;
   intent?: string;
   verified: boolean;
   isOnboarded: boolean;
@@ -53,6 +61,14 @@ export async function getProfileByHandle(
         location: users.location,
         website: users.website,
         avatarUrl: users.avatarUrl,
+        coverPhotoUrl: users.coverPhotoUrl,
+        socialLinks: users.socialLinks,
+        isPrivate: users.isPrivate,
+        dmPermission: users.dmPermission,
+        showOnlineStatus: users.showOnlineStatus,
+        twoFactorEnabled: users.twoFactorEnabled,
+        twoFactorType: users.twoFactorType,
+        theme: users.theme,
         intent: users.intent,
         verified: users.verified,
         isOnboarded: users.isOnboarded,
@@ -238,6 +254,14 @@ export async function getProfileByHandle(
       location: row.location,
       website: row.website,
       avatarUrl: row.avatarUrl,
+      coverPhotoUrl: row.coverPhotoUrl,
+      socialLinks: row.socialLinks || {},
+      isPrivate: Boolean(row.isPrivate),
+      dmPermission: row.dmPermission || "everyone",
+      showOnlineStatus: Boolean(row.showOnlineStatus),
+      twoFactorEnabled: Boolean(row.twoFactorEnabled),
+      twoFactorType: row.twoFactorType || "authenticator",
+      theme: row.theme || "system",
       intent: row.intent || "none",
       verified: row.verified,
       isOnboarded: Boolean(row.isOnboarded),
@@ -357,6 +381,14 @@ export async function updateProfile(
     location?: string;
     website?: string;
     avatarUrl?: string | null;
+    coverPhotoUrl?: string | null;
+    socialLinks?: { github?: string; linkedin?: string; twitter?: string; website?: string } | null;
+    isPrivate?: boolean;
+    dmPermission?: string;
+    showOnlineStatus?: boolean;
+    twoFactorEnabled?: boolean;
+    twoFactorType?: string;
+    theme?: string;
     intent?: string;
   }
 ): Promise<void> {
@@ -368,6 +400,14 @@ export async function updateProfile(
   if (updates.location !== undefined) cleanUpdates.location = updates.location.trim() || null;
   if (updates.website !== undefined) cleanUpdates.website = updates.website.trim() || null;
   if (updates.avatarUrl !== undefined) cleanUpdates.avatarUrl = updates.avatarUrl?.trim() || null;
+  if (updates.coverPhotoUrl !== undefined) cleanUpdates.coverPhotoUrl = updates.coverPhotoUrl?.trim() || null;
+  if (updates.socialLinks !== undefined) cleanUpdates.socialLinks = updates.socialLinks;
+  if (updates.isPrivate !== undefined) cleanUpdates.isPrivate = updates.isPrivate;
+  if (updates.dmPermission !== undefined) cleanUpdates.dmPermission = updates.dmPermission;
+  if (updates.showOnlineStatus !== undefined) cleanUpdates.showOnlineStatus = updates.showOnlineStatus;
+  if (updates.twoFactorEnabled !== undefined) cleanUpdates.twoFactorEnabled = updates.twoFactorEnabled;
+  if (updates.twoFactorType !== undefined) cleanUpdates.twoFactorType = updates.twoFactorType;
+  if (updates.theme !== undefined) cleanUpdates.theme = updates.theme;
   if (updates.intent !== undefined) cleanUpdates.intent = updates.intent;
 
   try {

@@ -12,6 +12,21 @@ const UpdateProfileSchema = z.object({
   location: z.string().max(100).optional(),
   website: z.string().max(200).optional(),
   avatarUrl: z.string().url("Noto‘g‘ri rasm havolasi").or(z.literal("")).optional(),
+  coverPhotoUrl: z.string().url("Noto‘g‘ri muqova rasmi havolasi").or(z.literal("")).optional(),
+  socialLinks: z
+    .object({
+      github: z.string().optional(),
+      linkedin: z.string().optional(),
+      twitter: z.string().optional(),
+      website: z.string().optional(),
+    })
+    .optional(),
+  isPrivate: z.boolean().optional(),
+  dmPermission: z.enum(["everyone", "followed", "nobody"]).optional(),
+  showOnlineStatus: z.boolean().optional(),
+  twoFactorEnabled: z.boolean().optional(),
+  twoFactorType: z.enum(["authenticator", "sms"]).optional(),
+  theme: z.enum(["dark", "light", "system"]).optional(),
   intent: z
     .enum([
       "none",

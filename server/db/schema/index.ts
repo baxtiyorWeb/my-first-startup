@@ -34,6 +34,16 @@ export const users = pgTable(
     isOnboarded: boolean("is_onboarded").default(false).notNull(),
     isBot: boolean("is_bot").default(false).notNull(),
     botPersona: text("bot_persona"),
+    coverPhotoUrl: varchar("cover_photo_url", { length: 500 }),
+    socialLinks: jsonb("social_links").$type<{ github?: string; linkedin?: string; twitter?: string; website?: string }>().default({}),
+    isPrivate: boolean("is_private").default(false).notNull(),
+    dmPermission: varchar("dm_permission", { length: 20 }).default("everyone").notNull(),
+    showOnlineStatus: boolean("show_online_status").default(true).notNull(),
+    passwordHash: varchar("password_hash", { length: 255 }),
+    twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
+    twoFactorType: varchar("two_factor_type", { length: 20 }).default("authenticator").notNull(),
+    theme: varchar("theme", { length: 20 }).default("system").notNull(),
+    isDeactivated: boolean("is_deactivated").default(false).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -256,12 +266,55 @@ export const notificationSettings = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     notifyLikes: boolean("notify_likes").default(true).notNull(),
     notifyComments: boolean("notify_comments").default(true).notNull(),
+    notifyShares: boolean("notify_shares").default(true).notNull(),
     notifyFollows: boolean("notify_follows").default(true).notNull(),
+    notifyMentions: boolean("notify_mentions").default(true).notNull(),
     notifyNewPosts: boolean("notify_new_posts").default(true).notNull(),
     pushEnabled: boolean("push_enabled").default(true).notNull(),
+    emailDigest: boolean("email_digest").default(true).notNull(),
+    emailSecurity: boolean("email_security").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   }
+);
+
+// 12. User Blocked List Table
+export const userBlocks = pgTable(
+  "user_blocks",
+  {
+    blockerId: uuid("blocker_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    blockedId: uuid("blocked_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.blockerId, table.blockedId] }),
+    index("idx_user_blocks_blocker").on(table.blockerId),
+  ]
+);
+
+// 13. Active User Sessions Table
+export const userSessions = pgTable(
+  "user_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    deviceName: varchar("device_name", { length: 100 }).notNull(),
+    browser: varchar("browser", { length: 100 }).notNull(),
+    ipAddress: varchar("ip_address", { length: 50 }),
+    location: varchar("location", { length: 100 }),
+    isCurrent: boolean("is_current").default(false).notNull(),
+    lastActiveAt: timestamp("last_active_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_user_sessions_user").on(table.userId),
+  ]
 );
 
 // Relations definition for Drizzle Relational Queries
