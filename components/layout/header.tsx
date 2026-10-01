@@ -20,6 +20,7 @@ import { useAuth } from "@/components/auth/auth-context";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { useMessages } from "@/components/messages/messages-context";
 
 interface HeaderProps {
   title?: string;
@@ -32,6 +33,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   const pathname = usePathname();
   const { session, logout } = useAuth();
   const { t, localePath } = useI18n();
+  const { totalUnreadCount } = useMessages();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -208,10 +210,15 @@ export function Header({ title, subtitle }: HeaderProps) {
             {/* Direct Messages Icon Button */}
             <Link
               href={localePath("/dashboard/messages")}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95 flex items-center justify-center"
+              className="relative p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95 flex items-center justify-center cursor-pointer"
               title={t("nav.messages") || "Xabarlar"}
             >
               <MessageSquare size={18} />
+              {totalUnreadCount > 0 && (
+                <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-slate-900 shadow-2xs animate-in zoom-in-75">
+                  {totalUnreadCount > 9 ? "9+" : totalUnreadCount}
+                </span>
+              )}
             </Link>
 
             {/* Primary Create Thought Action - HIDDEN ON MOBILE/PHONES */}

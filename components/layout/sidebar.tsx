@@ -10,7 +10,7 @@ import {
   UserIcon,
   SettingsIcon,
 } from "@/components/icons";
-import { LogOut, Shield } from "lucide-react";
+import { LogOut, Shield, MessageSquare } from "lucide-react";
 import {
   useShell,
   SIDEBAR_EXPANDED_WIDTH,
@@ -21,6 +21,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { useMessages } from "@/components/messages/messages-context";
 
 export function Sidebar() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { session, logout } = useAuth();
   const { t, localePath } = useI18n();
+  const { totalUnreadCount } = useMessages();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
@@ -37,11 +39,18 @@ export function Sidebar() {
     "/dashboard";
 
   const primaryNavItems = [
-    { label: t("nav.home"), rawHref: "/dashboard", icon: HomeIcon },
+    { label: t("nav.home"), rawHref: "/dashboard", icon: HomeIcon, badge: 0 },
+    {
+      label: t("nav.messages") || "Xabarlar",
+      rawHref: "/dashboard/messages",
+      icon: MessageSquare,
+      badge: totalUnreadCount,
+    },
     {
       label: t("nav.bookmarks"),
       rawHref: "/dashboard/bookmarks",
       icon: BookmarkIcon,
+      badge: 0,
     },
   ];
 
@@ -145,16 +154,24 @@ export function Sidebar() {
                   >
                     <div className="relative shrink-0 flex items-center justify-center w-5 h-5">
                       <IconComponent size={18} />
+                      {item.badge > 0 && isCollapsed && (
+                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
+                      )}
                     </div>
 
                     <span
-                      className={`flex-1 transition-all duration-200 overflow-hidden whitespace-nowrap ${
+                      className={`flex-1 transition-all duration-200 overflow-hidden whitespace-nowrap flex items-center justify-between ${
                         isCollapsed
                           ? "opacity-0 w-0 pointer-events-none"
                           : "opacity-100 w-auto"
                       }`}
                     >
-                      {item.label}
+                      <span>{item.label}</span>
+                      {item.badge > 0 && !isCollapsed && (
+                        <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-bold">
+                          {item.badge > 9 ? "9+" : item.badge}
+                        </span>
+                      )}
                     </span>
                   </Link>
 

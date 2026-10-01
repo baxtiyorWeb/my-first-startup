@@ -384,3 +384,106 @@ export const botEngineSettings = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   }
 );
+
+// 14. Conversations Table (Supports 1-to-1 DMs & Group chats)
+export const conversations = pgTable(
+  "conversations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    type: varchar("type", { length: 20 }).default("direct").notNull(),
+    directPairKey: varchar("direct_pair_key", { length: 73 }),
+    lastMessageId: uuid("last_message_id"),
+    lastMessageText: text("last_message_text"),
+    lastMessageSenderId: uuid("last_message_sender_id"),
+    lastMessageAt: timestamp("last_message_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_conversations_pair_key").on(table.directPairKey),
+    index("idx_conversations_last_msg_at").on(table.lastMessageAt),
+  ]
+);
+
+// 15. Conversation Participants Table (Tracks memberships, read markers, muted/archived flags)
+export const conversationParticipants = pgTable(
+  "conversation_participants",
+  {
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
+    lastReadMessageId: uuid("last_read_message_id"),
+    lastReadAt: timestamp("last_read_at", { withTimezone: true }),
+    isArchived: boolean("is_archived").default(false).notNull(),
+    isMuted: boolean("is_muted").default(false).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.conversationId, table.userId] }),
+    index("idx_conv_participants_user").on(table.userId, table.conversationId),
+    index("idx_conv_participants_user_archived").on(table.userId, table.isArchived),
+  ]
+);
+
+// 16. Messages Table (Idempotent, ordered, persistent message history)
+export const messages = pgTable(
+  "messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    senderId: uuid("sender_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    messageType: varchar("message_type", { length: 20 }).default("text").notNull(),
+    mediaUrls: jsonb("media_urls").$type<string[]>().default([]).notNull(),
+    clientMessageId: varchar("client_message_id", { length: 64 }),
+    replyToId: uuid("reply_to_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("idx_messages_conv_created").on(table.conversationId, table.createdAt),
+    index("idx_messages_sender").on(table.senderId),
+    uniqueIndex("idx_messages_client_msg_id").on(table.conversationId, table.senderId, table.clientMessageId),
+  ]
+);
+
+// Relations
+export const conversationsRelations = relations(conversations, ({ many }) => ({
+  participants: many(conversationParticipants),
+  messages: many(messages),
+}));
+
+export const conversationParticipantsRelations = relations(conversationParticipants, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [conversationParticipants.conversationId],
+    references: [conversations.id],
+  }),
+  user: one(users, {
+    fields: [conversationParticipants.userId],
+    references: [users.id],
+  }),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+  sender: one(users, {
+    fields: [messages.senderId],
+    references: [users.id],
+  }),
+  replyTo: one(messages, {
+    fields: [messages.replyToId],
+    references: [messages.id],
+  }),
+}));
+

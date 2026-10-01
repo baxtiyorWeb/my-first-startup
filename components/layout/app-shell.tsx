@@ -15,6 +15,7 @@ import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { Footer } from "./footer";
 import { MobileBottomNav } from "./mobile-nav";
+import { MessagesProvider } from "@/components/messages/messages-context";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -150,9 +151,11 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <ShellProvider>
-      <ShellLayoutInner headerTitle={headerTitle} headerSubtitle={headerSubtitle}>
-        {children}
-      </ShellLayoutInner>
+      <MessagesProvider>
+        <ShellLayoutInner headerTitle={headerTitle} headerSubtitle={headerSubtitle}>
+          {children}
+        </ShellLayoutInner>
+      </MessagesProvider>
     </ShellProvider>
   );
 }
