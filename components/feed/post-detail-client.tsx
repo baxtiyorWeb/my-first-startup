@@ -570,7 +570,7 @@ function PostDetailInner({
         {/* Media Grid */}
         {mediaList.length > 0 && (
           <div
-            className={`mt-4 grid gap-2 ${
+            className={`mt-4 w-full sm:max-w-[560px] grid gap-2 ${
               mediaList.length === 1
                 ? "grid-cols-1"
                 : mediaList.length === 2
@@ -583,7 +583,13 @@ function PostDetailInner({
                 type="button"
                 key={url}
                 onClick={() => setLightboxIndex(idx)}
-                className="relative group aspect-video sm:aspect-square rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className={`relative group rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer ${
+                  mediaList.length === 1
+                    ? "aspect-video sm:aspect-auto sm:h-72"
+                    : mediaList.length === 2
+                    ? "aspect-[4/3] sm:aspect-auto sm:h-52"
+                    : "aspect-square sm:aspect-auto sm:h-44"
+                }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

@@ -409,7 +409,7 @@ export function PostCard({
           {/* Post Media Attachments (up to 3 images) */}
           {mediaList.length > 0 && (
             <div
-              className={`mt-3 w-full grid gap-2 overflow-hidden rounded-xl ${
+              className={`mt-2.5 w-full sm:max-w-[540px] grid gap-2 overflow-hidden rounded-xl ${
                 mediaList.length === 1
                   ? "grid-cols-1"
                   : mediaList.length === 2
@@ -425,34 +425,24 @@ export function PostCard({
                     e.stopPropagation();
                     setLightboxIndex(idx);
                   }}
-                  className={`group/media relative w-full overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-950/5 dark:bg-slate-950/40 cursor-zoom-in ${
+                  className={`group/media relative w-full overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in ${
                     mediaList.length === 1
-                      ? "aspect-video max-h-80 sm:max-h-96"
+                      ? "aspect-video sm:aspect-auto sm:h-64 sm:max-h-64"
                       : mediaList.length === 2
-                      ? "aspect-[4/3] sm:aspect-video"
-                      : "aspect-square sm:aspect-[4/3]"
+                      ? "aspect-[4/3] sm:aspect-auto sm:h-48"
+                      : "aspect-square sm:aspect-auto sm:h-40"
                   }`}
                 >
-                  {/* Layer 1: Ambient blurred background cover */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={url}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-35 dark:opacity-25 pointer-events-none transform-gpu"
-                  />
-
-                  {/* Layer 2: Sharp foreground image contain */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
                     alt={post.title || `Attachment ${idx + 1}`}
                     loading="lazy"
-                    className="relative z-10 w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-105 will-change-transform"
+                    className="w-full h-full object-cover transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
                   />
 
                   {/* Hover interaction overlay */}
-                  <div className="absolute inset-0 z-20 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
+                  <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
                 </div>
               ))}
             </div>

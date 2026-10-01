@@ -229,9 +229,9 @@ export function Header({ title, subtitle }: HeaderProps) {
               </Link>
             )}
 
-            {/* User Profile Dropdown Menu OR Guest Sign In */}
+            {/* User Profile Dropdown Menu OR Guest Sign In - HIDDEN ON MOBILE (available in bottom nav) */}
             {session.isAuthenticated ? (
-              <div className="relative shrink-0" ref={menuRef}>
+              <div className="hidden sm:block relative shrink-0" ref={menuRef}>
                 <button
                   type="button"
                   onClick={() => setIsUserMenuOpen((prev) => !prev)}
