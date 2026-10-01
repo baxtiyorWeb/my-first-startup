@@ -8,18 +8,32 @@ import { AppError } from "@/server/common/errors";
 const UpdateProfileSchema = z.object({
   name: z.string().min(2, "Ism kamida 2 ta belgidan iborat bo‘lishi kerak").optional(),
   role: z.string().min(2, "Rol kamida 2 ta belgidan iborat bo‘lishi kerak").optional(),
-  bio: z.string().max(500, "Bio 500 belgidan oshmasligi kerak").optional(),
-  location: z.string().max(100).optional(),
-  website: z.string().max(200).optional(),
-  avatarUrl: z.string().url("Noto‘g‘ri rasm havolasi").or(z.literal("")).optional(),
-  coverPhotoUrl: z.string().url("Noto‘g‘ri muqova rasmi havolasi").or(z.literal("")).optional(),
+  bio: z.string().max(1000, "Bio 1000 belgidan oshmasligi kerak").nullable().optional(),
+  location: z.string().max(100).nullable().optional(),
+  website: z.string().max(200).nullable().optional(),
+  avatarUrl: z
+    .string()
+    .url("Noto‘g‘ri rasm havolasi")
+    .or(z.string().startsWith("/"))
+    .or(z.string().startsWith("data:image/"))
+    .or(z.literal(""))
+    .nullable()
+    .optional(),
+  coverPhotoUrl: z
+    .string()
+    .url("Noto‘g‘ri muqova rasmi havolasi")
+    .or(z.string().startsWith("/"))
+    .or(z.literal(""))
+    .nullable()
+    .optional(),
   socialLinks: z
     .object({
-      github: z.string().optional(),
-      linkedin: z.string().optional(),
-      twitter: z.string().optional(),
-      website: z.string().optional(),
+      github: z.string().nullable().optional(),
+      linkedin: z.string().nullable().optional(),
+      twitter: z.string().nullable().optional(),
+      website: z.string().nullable().optional(),
     })
+    .nullable()
     .optional(),
   isPrivate: z.boolean().optional(),
   dmPermission: z.enum(["everyone", "followed", "nobody"]).optional(),

@@ -41,7 +41,7 @@ function ProfileEditForm({
 
   // Local-only avatar & cover selection before saving
   const [previewAvatarUrl, setPreviewAvatarUrl] = useState(
-    () => profile.avatarUrl || generateRandomAvatar(profile.handle || profile.name)
+    () => profile.avatarUrl || ""
   );
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
   const [isPendingDelete, setIsPendingDelete] = useState(false);
@@ -180,7 +180,7 @@ function ProfileEditForm({
 
         const uploadRes = await api.upload.uploadAvatar(compressedFile);
         finalAvatarUrl = uploadRes.url;
-      } else if (previewAvatarUrl) {
+      } else if (previewAvatarUrl !== profile.avatarUrl) {
         finalAvatarUrl = previewAvatarUrl;
       }
 
@@ -190,7 +190,7 @@ function ProfileEditForm({
       } else if (selectedCoverFile) {
         const uploadRes = await api.upload.uploadFile(selectedCoverFile, "covers");
         finalCoverUrl = uploadRes.url;
-      } else if (previewCoverUrl) {
+      } else if (previewCoverUrl !== profile.coverPhotoUrl) {
         finalCoverUrl = previewCoverUrl;
       }
 
@@ -198,10 +198,10 @@ function ProfileEditForm({
         name: name.trim(),
         role: role.trim(),
         bio: bio.trim(),
-        location: location.trim() || undefined,
-        website: website.trim() || undefined,
-        avatarUrl: finalAvatarUrl,
-        coverPhotoUrl: finalCoverUrl,
+        location: location.trim(),
+        website: website.trim(),
+        avatarUrl: finalAvatarUrl ?? "",
+        coverPhotoUrl: finalCoverUrl ?? "",
         intent,
       });
 

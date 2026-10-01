@@ -15,7 +15,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 
 import { useAuth } from "@/components/auth/auth-context";
 import { isSameUser } from "@/lib/user-utils";
-import { Menu, Camera, Loader2 } from "lucide-react";
+import { Menu, Camera, Loader2, Trash2 } from "lucide-react";
 import { ProfileMenuModal } from "./profile-menu-modal";
 import { api } from "@/lib/api";
 
@@ -25,6 +25,7 @@ interface ProfileHeaderProps {
   onEditClick: () => void;
   onFollowToggle?: (isFollowing: boolean) => void;
   onTabChange?: (tab: ProfileTab) => void;
+  onProfileUpdate?: (updates: Partial<UserProfile>) => void;
 }
 
 export function ProfileHeader({
@@ -33,6 +34,7 @@ export function ProfileHeader({
   onEditClick,
   onFollowToggle,
   onTabChange,
+  onProfileUpdate,
 }: ProfileHeaderProps) {
   const { session, updateCurrentUser } = useAuth();
   const { t, localePath } = useI18n();
@@ -63,11 +65,32 @@ export function ProfileHeader({
       const res = await api.upload.uploadFile(file, "covers");
       setCoverPhotoUrl(res.url);
       await updateCurrentUser({ coverPhotoUrl: res.url });
+      onProfileUpdate?.({ coverPhotoUrl: res.url });
       toast.success("Muqova rasmi muvaffaqiyatli yangilandi");
     } catch {
       toast.error("Muqova rasmini yuklashda xatolik yuz berdi");
     } finally {
       setIsUploadingCover(false);
+      if (coverInputRef.current) {
+        coverInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemoveCover = async () => {
+    setIsUploadingCover(true);
+    try {
+      setCoverPhotoUrl("");
+      await updateCurrentUser({ coverPhotoUrl: "" });
+      onProfileUpdate?.({ coverPhotoUrl: "" });
+      toast.success("Muqova rasmi olib tashlandi");
+    } catch {
+      toast.error("Muqovani o'chirishda xatolik yuz berdi");
+    } finally {
+      setIsUploadingCover(false);
+      if (coverInputRef.current) {
+        coverInputRef.current.value = "";
+      }
     }
   };
 
@@ -134,24 +157,36 @@ export function ProfileHeader({
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
         {isSelfUser && (
-          <button
-            type="button"
-            disabled={isUploadingCover}
-            onClick={() => coverInputRef.current?.click()}
-            className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer opacity-90 hover:opacity-100 shadow-sm disabled:opacity-50"
-          >
-            {isUploadingCover ? (
-              <>
-                <Loader2 size={14} className="animate-spin" />
-                <span>Yuklanmoqda...</span>
-              </>
-            ) : (
-              <>
-                <Camera size={14} />
-                <span>Muqovani almashtirish</span>
-              </>
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+            <button
+              type="button"
+              disabled={isUploadingCover}
+              onClick={() => coverInputRef.current?.click()}
+              className="px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer opacity-90 hover:opacity-100 shadow-sm disabled:opacity-50"
+            >
+              {isUploadingCover ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>Yuklanmoqda...</span>
+                </>
+              ) : (
+                <>
+                  <Camera size={14} />
+                  <span>{coverPhotoUrl ? "Muqovani almashtirish" : "Muqova qo‘yish"}</span>
+                </>
+              )}
+            </button>
+            {coverPhotoUrl && !isUploadingCover && (
+              <button
+                type="button"
+                onClick={handleRemoveCover}
+                title="Muqova rasmini olib tashlash"
+                className="p-1.5 rounded-xl bg-black/60 hover:bg-rose-600 backdrop-blur-md text-white/80 hover:text-white transition-all cursor-pointer shadow-sm"
+              >
+                <Trash2 size={14} />
+              </button>
             )}
-          </button>
+          </div>
         )}
       </div>
 

@@ -419,12 +419,12 @@ export async function updateProfile(
   updates: {
     name?: string;
     role?: string;
-    bio?: string;
-    location?: string;
-    website?: string;
+    bio?: string | null;
+    location?: string | null;
+    website?: string | null;
     avatarUrl?: string | null;
     coverPhotoUrl?: string | null;
-    socialLinks?: { github?: string; linkedin?: string; twitter?: string; website?: string } | null;
+    socialLinks?: { github?: string | null; linkedin?: string | null; twitter?: string | null; website?: string | null } | null;
     isPrivate?: boolean;
     dmPermission?: string;
     showOnlineStatus?: boolean;
@@ -438,12 +438,12 @@ export async function updateProfile(
 
   if (updates.name !== undefined) cleanUpdates.name = updates.name.trim();
   if (updates.role !== undefined) cleanUpdates.role = updates.role.trim();
-  if (updates.bio !== undefined) cleanUpdates.bio = updates.bio.trim();
-  if (updates.location !== undefined) cleanUpdates.location = updates.location.trim() || null;
-  if (updates.website !== undefined) cleanUpdates.website = updates.website.trim() || null;
+  if (updates.bio !== undefined) cleanUpdates.bio = updates.bio ? updates.bio.trim() : "";
+  if (updates.location !== undefined) cleanUpdates.location = updates.location?.trim() || null;
+  if (updates.website !== undefined) cleanUpdates.website = updates.website?.trim() || null;
   if (updates.avatarUrl !== undefined) cleanUpdates.avatarUrl = updates.avatarUrl?.trim() || null;
   if (updates.coverPhotoUrl !== undefined) cleanUpdates.coverPhotoUrl = updates.coverPhotoUrl?.trim() || null;
-  if (updates.socialLinks !== undefined) cleanUpdates.socialLinks = updates.socialLinks;
+  if (updates.socialLinks !== undefined) cleanUpdates.socialLinks = updates.socialLinks || {};
   if (updates.isPrivate !== undefined) cleanUpdates.isPrivate = updates.isPrivate;
   if (updates.dmPermission !== undefined) cleanUpdates.dmPermission = updates.dmPermission;
   if (updates.showOnlineStatus !== undefined) cleanUpdates.showOnlineStatus = updates.showOnlineStatus;

@@ -41,7 +41,10 @@ import {
   AtSign,
   Mail,
   Camera,
+  Dice5,
 } from "lucide-react";
+import { useTheme } from "@/components/theme/theme-context";
+import { generateRandomAvatar } from "@/lib/avatar";
 
 function GithubIcon({ size = 14 }: { size?: number }) {
   return (
@@ -74,6 +77,7 @@ type SettingsTab = "account" | "privacy" | "security" | "notifications" | "syste
 
 export default function SettingsPage() {
   const { session, isLoaded, updateCurrentUser, logout } = useAuth();
+  const { theme: appTheme, setTheme: setAppTheme } = useTheme();
   const { t, locale, switchLocale } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -144,12 +148,7 @@ export default function SettingsPage() {
 
   // System & Theme states
   const [theme, setTheme] = useState<"dark" | "light" | "system">(() => {
-    if (typeof window === "undefined") return "system";
-    try {
-      return (localStorage.getItem("theme") as "dark" | "light" | "system") || "system";
-    } catch {
-      return "system";
-    }
+    return (session.user.theme as "dark" | "light" | "system") || "system";
   });
 
   const [alphabet, setAlphabet] = useState<string>(() => {
@@ -187,11 +186,13 @@ export default function SettingsPage() {
     try {
       const res = await uploadFile(file, "covers");
       setCoverPhotoUrl(res.url);
+      await updateCurrentUser({ coverPhotoUrl: res.url });
       toast.success("Muqova rasmi yuklandi");
     } catch {
       toast.error("Muqova rasmini yuklashda xatolik");
     } finally {
       setIsUploadingSettingsCover(false);
+      if (settingsCoverRef.current) settingsCoverRef.current.value = "";
     }
   };
 
@@ -206,11 +207,44 @@ export default function SettingsPage() {
     try {
       const res = await uploadFile(file, "avatars");
       setAvatarUrl(res.url);
+      await updateCurrentUser({ avatarUrl: res.url });
       toast.success("Profil rasmi yuklandi");
     } catch {
       toast.error("Profil rasmini yuklashda xatolik");
     } finally {
       setIsUploadingSettingsAvatar(false);
+      if (settingsAvatarRef.current) settingsAvatarRef.current.value = "";
+    }
+  };
+
+  const handleSettingsRandomAvatar = async () => {
+    const newAvatar = generateRandomAvatar();
+    setAvatarUrl(newAvatar);
+    try {
+      await updateCurrentUser({ avatarUrl: newAvatar });
+      toast.success("Tasodifiy avatar o‘rnatildi");
+    } catch {
+      toast.error("Avatarni saqlashda xatolik");
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setAvatarUrl("");
+    try {
+      await updateCurrentUser({ avatarUrl: "" });
+      toast.success("Profil rasmi olib tashlandi");
+    } catch {
+      toast.error("Rasmni o'chirishda xatolik");
+    }
+  };
+
+  const handleRemoveCover = async () => {
+    setCoverPhotoUrl("");
+    try {
+      await updateCurrentUser({ coverPhotoUrl: "" });
+      toast.success("Muqova rasmi olib tashlandi");
+    } catch {
+      toast.error("Muqovani o'chirishda xatolik");
     }
   };
 
@@ -305,8 +339,8 @@ export default function SettingsPage() {
         role: role.trim(),
         bio: bio.trim(),
         location: location.trim(),
-        avatarUrl: avatarUrl.trim() || undefined,
-        coverPhotoUrl: coverPhotoUrl.trim() || undefined,
+        avatarUrl: avatarUrl.trim(),
+        coverPhotoUrl: coverPhotoUrl.trim(),
         socialLinks: {
           github: github.trim(),
           linkedin: linkedin.trim(),
@@ -447,17 +481,13 @@ export default function SettingsPage() {
   // Theme switch
   const handleThemeChange = (newTheme: "dark" | "light" | "system") => {
     setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else if (newTheme === "light") {
-      document.documentElement.classList.remove("dark");
+    if (newTheme === "system") {
+      const prefersDark =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setAppTheme(prefersDark ? "dark" : "light");
     } else {
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
+      setAppTheme(newTheme);
     }
     updateCurrentUser({ theme: newTheme }).catch(() => {});
     toast.success("Mavzu yangilandi");
@@ -751,14 +781,21 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            {/* Profile Avatar & Cover Photo URL preview */}
-            <div className="space-y-3 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
-              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                Muqova rasmi va Profil rasmi (Cover Photo)
-              </span>
+            {/* Profile Avatar & Cover Photo section */}
+            <div className="space-y-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                    Muqova rasmi va Profil rasmi
+                  </span>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    O'zingizga mos profil va muqova rasmini yuklang yoki tasodifiy avatar yarating
+                  </p>
+                </div>
+              </div>
 
-              {/* Cover photo preview */}
-              <div className="relative h-28 w-full rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600">
+              {/* Cover photo preview banner */}
+              <div className="relative h-32 sm:h-36 w-full rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 group">
                 {coverPhotoUrl ? (
                   <img
                     src={coverPhotoUrl}
@@ -766,13 +803,43 @@ export default function SettingsPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs text-slate-400 gap-1.5">
-                    <ImageIcon size={16} />
-                    <span>Muqova rasmi ko'rsatilmadi</span>
+                  <div className="w-full h-full flex flex-col items-center justify-center text-xs text-slate-400 gap-1 select-none">
+                    <ImageIcon size={20} className="opacity-50" />
+                    <span className="text-[11px]">Muqova rasmi yuklanmagan</span>
                   </div>
                 )}
+
+                {/* Banner Actions Overlay */}
+                <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                  <button
+                    type="button"
+                    disabled={isUploadingSettingsCover}
+                    onClick={() => settingsCoverRef.current?.click()}
+                    className="px-2.5 py-1.5 rounded-lg bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50"
+                  >
+                    {isUploadingSettingsCover ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : (
+                      <Camera size={13} />
+                    )}
+                    <span>{coverPhotoUrl ? "Muqovani almashtirish" : "Muqova yuklash"}</span>
+                  </button>
+
+                  {coverPhotoUrl && (
+                    <button
+                      type="button"
+                      disabled={isUploadingSettingsCover}
+                      onClick={handleRemoveCover}
+                      title="Muqova rasmini olib tashlash"
+                      className="p-1.5 rounded-lg bg-black/60 hover:bg-rose-600 backdrop-blur-md text-white/80 hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+
                 {/* Avatar preview overlap */}
-                <div className="absolute bottom-2 left-3 w-12 h-12 rounded-full border-2 border-white dark:border-slate-900 bg-slate-300 dark:bg-slate-600 overflow-hidden">
+                <div className="absolute bottom-2.5 left-3.5 w-14 h-14 rounded-full border-2 border-white dark:border-slate-900 bg-slate-900 dark:bg-slate-100 overflow-hidden shadow-md">
                   <img
                     src={avatarUrl || session.user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${handle}`}
                     alt="Avatar"
@@ -785,66 +852,56 @@ export default function SettingsPage() {
               <input
                 ref={settingsCoverRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={handleSettingsCoverUpload}
                 className="hidden"
               />
               <input
                 ref={settingsAvatarRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={handleSettingsAvatarUpload}
                 className="hidden"
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Profil rasmi (Avatar)
-                  </label>
-                  <div className="flex gap-1.5">
-                    <input
-                      type="text"
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="https://example.com/avatar.jpg"
-                      className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
-                    />
-                    <button
-                      type="button"
-                      disabled={isUploadingSettingsAvatar}
-                      onClick={() => settingsAvatarRef.current?.click()}
-                      className="px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors shrink-0 flex items-center gap-1"
-                    >
-                      {isUploadingSettingsAvatar ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
-                      <span>Tanlash</span>
-                    </button>
-                  </div>
-                </div>
+              {/* Avatar management actions */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 mr-1">
+                  Profil rasmi:
+                </span>
+                <button
+                  type="button"
+                  disabled={isUploadingSettingsAvatar}
+                  onClick={() => settingsAvatarRef.current?.click()}
+                  className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs disabled:opacity-50"
+                >
+                  {isUploadingSettingsAvatar ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Camera size={13} />
+                  )}
+                  <span>Fayldan yuklash</span>
+                </button>
 
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Muqova rasmi (Cover Photo)
-                  </label>
-                  <div className="flex gap-1.5">
-                    <input
-                      type="text"
-                      value={coverPhotoUrl}
-                      onChange={(e) => setCoverPhotoUrl(e.target.value)}
-                      placeholder="https://example.com/cover.jpg"
-                      className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
-                    />
-                    <button
-                      type="button"
-                      disabled={isUploadingSettingsCover}
-                      onClick={() => settingsCoverRef.current?.click()}
-                      className="px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors shrink-0 flex items-center gap-1"
-                    >
-                      {isUploadingSettingsCover ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
-                      <span>Tanlash</span>
-                    </button>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleSettingsRandomAvatar}
+                  className="px-3 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-950/50 border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/60 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                >
+                  <Dice5 size={13} />
+                  <span>Tasodifiy avatar</span>
+                </button>
+
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer flex items-center gap-1"
+                  >
+                    <Trash2 size={12} />
+                    <span>O'chirish</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -929,10 +986,10 @@ export default function SettingsPage() {
                     <span>GitHub URL</span>
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={github}
                     onChange={(e) => setGithub(e.target.value)}
-                    placeholder="https://github.com/username"
+                    placeholder="https://github.com/username yoki @username"
                     className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                   />
                 </div>
@@ -943,7 +1000,7 @@ export default function SettingsPage() {
                     <span>LinkedIn URL</span>
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={linkedin}
                     onChange={(e) => setLinkedin(e.target.value)}
                     placeholder="https://linkedin.com/in/username"
@@ -957,10 +1014,10 @@ export default function SettingsPage() {
                     <span>Twitter / X URL</span>
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={twitter}
                     onChange={(e) => setTwitter(e.target.value)}
-                    placeholder="https://twitter.com/username"
+                    placeholder="https://twitter.com/username yoki @username"
                     className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                   />
                 </div>
@@ -971,10 +1028,10 @@ export default function SettingsPage() {
                     <span>Shaxsiy veb-sayt URL</span>
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
-                    placeholder="https://mywebsite.com"
+                    placeholder="https://mywebsite.com yoki mywebsite.com"
                     className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                   />
                 </div>
@@ -1151,9 +1208,16 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer disabled:opacity-60"
               >
-                Maxfiylikni saqlash
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Saqlanmoqda...</span>
+                  </>
+                ) : (
+                  <span>Maxfiylikni saqlash</span>
+                )}
               </button>
             </div>
           </form>
@@ -1490,9 +1554,16 @@ export default function SettingsPage() {
                 type="button"
                 onClick={handleSaveNotifications}
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer disabled:opacity-60"
               >
-                Bildirishnomalarni saqlash
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Saqlanmoqda...</span>
+                  </>
+                ) : (
+                  <span>Bildirishnomalarni saqlash</span>
+                )}
               </button>
             </div>
           </div>

@@ -17,7 +17,7 @@ import { isSameUser } from "@/lib/user-utils";
 
 function ProfileContent() {
   const searchParams = useSearchParams();
-  const { session } = useAuth();
+  const { session, isLoaded } = useAuth();
   const { t } = useI18n();
 
   const rawHandle = searchParams.get("user");
@@ -54,7 +54,13 @@ function ProfileContent() {
   }, [currentHandle, t]);
 
   useEffect(() => {
-    if (!currentHandle) return;
+    if (!currentHandle) {
+      if (isLoaded && !session.isAuthenticated && !rawHandle) {
+        setIsLoading(false);
+        setError("Profilni ko'rish uchun tizimga kiring");
+      }
+      return;
+    }
 
     let isMounted = true;
     api.users
@@ -80,13 +86,45 @@ function ProfileContent() {
     return () => {
       isMounted = false;
     };
-  }, [currentHandle, t]);
+  }, [currentHandle, isLoaded, session.isAuthenticated, rawHandle, t]);
 
   const isSelf = Boolean(
     profile?.isSelf ||
       isSameUser(session.user, profile) ||
       isSameUser(session.user, { handle: currentHandle })
   );
+
+  // Keep local profile synced with auth session updates for self user
+  useEffect(() => {
+    if (isSelf && profile && session.user.id) {
+      setProfile((prev) => {
+        if (!prev) return null;
+        if (
+          prev.name !== session.user.name ||
+          prev.avatarUrl !== session.user.avatarUrl ||
+          prev.coverPhotoUrl !== session.user.coverPhotoUrl ||
+          prev.bio !== session.user.bio ||
+          prev.role !== session.user.role ||
+          prev.location !== session.user.location ||
+          prev.website !== session.user.website ||
+          prev.intent !== session.user.intent
+        ) {
+          return {
+            ...prev,
+            name: session.user.name,
+            avatarUrl: session.user.avatarUrl,
+            coverPhotoUrl: session.user.coverPhotoUrl,
+            bio: session.user.bio || "",
+            role: session.user.role,
+            location: session.user.location,
+            website: session.user.website,
+            intent: session.user.intent || "none",
+          };
+        }
+        return prev;
+      });
+    }
+  }, [isSelf, profile, session.user]);
 
   const activeDiscussions = useMemo(() => {
     if (discussionPosts.length > 0) return discussionPosts;
@@ -218,6 +256,7 @@ function ProfileContent() {
         onEditClick={() => setIsEditModalOpen(true)}
         onFollowToggle={handleFollowToggle}
         onTabChange={setActiveTab}
+        onProfileUpdate={handleUpdateProfile}
       />
 
       {/* 2. Pinned / Featured Thought Card */}
