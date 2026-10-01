@@ -41,6 +41,7 @@ export default function MessagesPage() {
     hasMoreMessages,
     isPeerTyping,
     peerLastReadAt,
+    peerLastReadMessageId,
     isConnected,
     loadMoreMessages,
     sendMessage,
@@ -572,8 +573,12 @@ export default function MessagesPage() {
                     const isFromMe = msg.senderId === session.user?.id;
                     const isReadByPeer =
                       isFromMe &&
-                      peerLastReadAt &&
-                      new Date(msg.createdAt).getTime() <= new Date(peerLastReadAt).getTime();
+                      Boolean(
+                        (peerLastReadAt &&
+                          new Date(msg.createdAt).getTime() <=
+                            new Date(peerLastReadAt).getTime() + 1500) ||
+                        (peerLastReadMessageId && msg.id === peerLastReadMessageId)
+                      );
 
                     return (
                       <div

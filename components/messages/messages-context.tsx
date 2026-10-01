@@ -101,6 +101,40 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
   const typingDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingActiveRef = useRef(false);
 
+  // Keep a ref to activeConversationId to prevent SSE reconnection on conversation change
+  const activeConversationIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    activeConversationIdRef.current = activeConversationId;
+  }, [activeConversationId]);
+
+  // Audio notification chime using Web Audio API
+  const playNotificationChime = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+      }
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.22);
+    } catch {
+      // AudioContext blocked by browser policy
+    }
+  }, []);
+
   // Total unread count across all conversations
   const totalUnreadCount = useMemo(() => {
     return conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
@@ -182,20 +216,40 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
       };
 
       // 1. Connection ACK
-      es.addEventListener("connection:ack", () => {
+      es.addEventListener("connection:ack", (e: MessageEvent) => {
         lastSyncTimestampRef.current = new Date().toISOString();
+        try {
+          const payload = JSON.parse(e.data);
+          if (Array.isArray(payload?.onlineUserIds)) {
+            const onlineSet = new Set<string>(payload.onlineUserIds);
+            setConversations((prev) =>
+              prev.map((c) => ({
+                ...c,
+                peerUser: {
+                  ...c.peerUser,
+                  isOnline: onlineSet.has(c.peerUser.id),
+                },
+              }))
+            );
+          }
+        } catch {}
       });
 
       // 2. Incoming new message
       es.addEventListener("message:new", (e: MessageEvent) => {
         try {
           const payload = JSON.parse(e.data);
-          const { conversationId, message } = payload;
+          const { conversationId, message, sender } = payload;
           lastSyncTimestampRef.current = message.createdAt || new Date().toISOString();
 
+          const isFromMe = message.senderId === currentUserId;
+          const isCurrentActive = activeConversationIdRef.current === conversationId;
+          const isPageVisible =
+            typeof document !== "undefined" && document.visibilityState === "visible";
+
+          // 1. Update message map
           setMessagesMap((prev) => {
             const list = prev[conversationId] || [];
-            // Check if already present (e.g. matched by clientMessageId or id)
             const existsIndex = list.findIndex(
               (m) =>
                 m.id === message.id ||
@@ -211,28 +265,54 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
             }
           });
 
-          // Update conversation last message preview
+          // 2. Update and reorder conversations list (move to top)
           setConversations((prev) => {
-            return prev.map((c) => {
-              if (c.id === conversationId) {
-                const isFromMe = message.senderId === currentUserId;
-                const isCurrentActive = activeConversationId === conversationId;
-                return {
-                  ...c,
-                  lastMessage: {
-                    id: message.id,
-                    content: message.content,
-                    senderId: message.senderId,
-                    createdAt: message.createdAt,
-                    isFromMe,
-                  },
-                  unreadCount: isFromMe || isCurrentActive ? 0 : c.unreadCount + 1,
-                  updatedAt: message.createdAt,
-                };
-              }
-              return c;
-            });
+            const existsIndex = prev.findIndex((c) => c.id === conversationId);
+            if (existsIndex >= 0) {
+              const existing = prev[existsIndex];
+              const updated: ConversationItem = {
+                ...existing,
+                lastMessage: {
+                  id: message.id,
+                  content: message.content,
+                  senderId: message.senderId,
+                  createdAt: message.createdAt,
+                  isFromMe,
+                },
+                unreadCount:
+                  isFromMe || (isCurrentActive && isPageVisible)
+                    ? 0
+                    : (existing.unreadCount || 0) + 1,
+                updatedAt: message.createdAt,
+              };
+              const others = [...prev.slice(0, existsIndex), ...prev.slice(existsIndex + 1)];
+              return [updated, ...others];
+            } else {
+              // Newly created conversation from peer, reload list
+              refreshConversations();
+              return prev;
+            }
           });
+
+          // 3. Handle read receipts and notifications for peer messages
+          if (!isFromMe) {
+            if (isCurrentActive && isPageVisible) {
+              // Active chat: immediately mark as read so the sender sees the double checkmark!
+              apiClient(`/api/messages/conversations/${conversationId}/read`, {
+                method: "POST",
+                body: JSON.stringify({ messageId: message.id }),
+              }).catch(() => {});
+            } else {
+              // Inactive or background: play sound chime and notify with toast
+              playNotificationChime();
+              const senderName = sender?.name || "Yangi xabar";
+              const snippet =
+                message.content.length > 60
+                  ? message.content.slice(0, 60) + "..."
+                  : message.content;
+              toast.info(`${senderName}: ${snippet}`);
+            }
+          }
         } catch {}
       });
 
@@ -303,11 +383,19 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     } catch {
       setIsConnected(false);
     }
-  }, [currentUserId, activeConversationId, refreshConversations]);
+  }, [currentUserId, playNotificationChime, refreshConversations]);
 
-  // Initial load
+  // Initial load and SSE setup
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+      setIsConnected(false);
+      return;
+    }
+
     setLoadingConversations(true);
     refreshConversations().finally(() => setLoadingConversations(false));
     connectSSE();
@@ -322,6 +410,31 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
       }
     };
   }, [currentUserId, connectSSE, refreshConversations]);
+
+  // Window focus / visibility change: mark active conversation as read immediately
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible" && activeConversationIdRef.current) {
+        const convId = activeConversationIdRef.current;
+        apiClient(`/api/messages/conversations/${convId}/read`, {
+          method: "POST",
+        }).catch(() => {});
+        setConversations((prev) =>
+          prev.map((c) => (c.id === convId ? { ...c, unreadCount: 0 } : c))
+        );
+      }
+    };
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    return () => {
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+    };
+  }, []);
 
   // Load messages when active conversation changes
   const loadMessages = useCallback(
@@ -443,24 +556,27 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
         [activeConversationId]: [...(prev[activeConversationId] || []), optimisticMessage],
       }));
 
-      // Update conversation preview
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === activeConversationId
-            ? {
-                ...c,
-                lastMessage: {
-                  id: clientMessageId,
-                  content: trimmed,
-                  senderId: currentUserId,
-                  createdAt: optimisticMessage.createdAt,
-                  isFromMe: true,
-                },
-                updatedAt: optimisticMessage.createdAt,
-              }
-            : c
-        )
-      );
+      // Update conversation preview and move to top of conversations list
+      setConversations((prev) => {
+        const existsIndex = prev.findIndex((c) => c.id === activeConversationId);
+        if (existsIndex >= 0) {
+          const existing = prev[existsIndex];
+          const updated = {
+            ...existing,
+            lastMessage: {
+              id: clientMessageId,
+              content: trimmed,
+              senderId: currentUserId,
+              createdAt: optimisticMessage.createdAt,
+              isFromMe: true,
+            },
+            updatedAt: optimisticMessage.createdAt,
+          };
+          const others = [...prev.slice(0, existsIndex), ...prev.slice(existsIndex + 1)];
+          return [updated, ...others];
+        }
+        return prev;
+      });
 
       // Stop typing
       if (isTypingActiveRef.current) {

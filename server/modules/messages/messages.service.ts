@@ -1,4 +1,4 @@
-import { eq, and, or, desc, lt, gt, sql, inArray } from "drizzle-orm";
+import { eq, ne, and, or, desc, lt, gt, sql, inArray } from "drizzle-orm";
 import { db } from "@/server/db";
 import {
   conversations,
@@ -318,7 +318,7 @@ export class MessagesService {
       .where(
         and(
           inArray(conversationParticipants.conversationId, convIds),
-          sql`${conversationParticipants.userId} != ${currentUserId}`
+          ne(conversationParticipants.userId, currentUserId)
         )
       );
 
@@ -417,7 +417,7 @@ export class MessagesService {
       .where(
         and(
           eq(conversationParticipants.conversationId, conversationId),
-          sql`${conversationParticipants.userId} != ${currentUserId}`
+          ne(conversationParticipants.userId, currentUserId)
         )
       )
       .limit(1);
@@ -616,12 +616,24 @@ export class MessagesService {
       updatedAt: savedMessage.updatedAt.toISOString(),
     };
 
-    // 5. Broadcast real-time event to all participants
+    // 5. Broadcast real-time event to all participants with sender info
+    const [senderUser] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        handle: users.handle,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(users)
+      .where(eq(users.id, currentUserId))
+      .limit(1);
+
     realtimeHub.emitToUsers(participantIds, {
       type: "message:new",
       data: {
         conversationId,
         message: messageDTO,
+        sender: senderUser || { id: currentUserId, name: "Foydalanuvchi", handle: "" },
       },
     });
 
@@ -630,19 +642,13 @@ export class MessagesService {
       // If peer is not currently online or not in this conversation, notify
       const isOnline = realtimeHub.isUserOnline(peerId);
       if (!isOnline) {
-        const [sender] = await db
-          .select({ name: users.name })
-          .from(users)
-          .where(eq(users.id, currentUserId))
-          .limit(1);
-
         triggerNotification({
           recipientId: peerId,
           actorId: currentUserId,
           type: "comment", // notifications type
           targetId: conversationId,
           targetType: "user",
-          title: sender?.name || "Yangi xabar",
+          title: senderUser?.name || "Yangi xabar",
           message: content.length > 60 ? `${content.slice(0, 60)}...` : content,
           link: `/dashboard/messages?conv=${conversationId}`,
         }).catch(() => {});
@@ -662,10 +668,21 @@ export class MessagesService {
   ): Promise<void> {
     const now = new Date();
 
+    let resolvedLastMessageId = lastMessageId;
+    if (!resolvedLastMessageId) {
+      const [latest] = await db
+        .select({ id: messages.id })
+        .from(messages)
+        .where(eq(messages.conversationId, conversationId))
+        .orderBy(desc(messages.createdAt))
+        .limit(1);
+      resolvedLastMessageId = latest?.id;
+    }
+
     await db
       .update(conversationParticipants)
       .set({
-        lastReadMessageId: lastMessageId || null,
+        lastReadMessageId: resolvedLastMessageId || null,
         lastReadAt: now,
       })
       .where(
@@ -682,7 +699,7 @@ export class MessagesService {
       .where(
         and(
           eq(conversationParticipants.conversationId, conversationId),
-          sql`${conversationParticipants.userId} != ${currentUserId}`
+          ne(conversationParticipants.userId, currentUserId)
         )
       );
 
@@ -693,7 +710,7 @@ export class MessagesService {
       data: {
         conversationId,
         readerId: currentUserId,
-        lastReadMessageId: lastMessageId || null,
+        lastReadMessageId: resolvedLastMessageId || null,
         lastReadAt: now.toISOString(),
       },
     });

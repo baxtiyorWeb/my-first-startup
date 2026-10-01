@@ -1,7 +1,7 @@
 /**
  * Real-Time Event Dispatcher and Connection Hub for Direct Messaging (DM)
  * Provides Server-Sent Events (SSE) stream management, ephemeral typing indicators,
- * and multi-device connection tracking with presence detection.
+ * multi-device connection tracking, dead connection pruning, and live presence detection.
  */
 
 export interface RealtimeMessageEvent {
@@ -46,10 +46,10 @@ class RealtimeHubService {
   public registerClient(userId: string, controller: SSEController): string {
     const connectionId = `conn_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
+    const wasOffline = !this.isUserOnline(userId);
+
     if (!this.clients.has(userId)) {
       this.clients.set(userId, new Map());
-      // First connection for this user -> user went online
-      this.broadcastPresence(userId, true);
     }
 
     const userClients = this.clients.get(userId)!;
@@ -60,12 +60,19 @@ class RealtimeHubService {
       connectedAt: new Date(),
     });
 
-    // Send connection ACK
-    this.sendToController(controller, {
+    if (wasOffline) {
+      // First connection for this user -> broadcast user is now online
+      this.broadcastPresence(userId, true);
+    }
+
+    // Send connection ACK with list of currently online user IDs
+    const onlineUserIds = Array.from(this.clients.keys()).filter((uid) => this.isUserOnline(uid));
+    this.sendToController(userId, connectionId, controller, {
       type: "connection:ack",
       data: {
         connectionId,
         userId,
+        onlineUserIds,
         timestamp: new Date().toISOString(),
       },
     });
@@ -91,6 +98,24 @@ class RealtimeHubService {
   }
 
   /**
+   * Immediately terminate all active connections of a user on logout
+   */
+  public forceUserOffline(userId: string): void {
+    const userClients = this.clients.get(userId);
+    if (userClients) {
+      for (const client of userClients.values()) {
+        try {
+          client.controller.close();
+        } catch {}
+      }
+      this.clients.delete(userId);
+    }
+    const now = new Date();
+    this.lastSeenMap.set(userId, now);
+    this.broadcastPresence(userId, false);
+  }
+
+  /**
    * Check if a user currently has at least one active connection
    */
   public isUserOnline(userId: string): boolean {
@@ -112,8 +137,17 @@ class RealtimeHubService {
     const userClients = this.clients.get(userId);
     if (!userClients || userClients.size === 0) return;
 
-    for (const client of userClients.values()) {
-      this.sendToController(client.controller, event);
+    const deadConnections: string[] = [];
+
+    for (const [connId, client] of userClients.entries()) {
+      const ok = this.sendToController(userId, connId, client.controller, event);
+      if (!ok) {
+        deadConnections.push(connId);
+      }
+    }
+
+    for (const connId of deadConnections) {
+      this.unregisterClient(userId, connId);
     }
   }
 
@@ -164,23 +198,29 @@ class RealtimeHubService {
   }
 
   /**
-   * Internal helper to format SSE message
+   * Internal helper to format SSE message and safely detect dead sockets
    */
-  private sendToController(controller: SSEController, event: RealtimeMessageEvent): void {
+  private sendToController(
+    userId: string,
+    connectionId: string,
+    controller: SSEController,
+    event: RealtimeMessageEvent
+  ): boolean {
     try {
       const payload = `event: ${event.type}\ndata: ${JSON.stringify(event.data)}\n\n`;
       const encoded = new TextEncoder().encode(payload);
       controller.enqueue(encoded);
+      return true;
     } catch {
-      // Controller may already be closed by browser
+      // Stream/TCP socket dead or closed by client
+      return false;
     }
   }
 
   /**
-   * Broadcast presence update to interested peers
+   * Broadcast presence update to all connected clients
    */
   private broadcastPresence(userId: string, isOnline: boolean): void {
-    // Notify all connected clients about presence change
     const event: RealtimeMessageEvent = {
       type: "presence:update",
       data: {
@@ -190,12 +230,18 @@ class RealtimeHubService {
       },
     };
 
-    // Broadcast presence update
-    for (const userClients of this.clients.values()) {
-      for (const client of userClients.values()) {
-        if (client.userId !== userId) {
-          this.sendToController(client.controller, event);
+    for (const [clientUserId, userClients] of this.clients.entries()) {
+      if (clientUserId === userId) continue;
+
+      const deadConnections: string[] = [];
+      for (const [connId, client] of userClients.entries()) {
+        const ok = this.sendToController(clientUserId, connId, client.controller, event);
+        if (!ok) {
+          deadConnections.push(connId);
         }
+      }
+      for (const connId of deadConnections) {
+        this.unregisterClient(clientUserId, connId);
       }
     }
   }
