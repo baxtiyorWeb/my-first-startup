@@ -36,6 +36,7 @@ function ProfileEditForm({
   const [bio, setBio] = useState(profile.bio);
   const [location, setLocation] = useState(profile.location || "");
   const [website, setWebsite] = useState(profile.website || "");
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState(profile.coverPhotoUrl || "");
   const [intent, setIntent] = useState<UserIntent>(profile.intent || "none");
 
   // Local-only avatar selection before saving
@@ -147,6 +148,7 @@ function ProfileEditForm({
         location: location.trim() || undefined,
         website: website.trim() || undefined,
         avatarUrl: finalAvatarUrl,
+        coverPhotoUrl: coverPhotoUrl.trim() || undefined,
         intent,
       });
 
@@ -157,6 +159,7 @@ function ProfileEditForm({
         location: location.trim() || undefined,
         website: website.trim() || undefined,
         avatarUrl: finalAvatarUrl || undefined,
+        coverPhotoUrl: coverPhotoUrl.trim() || undefined,
         intent,
       });
 
@@ -346,6 +349,19 @@ function ProfileEditForm({
               className="w-full h-9 px-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Muqova rasmi URL (Cover Photo)
+          </label>
+          <input
+            type="url"
+            value={coverPhotoUrl}
+            onChange={(e) => setCoverPhotoUrl(e.target.value)}
+            placeholder="https://images.unsplash.com/photo-..."
+            className="w-full h-9 px-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
+          />
         </div>
 
         {/* Footer Actions */}

@@ -77,173 +77,221 @@ export function ProfileHeader({
   };
 
   return (
-    <header className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-7 shadow-xs">
-      {/* 1. Identity & Actions Row */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-        {/* Left: Avatar + Primary Identity */}
-        <div className="flex items-start gap-4 sm:gap-5">
+    <header className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+      {/* Cover Photo Banner */}
+      <div className="relative h-36 sm:h-48 w-full bg-gradient-to-r from-slate-900 via-zinc-800 to-slate-800 overflow-hidden select-none group">
+        {profile.coverPhotoUrl ? (
+          <img
+            src={profile.coverPhotoUrl}
+            alt={`${profile.name} cover`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-700 via-slate-900 to-black opacity-90 flex items-center justify-center">
+            <div className="text-white/10 text-4xl font-black tracking-widest uppercase select-none font-mono">
+              {profile.handle}
+            </div>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+        {isSelfUser && (
+          <button
+            type="button"
+            onClick={onEditClick}
+            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer opacity-90 hover:opacity-100 shadow-sm"
+          >
+            <span>Muqovani almashtirish</span>
+          </button>
+        )}
+      </div>
+
+      {/* Profile Details Header */}
+      <div className="px-4 sm:px-6 pb-5 pt-0">
+        {/* Avatar Overlap & Action Buttons Row */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 -mt-12 sm:-mt-16 mb-4">
           {/* Avatar with authority ring */}
           <div className="relative shrink-0 select-none">
             <UserAvatar
               name={profile.name}
               avatarUrl={profile.avatarUrl}
               size="xl"
-              className="ring-2 ring-slate-200 dark:ring-slate-800 shadow-sm"
+              className="w-20 h-20 sm:w-28 sm:h-28 ring-4 ring-white dark:ring-slate-900 shadow-md"
             />
             {profile.verified && (
               <span
-                className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-white dark:bg-slate-900"
+                className="absolute bottom-0 right-0 p-0.5 rounded-full bg-white dark:bg-slate-900"
                 title={t("common.verifiedAuthor")}
               >
-                <VerifiedBadgeIcon size={18} className="text-slate-900 dark:text-slate-100" />
+                <VerifiedBadgeIcon size={20} className="text-slate-900 dark:text-slate-100" />
               </span>
             )}
           </div>
 
-          {/* Name, Handle & Professional Role */}
-          <div className="min-w-0 flex-1 pt-0.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-950 dark:text-white leading-tight">
-                {profile.name}
-              </h1>
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-                {profile.handle}
-              </span>
-            </div>
+          {/* Right: Contextual Action Buttons */}
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto w-full sm:w-auto pt-2 sm:pt-0">
+            {isSelfUser ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onEditClick}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all cursor-pointer"
+                >
+                  <span>{t("profile.editProfile")}</span>
+                </button>
 
-            <p className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mt-1">
-              {profile.role}
-            </p>
+                {/* Menu & Settings Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsMenuModalOpen(true)}
+                  aria-label="Menyu va sozlamalar"
+                  title="Menyu va sozlamalar"
+                  className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <Settings size={16} />
+                </button>
 
-            {profile.intent && profile.intent !== "none" && (
-              <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700">
-                <span>
-                  {profile.intent === "looking_for_cofounder" && t("intents.badge_cofounder")}
-                  {profile.intent === "open_to_work" && t("intents.badge_open_to_work")}
-                  {profile.intent === "raising_funds" && t("intents.badge_raising")}
-                  {profile.intent === "open_to_advisory" && t("intents.badge_advisory")}
-                </span>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  aria-label={t("profile.shareProfile")}
+                  title={t("profile.shareProfile")}
+                  className={`p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer ${
+                    isSharing ? "scale-95 text-slate-950 dark:text-white" : ""
+                  }`}
+                >
+                  <ShareIcon size={16} />
+                </button>
+
+                {/* Profile Menu Modal */}
+                <ProfileMenuModal
+                  isOpen={isMenuModalOpen}
+                  onClose={() => setIsMenuModalOpen(false)}
+                />
+              </>
+            ) : (
+              <>
+                {/* Follow / Following Toggle */}
+                <button
+                  type="button"
+                  onClick={handleFollow}
+                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+                    isFollowing
+                      ? "border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      : "bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 shadow-xs"
+                  }`}
+                >
+                  {isFollowing ? (
+                    <>
+                      <CheckIcon size={14} />
+                      <span>{t("common.following")}</span>
+                    </>
+                  ) : (
+                    <span>{t("common.follow")}</span>
+                  )}
+                </button>
+
+                {/* Direct Message Link */}
+                <Link
+                  href={localePath(`/dashboard/messages?to=${profile.handle}`)}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+                  title={t("nav.messages")}
+                >
+                  <MessageIcon size={15} />
+                  <span>{t("nav.messages")}</span>
+                </Link>
+
+                {/* Share button */}
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  aria-label={t("profile.shareProfile")}
+                  className={`p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer ${
+                    isSharing ? "scale-95 text-slate-950 dark:text-white" : ""
+                  }`}
+                >
+                  <ShareIcon size={16} />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Primary Identity Info */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-950 dark:text-white">
+              {profile.name}
+            </h1>
+            <span className="text-xs text-slate-400 font-mono">
+              {profile.handle}
+            </span>
+          </div>
+
+          <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300">
+            {profile.role}
+          </p>
+
+          {/* Location, Joined & Social Links */}
+          <div className="flex items-center gap-3.5 mt-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
+            {profile.location && (
+              <div className="flex items-center gap-1 font-medium">
+                <span>📍 {profile.location}</span>
               </div>
             )}
-
-            {/* Location & Links */}
-            <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
-              {profile.location && (
-                <div className="flex items-center gap-1">
-                  <span>{profile.location}</span>
-                </div>
-              )}
-              {profile.joinedDate && (
-                <div className="flex items-center gap-1">
-                  <span>{t("profile.joined")}: {profile.joinedDate}</span>
-                </div>
-              )}
-              {profile.website && (
-                <a
-                  href={profile.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline flex items-center gap-1 text-slate-900 dark:text-slate-100"
-                >
-                  <span>{profile.website.replace(/^https?:\/\//, "")}</span>
-                </a>
-              )}
-            </div>
+            {profile.joinedDate && (
+              <div className="flex items-center gap-1 font-medium text-slate-400">
+                <span>🗓️ {profile.joinedDate}</span>
+              </div>
+            )}
+            {profile.socialLinks?.github && (
+              <a
+                href={profile.socialLinks.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-slate-950 dark:hover:text-white font-semibold flex items-center gap-1"
+                title="GitHub"
+              >
+                <span>GitHub</span>
+              </a>
+            )}
+            {profile.socialLinks?.linkedin && (
+              <a
+                href={profile.socialLinks.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-slate-950 dark:hover:text-white font-semibold flex items-center gap-1"
+                title="LinkedIn"
+              >
+                <span>LinkedIn</span>
+              </a>
+            )}
+            {profile.socialLinks?.twitter && (
+              <a
+                href={profile.socialLinks.twitter}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-slate-950 dark:hover:text-white font-semibold flex items-center gap-1"
+                title="Twitter / X"
+              >
+                <span>Twitter</span>
+              </a>
+            )}
+            {(profile.socialLinks?.website || profile.website) && (
+              <a
+                href={profile.socialLinks?.website || profile.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline flex items-center gap-1 text-slate-900 dark:text-slate-100 font-semibold"
+              >
+                <span>🌐 {(profile.socialLinks?.website || profile.website || "").replace(/^https?:\/\//, "")}</span>
+              </a>
+            )}
           </div>
         </div>
 
-        {/* Right: Contextual Action Buttons */}
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto w-full sm:w-auto">
-          {isSelfUser ? (
-            <>
-              <button
-                type="button"
-                onClick={onEditClick}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-              >
-                <span>{t("profile.editProfile")}</span>
-              </button>
-
-              {/* Menu & Settings Button (Modal Sheet) */}
-              <button
-                type="button"
-                onClick={() => setIsMenuModalOpen(true)}
-                aria-label="Menyu va sozlamalar"
-                title="Menyu va sozlamalar"
-                className="p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <Settings size={15} />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleShare}
-                aria-label={t("profile.shareProfile")}
-                title={t("profile.shareProfile")}
-                className={`p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer ${
-                  isSharing ? "scale-95 text-slate-950 dark:text-white" : ""
-                }`}
-              >
-                <ShareIcon size={15} />
-              </button>
-
-              {/* Profile Menu Modal */}
-              <ProfileMenuModal
-                isOpen={isMenuModalOpen}
-                onClose={() => setIsMenuModalOpen(false)}
-              />
-            </>
-          ) : (
-            <>
-              {/* Follow / Following Toggle */}
-              <button
-                type="button"
-                onClick={handleFollow}
-                className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
-                  isFollowing
-                    ? "border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/60 group"
-                    : "bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 shadow-xs"
-                }`}
-              >
-                {isFollowing ? (
-                  <>
-                    <CheckIcon size={14} className="group-hover:hidden" />
-                    <span className="group-hover:hidden">{t("common.following")}</span>
-                    <span className="hidden group-hover:inline">{t("common.unfollow")}</span>
-                  </>
-                ) : (
-                  <span>{t("common.follow")}</span>
-                )}
-              </button>
-
-              {/* Direct Message Link */}
-              <Link
-                href={localePath(`/dashboard/messages?to=${profile.handle}`)}
-                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
-                title={t("nav.messages")}
-              >
-                <MessageIcon size={14} />
-                <span>{t("nav.messages")}</span>
-              </Link>
-
-              {/* Share button */}
-              <button
-                type="button"
-                onClick={handleShare}
-                aria-label={t("profile.shareProfile")}
-                className={`p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer ${
-                  isSharing ? "scale-95 text-slate-950 dark:text-white" : ""
-                }`}
-              >
-                <ShareIcon size={15} />
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
       {/* 2. Core Perspective (Bio) */}
-      <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
+      <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
         <p className="text-xs sm:text-[13.5px] leading-relaxed text-slate-800 dark:text-slate-200 font-normal">
           {profile.bio}
         </p>
@@ -349,6 +397,7 @@ export function ProfileHeader({
           </span>
         </div>
       </div>
-    </header>
+    </div>
+  </header>
   );
 }

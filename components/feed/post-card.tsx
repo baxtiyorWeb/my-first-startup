@@ -227,10 +227,10 @@ export function PostCard({
     <>
       <article
         aria-label={`${post.author.name} posti`}
-        className={`bg-white dark:bg-slate-900 border rounded-lg p-4 sm:p-4.5 transition-all duration-300 ${
+        className={`bg-transparent border-b border-slate-200/60 dark:border-slate-800/60 pb-5 pt-4 px-2 sm:px-3 transition-all duration-200 ${
           highlightActive
-            ? "animate-highlight-pulse border-amber-400/80 dark:border-amber-400/60 ring-2 ring-amber-400/50"
-            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+            ? "animate-highlight-pulse bg-slate-100/50 dark:bg-slate-800/30"
+            : ""
         }`}
       >
         {/* 1. Header: Author Identity & Metadata */}
@@ -323,8 +323,8 @@ export function PostCard({
                     >
                       {isFollowingAuthor ? (
                         <>
-                          <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                          <UserCheck className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                          <span className="font-medium">
                             {t("common.unfollow") || "Kuzatishni to‘xtatish"}
                           </span>
                         </>
@@ -352,7 +352,7 @@ export function PostCard({
                     }}
                     className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
                   >
-                    <Flag className="w-3.5 h-3.5 text-amber-500" />
+                    <Flag className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                     <span>{t("post.report")}</span>
                   </button>
 
@@ -366,7 +366,7 @@ export function PostCard({
                         }}
                         className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
                       >
-                        <Edit2 className="w-3.5 h-3.5 text-indigo-500" />
+                        <Edit2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                         <span>Tahrirlash</span>
                       </button>
 
@@ -376,9 +376,9 @@ export function PostCard({
                           setIsMenuOpen(false);
                           setIsConfirmDeleteOpen(true);
                         }}
-                        className="w-full px-3 py-2 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                        className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                         <span>{t("post.deleteConfirm")}</span>
                       </button>
                     </>
