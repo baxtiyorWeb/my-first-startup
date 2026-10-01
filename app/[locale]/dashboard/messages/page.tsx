@@ -249,17 +249,17 @@ export default function MessagesPage() {
   }, [messages]);
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] md:h-[calc(100vh-3.5rem)] w-full flex bg-white dark:bg-slate-950 overflow-hidden select-none">
+    <div className="h-full w-full flex bg-white dark:bg-slate-950 overflow-hidden select-none">
       {/* ─────────────────────────────────────────────────────────────
           LEFT PANE: Conversation List & User Search
          ───────────────────────────────────────────────────────────── */}
       <aside
         className={`${
           activeConversationId ? "hidden md:flex" : "flex"
-        } w-full md:w-80 lg:w-96 flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 shrink-0 h-full`}
+        } w-full md:w-80 lg:w-96 flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 shrink-0 h-full overflow-hidden`}
       >
         {/* Header & Status Indicator */}
-        <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
+        <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <MessageSquare size={18} />
@@ -284,7 +284,7 @@ export default function MessagesPage() {
         </div>
 
         {/* Search Bar */}
-        <div className="p-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="p-3 border-b border-slate-200 dark:border-slate-800 shrink-0">
           <div className="relative">
             <Search
               size={14}
@@ -310,7 +310,7 @@ export default function MessagesPage() {
         </div>
 
         {/* Conversation List / Search Results Scroll Area */}
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60 [scrollbar-width:thin]">
           {/* User Search Results Dropdown when typing query */}
           {searchQuery.trim().length >= 2 && userSearchResults.length > 0 && (
             <div className="p-2 bg-slate-100/60 dark:bg-slate-800/40">
@@ -446,12 +446,12 @@ export default function MessagesPage() {
       <main
         className={`${
           activeConversationId ? "flex" : "hidden md:flex"
-        } flex-1 flex-col h-full bg-white dark:bg-slate-950 relative`}
+        } flex-1 flex-col h-full min-h-0 bg-white dark:bg-slate-950 relative overflow-hidden`}
       >
         {activeConversation ? (
           <>
             {/* Chat Top Header */}
-            <div className="h-14 px-3 sm:px-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm z-10">
+            <div className="h-14 shrink-0 px-3 sm:px-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm z-10">
               <div className="flex items-center gap-2.5 min-w-0">
                 {/* Mobile Back Button */}
                 <button
@@ -520,7 +520,7 @@ export default function MessagesPage() {
             <div
               ref={scrollContainerRef}
               onScroll={handleScroll}
-              className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30 dark:bg-slate-950"
+              className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 bg-slate-50/30 dark:bg-slate-950 overscroll-contain [scrollbar-width:thin]"
             >
               {/* Load older messages indicator */}
               {loadingMessages && (
@@ -662,7 +662,7 @@ export default function MessagesPage() {
             {/* Message Composer */}
             <form
               onSubmit={handleSend}
-              className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex items-end gap-2"
+              className="shrink-0 p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex items-end gap-2"
             >
               <div className="flex-1 relative">
                 <textarea

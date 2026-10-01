@@ -15,7 +15,7 @@ import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { Footer } from "./footer";
 import { MobileBottomNav } from "./mobile-nav";
-import { MessagesProvider } from "@/components/messages/messages-context";
+import { MessagesProvider, useMessages } from "@/components/messages/messages-context";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -33,6 +33,9 @@ function ShellLayoutInner({
   const router = useRouter();
   const pathname = usePathname() || "";
   const { localePath } = useI18n();
+  const { activeConversationId } = useMessages();
+
+  const isMessagesPage = pathname.includes("/dashboard/messages");
 
   const isAuthRequired =
     pathname.endsWith("/dashboard/create") ||
@@ -62,13 +65,23 @@ function ShellLayoutInner({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased">
+    <div
+      className={`min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased ${
+        isMessagesPage ? "h-[100dvh] overflow-hidden" : ""
+      }`}
+    >
       {/* Desktop Fixed Navigation */}
       <Sidebar />
 
       {/* Main App Container: dynamically adjusts margin to match sidebar width smoothly */}
       <div
-        className="flex-1 flex flex-col min-w-0 transition-[margin-left] duration-250 ease-out pb-[58px] md:pb-0"
+        className={`flex-1 flex flex-col min-w-0 transition-[margin-left] duration-250 ease-out ${
+          isMessagesPage
+            ? activeConversationId
+              ? "pb-0 h-[100dvh] overflow-hidden"
+              : "pb-[58px] md:pb-0 h-[100dvh] overflow-hidden"
+            : "pb-[58px] md:pb-0"
+        }`}
         style={{
           marginLeft: "var(--sidebar-offset, 0px)",
         }}
@@ -93,22 +106,30 @@ function ShellLayoutInner({
         <main
           id="main-content"
           tabIndex={-1}
-          className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6 focus:outline-none"
+          className={`flex-1 w-full focus:outline-none ${
+            isMessagesPage
+              ? "p-0 min-h-0 overflow-hidden flex flex-col"
+              : "px-4 sm:px-6 lg:px-8 py-5 sm:py-6"
+          }`}
         >
           <div
-            className="w-full mx-auto transition-[max-width] duration-200 ease-out"
-            style={{ maxWidth: `var(--content-max-width, ${CONTENT_MAX_WIDTH}px)` }}
+            className={`w-full ${
+              isMessagesPage
+                ? "h-full flex-1 min-h-0"
+                : "mx-auto transition-[max-width] duration-200 ease-out"
+            }`}
+            style={isMessagesPage ? undefined : { maxWidth: `var(--content-max-width, ${CONTENT_MAX_WIDTH}px)` }}
           >
             {children}
           </div>
         </main>
 
-        {/* Dynamic Footer */}
-        <Footer />
+        {/* Dynamic Footer: Hidden on messages page to prevent unwanted double scroll */}
+        {!isMessagesPage && <Footer />}
       </div>
 
-      {/* Mobile Bottom Navigation (Authenticated) */}
-      {session.isAuthenticated && <MobileBottomNav />}
+      {/* Mobile Bottom Navigation (Authenticated): Hidden when inside chat detail */}
+      {session.isAuthenticated && (!isMessagesPage || !activeConversationId) && <MobileBottomNav />}
 
       {/* Guest Conversion Banner (Threads/Twitter style) */}
       {!session.isAuthenticated && (
