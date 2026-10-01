@@ -78,7 +78,7 @@ type SettingsTab = "account" | "privacy" | "security" | "notifications" | "syste
 export default function SettingsPage() {
   const { session, isLoaded, updateCurrentUser, logout } = useAuth();
   const { theme: appTheme, setTheme: setAppTheme } = useTheme();
-  const { t, locale, switchLocale } = useI18n();
+  const { t, locale, switchLocale, alphabet, setAlphabet } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -114,6 +114,7 @@ export default function SettingsPage() {
   const [loadingBlocks, setLoadingBlocks] = useState(false);
 
   // Security states
+  const [hasPassword, setHasPassword] = useState<boolean | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -149,16 +150,6 @@ export default function SettingsPage() {
   // System & Theme states
   const [theme, setTheme] = useState<"dark" | "light" | "system">(() => {
     return (session.user.theme as "dark" | "light" | "system") || "system";
-  });
-
-  const [alphabet, setAlphabet] = useState<string>(() => {
-    if (typeof window === "undefined") return "latin";
-    try {
-      const saved = localStorage.getItem("gogetters_alphabet") || localStorage.getItem("fikr_alphabet");
-      return saved === "cyrillic" || saved === "latin" ? saved : "latin";
-    } catch {
-      return "latin";
-    }
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -280,7 +271,7 @@ export default function SettingsPage() {
     }
   }, [currentTab]);
 
-  // Load active sessions when on Security tab
+  // Load active sessions and password status when on Security tab
   useEffect(() => {
     if (currentTab === "security") {
       setLoadingSessions(true);
@@ -288,6 +279,10 @@ export default function SettingsPage() {
         .then((res) => setActiveSessions(res.data.sessions || []))
         .catch(() => {})
         .finally(() => setLoadingSessions(false));
+
+      apiClient<{ hasPassword: boolean }>("/api/settings/password")
+        .then((res) => setHasPassword(res.data?.hasPassword ?? true))
+        .catch(() => setHasPassword(true));
     }
   }, [currentTab]);
 
@@ -390,9 +385,13 @@ export default function SettingsPage() {
     }
   };
 
-  // Password Change
+  // Password Change or Set
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (hasPassword && !currentPassword) {
+      toast.error("Eski parolni kiriting");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       toast.error("Yangi parollar mos kelmadi");
       return;
@@ -406,14 +405,22 @@ export default function SettingsPage() {
     try {
       await apiClient("/api/settings/password", {
         method: "POST",
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({
+          ...(hasPassword ? { currentPassword } : {}),
+          newPassword,
+        }),
       });
-      toast.success("Parol muvaffaqiyatli o'zgartirildi");
+      toast.success(
+        hasPassword
+          ? "Parol muvaffaqiyatli o'zgartirildi"
+          : "Parol muvaffaqiyatli o'rnatildi"
+      );
+      setHasPassword(true);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      toast.error(err.message || "Eski parol noto'g'ri");
+      toast.error(err.message || "Xatolik yuz berdi");
     } finally {
       setIsChangingPassword(false);
     }
@@ -1118,9 +1125,14 @@ export default function SettingsPage() {
 
             {/* DM Permission */}
             <div className="p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
-              <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                Xabar yuborish huquqi (Direct Message - DM)
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                  Xabar yuborish huquqi (Direct Message - DM)
+                </label>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-medium">
+                  Sozlama saqlanadi
+                </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {[
                   { id: "everyone", label: "Hamma", hint: "Barcha foydalanuvchilar" },
@@ -1236,30 +1248,46 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            {/* Change Password */}
+            {/* Change Password / Set Password */}
             <form onSubmit={handleChangePassword} className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block flex items-center gap-1.5">
-                <KeyRound size={15} />
-                <span>Parolni o'zgartirish</span>
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <KeyRound size={15} />
+                  <span>{hasPassword === false ? "Yangi parol o'rnatish" : "Parolni o'zgartirish"}</span>
+                </span>
+                {hasPassword === false && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-800">
+                    Google hisobi
+                  </span>
+                )}
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {hasPassword === false && (
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Siz Google orqali ro'yxatdan o'tgansiz. Tizimga login va parol orqali ham to'g'ridan-to'g'ri kirish uchun yangi parol o'rnating.
+                </p>
+              )}
+
+              <div className={`grid grid-cols-1 ${hasPassword === false ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-3`}>
+                {hasPassword !== false && (
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Eski parol
+                    </label>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                      placeholder="••••••••"
+                      className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Eski parol
-                  </label>
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    required
-                    className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Yangi parol
+                    {hasPassword === false ? "Parol" : "Yangi parol"}
                   </label>
                   <input
                     type="password"
@@ -1267,13 +1295,14 @@ export default function SettingsPage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     minLength={6}
+                    placeholder="Kamida 6 belgi"
                     className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Yangi parolni tasdiqlash
+                    {hasPassword === false ? "Parolni tasdiqlash" : "Yangi parolni tasdiqlash"}
                   </label>
                   <input
                     type="password"
@@ -1281,6 +1310,7 @@ export default function SettingsPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     minLength={6}
+                    placeholder="Kamida 6 belgi"
                     className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
                   />
                 </div>
@@ -1292,7 +1322,11 @@ export default function SettingsPage() {
                   disabled={isChangingPassword}
                   className="px-3.5 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer disabled:opacity-50"
                 >
-                  {isChangingPassword ? "O'zgartirilmoqda..." : "Parolni yangilash"}
+                  {isChangingPassword
+                    ? "Saqlanmoqda..."
+                    : hasPassword === false
+                    ? "Parol o'rnatish"
+                    : "Parolni yangilash"}
                 </button>
               </div>
             </form>
@@ -1301,10 +1335,15 @@ export default function SettingsPage() {
             <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block flex items-center gap-1.5">
-                    <ShieldCheck size={15} />
-                    <span>Ikki bosqichli autentifikatsiya (2FA)</span>
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <ShieldCheck size={15} />
+                      <span>Ikki bosqichli autentifikatsiya (2FA)</span>
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold border border-amber-200 dark:border-amber-800">
+                      Rejalashtirilgan
+                    </span>
+                  </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     Google Authenticator yoki SMS orqali qo'shimcha xavfsizlik qatlami
                   </p>
@@ -1652,14 +1691,17 @@ export default function SettingsPage() {
                   {t("settings.alphabetLabel")}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {["latin", "cyrillic"].map((alph) => (
+                  {(["latin", "cyrillic"] as const).map((alph) => (
                     <button
                       key={alph}
                       type="button"
                       onClick={() => {
                         setAlphabet(alph);
-                        localStorage.setItem("gogetters_alphabet", alph);
-                        toast.success("Alifbo tanlandi");
+                        toast.success(
+                          alph === "cyrillic"
+                            ? "Кирилл алифбоси танланди"
+                            : "Lotin alifbosi tanlandi"
+                        );
                       }}
                       className={`p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-colors ${
                         alphabet === alph

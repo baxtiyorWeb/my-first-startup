@@ -37,7 +37,13 @@ export async function GET(req: NextRequest) {
       rows = [newSession];
     }
 
-    return successResponse({ sessions: rows });
+    // Map isCurrent dynamically based on the requesting token's sessionId
+    const mappedRows = rows.map((s) => ({
+      ...s,
+      isCurrent: authUser.sessionId ? s.id === authUser.sessionId : s.isCurrent,
+    }));
+
+    return successResponse({ sessions: mappedRows });
   } catch (error) {
     return errorResponse(error);
   }
@@ -55,10 +61,16 @@ export async function DELETE(req: NextRequest) {
         .delete(userSessions)
         .where(and(eq(userSessions.id, sessionId), eq(userSessions.userId, authUser.userId)));
     } else {
-      // Delete all sessions except current
-      await db
-        .delete(userSessions)
-        .where(and(eq(userSessions.userId, authUser.userId), eq(userSessions.isCurrent, false)));
+      // Delete all sessions except the caller's current session
+      if (authUser.sessionId) {
+        await db
+          .delete(userSessions)
+          .where(and(eq(userSessions.userId, authUser.userId), ne(userSessions.id, authUser.sessionId)));
+      } else {
+        await db
+          .delete(userSessions)
+          .where(and(eq(userSessions.userId, authUser.userId), eq(userSessions.isCurrent, false)));
+      }
     }
 
     return successResponse({ message: "Seanslar yakunlandi" });

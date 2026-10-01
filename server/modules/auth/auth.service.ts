@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/db";
-import { users } from "@/server/db/schema";
+import { users, userSessions } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import { signSessionToken, type AuthUserPayload } from "@/server/common/auth-guard";
 import { generateRandomAvatar } from "@/lib/avatar";
@@ -113,6 +113,15 @@ export async function handleGoogleAuth(googleUser: {
 
   if (existingUsers.length > 0) {
     const u = existingUsers[0];
+
+    // Automatically reactivate account upon fresh Google login
+    if (u.isDeactivated) {
+      await db
+        .update(users)
+        .set({ isDeactivated: false, updatedAt: new Date() })
+        .where(eq(users.id, u.id));
+    }
+
     const resolvedAvatar = u.avatarUrl || avatarUrl || generateRandomAvatar(u.handle);
     if (!u.avatarUrl && resolvedAvatar) {
       db.update(users)
@@ -163,6 +172,22 @@ export async function handleGoogleAuth(googleUser: {
       isOnboarded: false,
     };
   }
+
+  // Create an active session in userSessions
+  const [createdSession] = await db
+    .insert(userSessions)
+    .values({
+      userId: userRecord.userId,
+      deviceName: "Brauzer seansi",
+      browser: "Google Chrome / Web",
+      ipAddress: "127.0.0.1",
+      location: "Toshkent, O‘zbekiston",
+      isCurrent: true,
+      lastActiveAt: new Date(),
+    })
+    .returning();
+
+  userRecord.sessionId = createdSession.id;
 
   // 4. Sign JWT session token
   const token = await signSessionToken(userRecord);

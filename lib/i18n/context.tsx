@@ -7,9 +7,13 @@ import { Locale, DEFAULT_LOCALE, isValidLocale } from "./config";
 import { dictionaries, getDictionary, type TranslationDictionary } from "./dictionaries";
 import { formatRelativeTime as formatRelativeTimeI18n } from "./format-date";
 
+import { latinToCyrillic } from "./transliterate";
+
 export interface I18nContextType {
   locale: Locale;
   dict: TranslationDictionary;
+  alphabet: "latin" | "cyrillic";
+  setAlphabet: (alph: "latin" | "cyrillic") => void;
   t: (path: string, fallback?: string) => string;
   switchLocale: (newLocale: Locale) => void;
   localePath: (path: string, targetLocale?: Locale) => string;
@@ -74,6 +78,25 @@ export function I18nProvider({
   const locale: Locale = isValidLocale(initialLocale) ? initialLocale : DEFAULT_LOCALE;
   const dict = useMemo(() => getDictionary(locale), [locale]);
 
+  const [alphabet, setAlphabetState] = React.useState<"latin" | "cyrillic">(() => {
+    if (typeof window === "undefined") return "latin";
+    try {
+      const saved = localStorage.getItem("gogetters_alphabet") || localStorage.getItem("fikr_alphabet");
+      return saved === "cyrillic" ? "cyrillic" : "latin";
+    } catch {
+      return "latin";
+    }
+  });
+
+  const setAlphabet = useCallback((alph: "latin" | "cyrillic") => {
+    setAlphabetState(alph);
+    try {
+      localStorage.setItem("gogetters_alphabet", alph);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
   // Sync document lang & cookie & localStorage
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -89,18 +112,20 @@ export function I18nProvider({
 
   const t = useCallback(
     (key: string, fallback?: string): string => {
-      const val = resolvePath(dict as any, key);
-      if (val !== undefined) return val;
+      let val = resolvePath(dict as any, key);
+      if (val === undefined && locale !== DEFAULT_LOCALE) {
+        val = resolvePath(dictionaries[DEFAULT_LOCALE] as any, key);
+      }
+      const rawText = val !== undefined ? val : (fallback ?? key);
 
-      // Fallback to default locale (uz) if missing in current
-      if (locale !== DEFAULT_LOCALE) {
-        const defaultVal = resolvePath(dictionaries[DEFAULT_LOCALE] as any, key);
-        if (defaultVal !== undefined) return defaultVal;
+      // Transliterate if Uzbek locale and Cyrillic script selected
+      if (locale === "uz" && alphabet === "cyrillic") {
+        return latinToCyrillic(rawText);
       }
 
-      return fallback ?? key;
+      return rawText;
     },
-    [dict, locale]
+    [dict, locale, alphabet]
   );
 
   const localePath = useCallback(
@@ -139,12 +164,14 @@ export function I18nProvider({
     () => ({
       locale,
       dict,
+      alphabet,
+      setAlphabet,
       t,
       switchLocale,
       localePath,
       formatRelativeTime,
     }),
-    [locale, dict, t, switchLocale, localePath, formatRelativeTime]
+    [locale, dict, alphabet, setAlphabet, t, switchLocale, localePath, formatRelativeTime]
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
@@ -158,6 +185,8 @@ export function useI18n(): I18nContextType {
     return {
       locale: DEFAULT_LOCALE,
       dict: defaultDict,
+      alphabet: "latin",
+      setAlphabet: () => {},
       t: (key: string, fallback?: string) => resolvePath(defaultDict as any, key) ?? fallback ?? key,
       switchLocale: () => {},
       localePath: (path: string) => getLocalePath(path, DEFAULT_LOCALE),

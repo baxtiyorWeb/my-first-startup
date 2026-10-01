@@ -1,4 +1,4 @@
-import { eq, and, desc, lt, isNull, sql } from "drizzle-orm";
+import { eq, and, or, desc, lt, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import { posts, users, postLikes, bookmarks, postViews, follows, userBlocks } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
@@ -380,6 +380,7 @@ export async function getPostById(
         authorAvatarUrl: users.avatarUrl,
         authorVerified: users.verified,
         authorIntent: users.intent,
+        authorIsPrivate: users.isPrivate,
         isFollowingAuthor: currentUserId
           ? sql<boolean>`EXISTS(SELECT 1 FROM ${follows} WHERE ${follows.followerId} = ${currentUserId}::uuid AND ${follows.followingId} = ${users.id})`
           : sql<boolean>`false`,
@@ -397,6 +398,33 @@ export async function getPostById(
 
     if (!row) {
       throw AppError.notFound("Post topilmadi");
+    }
+
+    // 1. Blocklist check (If either user blocked the other, post is invisible)
+    if (currentUserId && currentUserId !== row.authorId) {
+      const [blockRecord] = await db
+        .select({ blockerId: userBlocks.blockerId })
+        .from(userBlocks)
+        .where(
+          or(
+            and(eq(userBlocks.blockerId, row.authorId), eq(userBlocks.blockedId, currentUserId)),
+            and(eq(userBlocks.blockerId, currentUserId), eq(userBlocks.blockedId, row.authorId))
+          )
+        )
+        .limit(1);
+
+      if (blockRecord) {
+        throw AppError.notFound("Post topilmadi");
+      }
+    }
+
+    // 2. Private account check (Only author and approved followers can view private account posts)
+    if (row.authorIsPrivate) {
+      const isSelf = currentUserId === row.authorId;
+      const isFollowing = Boolean(row.isFollowingAuthor);
+      if (!isSelf && !isFollowing) {
+        throw AppError.forbidden("Ushbu hisob yopiq (Private). Postni ko‘rish uchun muallifga obuna bo‘ling.");
+      }
     }
 
     return {

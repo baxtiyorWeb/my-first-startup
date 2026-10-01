@@ -102,6 +102,7 @@ export async function triggerNotification(input: {
       if ((type === "comment" || type === "reply") && !settings.notifyComments) return;
       if (type === "follow" && !settings.notifyFollows) return;
       if (type === "new_post" && !settings.notifyNewPosts) return;
+      if (type === "share" as any && !settings.notifyShares) return;
     }
 
     // 3. Smart Anti-Spam Aggregation for "like" & Throttling for "comment"/"reply"

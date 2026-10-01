@@ -1,4 +1,4 @@
-import { ilike, or, and, isNull, desc } from "drizzle-orm";
+import { ilike, or, and, eq, isNull, desc } from "drizzle-orm";
 import { db } from "@/server/db";
 import { users, posts } from "@/server/db/schema";
 import type { SearchItem, SearchCategory, SearchResponse } from "@/types/social";
@@ -86,7 +86,7 @@ export async function searchContent(
           avatarUrl: users.avatarUrl,
         })
         .from(users)
-        .where(or(...userConditions))
+        .where(and(eq(users.isDeactivated, false), or(...userConditions)))
         .limit(limit);
 
       for (const u of matchedUsers) {
@@ -120,7 +120,15 @@ export async function searchContent(
           postType: posts.postType
         })
         .from(posts)
-        .where(and(isNull(posts.deletedAt), or(...postConditions)))
+        .innerJoin(users, eq(posts.authorId, users.id))
+        .where(
+          and(
+            isNull(posts.deletedAt),
+            eq(users.isPrivate, false),
+            eq(users.isDeactivated, false),
+            or(...postConditions)
+          )
+        )
         .orderBy(desc(posts.createdAt))
         .limit(limit);
 

@@ -10,9 +10,24 @@ import { hashPassword, verifyPassword } from "@/server/common/crypto";
 import { enforceRateLimit } from "@/server/common/rate-limiter";
 
 const PasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Eski parolni kiriting"),
+  currentPassword: z.string().optional(),
   newPassword: z.string().min(6, "Yangi parol kamida 6 ta belgidan iborat bo‘lishi kerak"),
 });
+
+export async function GET(req: NextRequest) {
+  try {
+    const authUser = await requireAuth(req);
+    const [userRow] = await db
+      .select({ passwordHash: users.passwordHash })
+      .from(users)
+      .where(eq(users.id, authUser.userId))
+      .limit(1);
+
+    return successResponse({ hasPassword: Boolean(userRow?.passwordHash) });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,6 +59,9 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (userRow?.passwordHash) {
+      if (!currentPassword) {
+        throw AppError.badRequest("Eski parolni kiriting");
+      }
       const isValid = await verifyPassword(currentPassword, userRow.passwordHash);
       if (!isValid) {
         throw AppError.badRequest("Eski parol noto‘g‘ri kiritildi");
@@ -61,7 +79,7 @@ export async function POST(req: NextRequest) {
       })
       .where(eq(users.id, authUser.userId));
 
-    return successResponse({ message: "Parol muvaffaqiyatli o‘zgartirildi" });
+    return successResponse({ message: "Parol muvaffaqiyatli saqlandi" });
   } catch (error) {
     return errorResponse(error);
   }

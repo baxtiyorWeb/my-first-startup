@@ -2,6 +2,9 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { type NextRequest } from "next/server";
 import { AppError } from "./errors";
+import { db } from "@/server/db";
+import { userSessions, users } from "@/server/db/schema";
+import { eq, and } from "drizzle-orm";
 
 export const SESSION_COOKIE_NAME = "gogetters_session";
 
@@ -30,6 +33,7 @@ export interface AuthUserPayload {
   role: string;
   avatarUrl?: string | null;
   isOnboarded: boolean;
+  sessionId?: string;
 }
 
 /**
@@ -58,6 +62,7 @@ export async function verifySessionToken(token: string): Promise<AuthUserPayload
       role: payload.role as string,
       avatarUrl: (payload.avatarUrl as string) || null,
       isOnboarded: Boolean(payload.isOnboarded),
+      sessionId: (payload.sessionId as string) || undefined,
     };
   } catch {
     return null;
@@ -97,6 +102,30 @@ export async function requireAuth(req?: NextRequest): Promise<AuthUserPayload> {
     throw AppError.unauthorized("Sessiya eskirgan yoki yaroqsiz. Qaytadan kiring");
   }
 
+  // 1. If sessionId is present, verify session has not been revoked in database
+  if (user.sessionId) {
+    const [activeSession] = await db
+      .select({ id: userSessions.id })
+      .from(userSessions)
+      .where(and(eq(userSessions.id, user.sessionId), eq(userSessions.userId, user.userId)))
+      .limit(1);
+
+    if (!activeSession) {
+      throw AppError.unauthorized("Ushbu seans boshqa qurilmadan yakunlangan. Qaytadan kiring");
+    }
+  }
+
+  // 2. Verify account is not deactivated
+  const [userRow] = await db
+    .select({ isDeactivated: users.isDeactivated })
+    .from(users)
+    .where(eq(users.id, user.userId))
+    .limit(1);
+
+  if (userRow?.isDeactivated) {
+    throw AppError.forbidden("Hisobingiz vaqtincha muzlatilgan. Qayta faollashtirish uchun tizimga kiring.");
+  }
+
   return user;
 }
 
@@ -106,7 +135,28 @@ export async function requireAuth(req?: NextRequest): Promise<AuthUserPayload> {
 export async function getOptionalAuth(req?: NextRequest): Promise<AuthUserPayload | null> {
   const token = await getTokenFromRequest(req);
   if (!token) return null;
-  return await verifySessionToken(token);
+  const user = await verifySessionToken(token);
+  if (!user) return null;
+
+  if (user.sessionId) {
+    const [activeSession] = await db
+      .select({ id: userSessions.id })
+      .from(userSessions)
+      .where(and(eq(userSessions.id, user.sessionId), eq(userSessions.userId, user.userId)))
+      .limit(1);
+
+    if (!activeSession) return null;
+  }
+
+  const [userRow] = await db
+    .select({ isDeactivated: users.isDeactivated })
+    .from(users)
+    .where(eq(users.id, user.userId))
+    .limit(1);
+
+  if (userRow?.isDeactivated) return null;
+
+  return user;
 }
 
 /**
