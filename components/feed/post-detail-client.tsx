@@ -372,10 +372,10 @@ function PostDetailInner({
       {/* Main Post Card */}
       <article
         ref={cardRef}
-        className={`bg-white dark:bg-slate-900 border rounded-xl p-4 sm:p-5 shadow-sm transition-all duration-300 ${
+        className={`bg-transparent pb-6 border-b border-slate-100 dark:border-slate-800/80 transition-all duration-300 ${
           isHighlighted
-            ? "animate-highlight-pulse border-amber-400/80 dark:border-amber-400/60 ring-2 ring-amber-400/50"
-            : "border-slate-200 dark:border-slate-800"
+            ? "animate-highlight-pulse border-amber-400/80 dark:border-amber-400/60 ring-2 ring-amber-400/50 rounded-xl p-3"
+            : ""
         }`}
       >
         {/* Author header */}
@@ -651,7 +651,7 @@ function PostDetailInner({
       </article>
 
       {/* Discussion Thread Section */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+      <section className="bg-transparent pt-2 space-y-4">
         <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
           {t("discussion.title")} ({commentsCount})
         </h2>

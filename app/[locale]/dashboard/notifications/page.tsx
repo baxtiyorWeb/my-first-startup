@@ -110,7 +110,7 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-4 w-full max-w-3xl mx-auto">
       {/* Top action header */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div className="pb-3 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
             Bildirishnomalar
@@ -136,7 +136,7 @@ export default function NotificationsPage() {
 
       {/* Notification List */}
       {items.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <div className="text-center py-16 py-6">
           <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
             <BellIcon size={24} />
           </div>
@@ -148,7 +148,7 @@ export default function NotificationsPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800/60 overflow-hidden shadow-xs">
+        <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
           {items.map((item) => (
             <Link
               key={item.id}

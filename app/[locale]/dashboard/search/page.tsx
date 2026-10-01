@@ -105,7 +105,7 @@ function SearchContent() {
   return (
     <div className="space-y-6 w-full max-w-4xl mx-auto pb-12">
       {/* Search Header Card */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
+      <div className="pb-4 border-b border-slate-100 dark:border-slate-800/80 space-y-4">
         {/* Search Input Bar */}
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -314,12 +314,12 @@ function SearchContent() {
                     </span>
                   </div>
                 )}
-                <div className="space-y-3">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
                   {postItems.map((p) => (
                     <Link
                       key={p.id}
                       href={localePath(p.href)}
-                      className="block p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-2xs hover:shadow-xs transition-all group cursor-pointer space-y-2.5"
+                      className="block py-4 transition-all group cursor-pointer space-y-2"
                     >
                       {/* Author Header */}
                       <div className="flex items-center justify-between gap-2">
@@ -342,7 +342,7 @@ function SearchContent() {
                       </div>
 
                       {/* Post Title */}
-                      <h2 className="text-sm sm:text-base font-bold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                      <h2 className="text-sm sm:text-base font-bold text-slate-950 dark:text-white group-hover:underline transition-colors line-clamp-2">
                         <HighlightText text={p.title} query={rawQuery} />
                       </h2>
 
@@ -352,11 +352,6 @@ function SearchContent() {
                           <HighlightText text={p.snippet} query={rawQuery} />
                         </p>
                       )}
-
-                      <div className="pt-2 flex items-center justify-end text-xs font-semibold text-indigo-600 dark:text-indigo-400 gap-1 opacity-80 group-hover:opacity-100">
-                        <span>{t("common.readMore")}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </div>
                     </Link>
                   ))}
                 </div>

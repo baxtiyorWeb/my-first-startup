@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import {
   VerifiedBadgeIcon,
@@ -15,8 +15,9 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 
 import { useAuth } from "@/components/auth/auth-context";
 import { isSameUser } from "@/lib/user-utils";
-import { Settings } from "lucide-react";
+import { Menu, Camera, Loader2 } from "lucide-react";
 import { ProfileMenuModal } from "./profile-menu-modal";
+import { api } from "@/lib/api";
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -33,13 +34,42 @@ export function ProfileHeader({
   onFollowToggle,
   onTabChange,
 }: ProfileHeaderProps) {
-  const { session } = useAuth();
+  const { session, updateCurrentUser } = useAuth();
   const { t, localePath } = useI18n();
   const isSelfUser = isSelf || isSameUser(session.user, profile);
   const [isFollowing, setIsFollowing] = useState(isSelfUser ? false : (profile.isFollowing ?? false));
   const [followersCount, setFollowersCount] = useState(profile.stats.followersCount);
   const [isSharing, setIsSharing] = useState(false);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState(profile.coverPhotoUrl || "");
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    setCoverPhotoUrl(profile.coverPhotoUrl || "");
+  }, [profile.coverPhotoUrl]);
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Muqova rasmi 10MB dan oshmasligi kerak");
+      return;
+    }
+
+    setIsUploadingCover(true);
+    try {
+      const res = await api.upload.uploadFile(file, "covers");
+      setCoverPhotoUrl(res.url);
+      await updateCurrentUser({ coverPhotoUrl: res.url });
+      toast.success("Muqova rasmi muvaffaqiyatli yangilandi");
+    } catch {
+      toast.error("Muqova rasmini yuklashda xatolik yuz berdi");
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
 
   const handleFollow = () => {
     if (isSelfUser) {
@@ -77,12 +107,20 @@ export function ProfileHeader({
   };
 
   return (
-    <header className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+    <header className="bg-transparent rounded-2xl overflow-hidden border-b border-slate-100 dark:border-slate-800/80 pb-4">
       {/* Cover Photo Banner */}
       <div className="relative h-36 sm:h-48 w-full bg-gradient-to-r from-slate-900 via-zinc-800 to-slate-800 overflow-hidden select-none group">
-        {profile.coverPhotoUrl ? (
+        <input
+          ref={coverInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleCoverUpload}
+          className="hidden"
+        />
+
+        {coverPhotoUrl ? (
           <img
-            src={profile.coverPhotoUrl}
+            src={coverPhotoUrl}
             alt={`${profile.name} cover`}
             className="w-full h-full object-cover"
           />
@@ -98,10 +136,21 @@ export function ProfileHeader({
         {isSelfUser && (
           <button
             type="button"
-            onClick={onEditClick}
-            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer opacity-90 hover:opacity-100 shadow-sm"
+            disabled={isUploadingCover}
+            onClick={() => coverInputRef.current?.click()}
+            className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer opacity-90 hover:opacity-100 shadow-sm disabled:opacity-50"
           >
-            <span>Muqovani almashtirish</span>
+            {isUploadingCover ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                <span>Yuklanmoqda...</span>
+              </>
+            ) : (
+              <>
+                <Camera size={14} />
+                <span>Muqovani almashtirish</span>
+              </>
+            )}
           </button>
         )}
       </div>
@@ -140,15 +189,15 @@ export function ProfileHeader({
                   <span>{t("profile.editProfile")}</span>
                 </button>
 
-                {/* Menu & Settings Button */}
+                {/* Menu Button (Open Sheet/Modal) */}
                 <button
                   type="button"
                   onClick={() => setIsMenuModalOpen(true)}
-                  aria-label="Menyu va sozlamalar"
-                  title="Menyu va sozlamalar"
+                  aria-label="Profil Menyusi"
+                  title="Profil Menyusi"
                   className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  <Settings size={16} />
+                  <Menu size={18} />
                 </button>
 
                 <button

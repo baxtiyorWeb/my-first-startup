@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const sessionData = await api.auth.getSession();
         if (isMounted && sessionData?.isAuthenticated && sessionData.user) {
-          const u = sessionData.user;
+          const u = sessionData.user as any;
           setSession({
             phoneNumber: u.phone || "",
             user: {
@@ -64,6 +64,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               role: u.role,
               bio: u.bio || "",
               avatarUrl: u.avatarUrl || undefined,
+              coverPhotoUrl: u.coverPhotoUrl || undefined,
+              socialLinks: u.socialLinks || undefined,
+              isPrivate: u.isPrivate,
+              dmPermission: u.dmPermission,
+              showOnlineStatus: u.showOnlineStatus,
+              twoFactorEnabled: u.twoFactorEnabled,
+              twoFactorType: u.twoFactorType,
+              theme: u.theme,
+              intent: u.intent || "none",
               verified: u.verified ?? true,
               location: u.location || undefined,
               website: u.website || undefined,
@@ -152,6 +161,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           location: updates.location,
           website: updates.website,
           avatarUrl: updates.avatarUrl,
+          coverPhotoUrl: updates.coverPhotoUrl,
+          socialLinks: updates.socialLinks,
+          isPrivate: updates.isPrivate,
+          dmPermission: updates.dmPermission,
+          showOnlineStatus: updates.showOnlineStatus,
+          twoFactorEnabled: updates.twoFactorEnabled,
+          twoFactorType: updates.twoFactorType,
+          theme: updates.theme,
           intent: updates.intent,
         });
 

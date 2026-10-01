@@ -12,7 +12,7 @@ import {
   SettingsIcon,
   BookmarkIcon,
 } from "@/components/icons";
-import { LogOut } from "lucide-react";
+import { LogOut, MessageSquare } from "lucide-react";
 import { useShell } from "./shell-context";
 import { SearchModal } from "@/components/search/search-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -20,7 +20,6 @@ import { useAuth } from "@/components/auth/auth-context";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 interface HeaderProps {
   title?: string;
@@ -206,8 +205,14 @@ export function Header({ title, subtitle }: HeaderProps) {
 
           {/* Right: Actions + Profile Dropdown */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            {/* Theme Toggle (Light / Dark) */}
-            <ThemeToggle size="sm" />
+            {/* Direct Messages Icon Button */}
+            <Link
+              href={localePath("/dashboard/messages")}
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95 flex items-center justify-center"
+              title={t("nav.messages") || "Xabarlar"}
+            >
+              <MessageSquare size={18} />
+            </Link>
 
             {/* Primary Create Thought Action - HIDDEN ON MOBILE/PHONES */}
             {!normalizedPath.startsWith("/dashboard/create") && (

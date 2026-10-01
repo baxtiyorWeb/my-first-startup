@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-context";
 import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { LOCALES, LOCALES_META } from "@/lib/i18n/config";
 import { apiClient } from "@/lib/api/client";
+import { uploadFile } from "@/lib/api/upload";
 import {
   User,
   Shield,
@@ -39,6 +40,7 @@ import {
   UserPlus,
   AtSign,
   Mail,
+  Camera,
 } from "lucide-react";
 
 function GithubIcon({ size = 14 }: { size?: number }) {
@@ -167,6 +169,50 @@ export default function SettingsPage() {
   // Modal confirm dialogs
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // File upload refs & loading states
+  const settingsCoverRef = useRef<HTMLInputElement>(null);
+  const settingsAvatarRef = useRef<HTMLInputElement>(null);
+  const [isUploadingSettingsCover, setIsUploadingSettingsCover] = useState(false);
+  const [isUploadingSettingsAvatar, setIsUploadingSettingsAvatar] = useState(false);
+
+  const handleSettingsCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Rasm hajmi 10MB dan oshmasligi kerak");
+      return;
+    }
+    setIsUploadingSettingsCover(true);
+    try {
+      const res = await uploadFile(file, "covers");
+      setCoverPhotoUrl(res.url);
+      toast.success("Muqova rasmi yuklandi");
+    } catch {
+      toast.error("Muqova rasmini yuklashda xatolik");
+    } finally {
+      setIsUploadingSettingsCover(false);
+    }
+  };
+
+  const handleSettingsAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Rasm hajmi 10MB dan oshmasligi kerak");
+      return;
+    }
+    setIsUploadingSettingsAvatar(true);
+    try {
+      const res = await uploadFile(file, "avatars");
+      setAvatarUrl(res.url);
+      toast.success("Profil rasmi yuklandi");
+    } catch {
+      toast.error("Profil rasmini yuklashda xatolik");
+    } finally {
+      setIsUploadingSettingsAvatar(false);
+    }
+  };
 
   // Sync state when session is ready
   useEffect(() => {
@@ -735,31 +781,69 @@ export default function SettingsPage() {
                 </div>
               </div>
 
+              {/* Hidden file inputs */}
+              <input
+                ref={settingsCoverRef}
+                type="file"
+                accept="image/*"
+                onChange={handleSettingsCoverUpload}
+                className="hidden"
+              />
+              <input
+                ref={settingsAvatarRef}
+                type="file"
+                accept="image/*"
+                onChange={handleSettingsAvatarUpload}
+                className="hidden"
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Profil rasmi URL (Avatar)
+                    Profil rasmi (Avatar)
                   </label>
-                  <input
-                    type="url"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
-                  />
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      value={avatarUrl}
+                      onChange={(e) => setAvatarUrl(e.target.value)}
+                      placeholder="https://example.com/avatar.jpg"
+                      className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
+                    />
+                    <button
+                      type="button"
+                      disabled={isUploadingSettingsAvatar}
+                      onClick={() => settingsAvatarRef.current?.click()}
+                      className="px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors shrink-0 flex items-center gap-1"
+                    >
+                      {isUploadingSettingsAvatar ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
+                      <span>Tanlash</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Muqova rasmi URL (Cover Photo)
+                    Muqova rasmi (Cover Photo)
                   </label>
-                  <input
-                    type="url"
-                    value={coverPhotoUrl}
-                    onChange={(e) => setCoverPhotoUrl(e.target.value)}
-                    placeholder="https://example.com/cover.jpg"
-                    className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
-                  />
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      value={coverPhotoUrl}
+                      onChange={(e) => setCoverPhotoUrl(e.target.value)}
+                      placeholder="https://example.com/cover.jpg"
+                      className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
+                    />
+                    <button
+                      type="button"
+                      disabled={isUploadingSettingsCover}
+                      onClick={() => settingsCoverRef.current?.click()}
+                      className="px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors shrink-0 flex items-center gap-1"
+                    >
+                      {isUploadingSettingsCover ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
+                      <span>Tanlash</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -934,12 +934,12 @@ export default function CreatePostPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t("create.postTitlePlaceholder") || "Post sarlavhasi (ixtiyoriy)..."}
-            className="w-full text-sm sm:text-base font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 placeholder:text-xs text-xs sm:text-sm focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-600 transition-all"
+            className="w-full text-base sm:text-lg font-bold bg-transparent border-b border-slate-100 dark:border-slate-800/80 px-1 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none transition-all"
           />
         </div>
 
         {/* Compact WYSIWYG Editor Container */}
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
+        <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-transparent overflow-hidden">
           {/* Editor Top Toolbar */}
           <div className="flex items-center flex-wrap gap-0.5 p-1 sm:p-1.5 bg-slate-50/90 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-800">
             {/* Undo / Redo */}
