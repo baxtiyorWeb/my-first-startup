@@ -20,19 +20,6 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/api/(.*)",
-        headers: [
-          { key: "Access-Control-Allow-Credentials", "value": "true" },
-          { key: "Access-Control-Allow-Origin", "value": "*" },
-          { key: "Access-Control-Allow-Methods", "value": "GET,DELETE,PATCH,POST,PUT,OPTIONS" },
-          {
-            key: "Access-Control-Allow-Headers",
-            value:
-              "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization",
-          },
-        ],
-      },
-      {
         source: "/(.*)",
         headers: [
           {
@@ -54,6 +41,11 @@ const nextConfig: NextConfig = {
           {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
+          },
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.b-cdn.net https://images.unsplash.com https://lh3.googleusercontent.com; connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://www.googleapis.com https://*.b-cdn.net; font-src 'self' data:; object-src 'none'; base-uri 'self';",
           },
         ],
       },

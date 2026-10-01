@@ -1,6 +1,6 @@
 import { eq, and, desc, lt, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { posts, users, postLikes, bookmarks, postViews, follows } from "@/server/db/schema";
+import { posts, users, postLikes, bookmarks, postViews, follows, userBlocks } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import { sanitizeRichContent, stripHtmlToPlainText } from "@/server/common/sanitizer";
 import { triggerNotification, notifyFollowersNewPost } from "@/server/modules/notifications/notifications.service";
@@ -54,6 +54,28 @@ export async function getFeed(
 
     if (postType) {
       conditions.push(eq(posts.postType, postType));
+    }
+
+    // Block filter: hide posts from users who blocked current user or whom current user blocked
+    if (currentUserId) {
+      conditions.push(
+        sql`NOT EXISTS (
+          SELECT 1 FROM ${userBlocks}
+          WHERE (${userBlocks.blockerId} = ${posts.authorId} AND ${userBlocks.blockedId} = ${currentUserId}::uuid)
+             OR (${userBlocks.blockerId} = ${currentUserId}::uuid AND ${userBlocks.blockedId} = ${posts.authorId})
+        )`
+      );
+
+      // Privacy filter: private account posts are only visible to the author and their followers
+      conditions.push(
+        sql`(${users.isPrivate} = false 
+          OR ${posts.authorId} = ${currentUserId}::uuid 
+          OR EXISTS (SELECT 1 FROM ${follows} WHERE ${follows.followerId} = ${currentUserId}::uuid AND ${follows.followingId} = ${posts.authorId})
+        )`
+      );
+    } else {
+      // For unauthenticated guests, hide all private accounts' posts
+      conditions.push(eq(users.isPrivate, false));
     }
 
     const rows = await db

@@ -17,11 +17,11 @@ const HAS_HTML_REGEX = /<[a-z][\s\S]*>/i;
  */
 function sanitizeClientHtml(html: string, searchQuery?: string): string {
   if (typeof window === "undefined") {
-    // Basic server-side regex strip of dangerous tags (script, iframe, on* attributes)
+    // Robust server-side regex strip of dangerous tags, unquoted/quoted event handlers, and javascript: schemes
     return html
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
-      .replace(/\s*on\w+\s*=\s*(['"]).*?\1/gi, "");
+      .replace(/<\/?(script|iframe|object|embed|svg|style|link|meta|base|form|input|button)\b[^>]*>/gi, "")
+      .replace(/\s+on[a-z0-9_-]+(\s*=\s*("[^"]*"|'[^']*'|[^\s>]+))?/gi, "")
+      .replace(/href\s*=\s*(['"])\s*javascript:[^'"]*\1/gi, 'href="#"');
   }
 
   try {

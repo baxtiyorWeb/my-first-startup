@@ -3,7 +3,7 @@ import { botService } from "@/server/bot-engine/bot-service";
 import { enforceAdminGuard } from "@/server/common/admin-guard";
 
 export async function POST(req: NextRequest) {
-  const guardResponse = enforceAdminGuard();
+  const guardResponse = await enforceAdminGuard(req);
   if (guardResponse) return guardResponse;
   try {
     const body = await req.json();

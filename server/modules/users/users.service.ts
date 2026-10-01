@@ -1,6 +1,6 @@
 import { eq, and, or, sql, desc, isNull } from "drizzle-orm";
 import { db } from "@/server/db";
-import { users, posts, comments, follows, postLikes, bookmarks } from "@/server/db/schema";
+import { users, posts, comments, follows, postLikes, bookmarks, userBlocks } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import { triggerNotification } from "@/server/modules/notifications/notifications.service";
 import type { PostResponse } from "@/server/modules/posts/posts.service";
@@ -95,149 +95,175 @@ export async function getProfileByHandle(
     const isSelf = currentUserId === row.id;
     const isFollowing = isSelf ? false : Boolean(row.isFollowing);
 
+    // Block List Check: If either party blocked the other, hide profile
+    if (currentUserId && !isSelf) {
+      const [blockRecord] = await db
+        .select({ blockerId: userBlocks.blockerId })
+        .from(userBlocks)
+        .where(
+          or(
+            and(eq(userBlocks.blockerId, row.id), eq(userBlocks.blockedId, currentUserId)),
+            and(eq(userBlocks.blockerId, currentUserId), eq(userBlocks.blockedId, row.id))
+          )
+        )
+        .limit(1);
+
+      if (blockRecord) {
+        throw AppError.notFound(`"${cleanHandle}" foydalanuvchisi topilmadi`);
+      }
+    }
+
     const monthNames = [
       "yanvar", "fevral", "mart", "aprel", "may", "iyun",
       "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"
     ];
     const joined = `${row.createdAt.getFullYear()}-yil ${monthNames[row.createdAt.getMonth()]}`;
 
-    // 1. Fetch user's own published posts
-    const userPostsRows = await db
-      .select({
-        id: posts.id,
-        title: posts.title,
-        content: posts.content,
-        postType: posts.postType,
-        projectUrl: posts.projectUrl,
-        projectStage: posts.projectStage,
-        lookingFor: posts.lookingFor,
-        mediaUrls: posts.mediaUrls,
-        readingTimeMinutes: posts.readingTimeMinutes,
-        likesCount: posts.likesCount,
-        commentsCount: posts.commentsCount,
-        sharesCount: posts.sharesCount,
-        viewsCount: posts.viewsCount,
-        createdAt: posts.createdAt,
-        authorId: users.id,
-        authorName: users.name,
-        authorHandle: users.handle,
-        authorRole: users.role,
-        authorAvatarUrl: users.avatarUrl,
-        authorVerified: users.verified,
-        authorIntent: users.intent,
-        isLiked: currentUserId
-          ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
-          : sql<boolean>`false`,
-        isSaved: currentUserId
-          ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
-          : sql<boolean>`false`,
-      })
-      .from(posts)
-      .innerJoin(users, eq(posts.authorId, users.id))
-      .where(and(eq(posts.authorId, row.id), isNull(posts.deletedAt)))
-      .orderBy(desc(posts.createdAt));
+    const isRestrictedPrivate = row.isPrivate && !isSelf && !isFollowing;
 
-    const formattedPosts: PostResponse[] = userPostsRows.map((p) => ({
-      id: p.id,
-      title: p.title,
-      content: p.content,
-      postType: (p.postType as any) || "thought",
-      projectUrl: p.projectUrl || null,
-      projectStage: (p.projectStage as any) || null,
-      lookingFor: (p.lookingFor as any) || null,
-      mediaUrls: (p.mediaUrls as string[]) || [],
-      readingTimeMinutes: p.readingTimeMinutes,
-      likesCount: p.likesCount,
-      commentsCount: p.commentsCount,
-      sharesCount: p.sharesCount,
-      viewsCount: p.viewsCount,
-      createdAt: p.createdAt.toISOString(),
-      isLiked: Boolean(p.isLiked),
-      isSaved: Boolean(p.isSaved),
-      author: {
-        id: p.authorId,
-        name: p.authorName,
-        handle: p.authorHandle,
-        role: p.authorRole,
-        avatarUrl: p.authorAvatarUrl,
-        verified: p.authorVerified,
-        intent: (p.authorIntent as any) || "none",
-      },
-    }));
+    // 1. Fetch user's own published posts (only if not restricted private account)
+    let formattedPosts: PostResponse[] = [];
+    if (!isRestrictedPrivate) {
+      const userPostsRows = await db
+        .select({
+          id: posts.id,
+          title: posts.title,
+          content: posts.content,
+          postType: posts.postType,
+          projectUrl: posts.projectUrl,
+          projectStage: posts.projectStage,
+          lookingFor: posts.lookingFor,
+          mediaUrls: posts.mediaUrls,
+          readingTimeMinutes: posts.readingTimeMinutes,
+          likesCount: posts.likesCount,
+          commentsCount: posts.commentsCount,
+          sharesCount: posts.sharesCount,
+          viewsCount: posts.viewsCount,
+          createdAt: posts.createdAt,
+          authorId: users.id,
+          authorName: users.name,
+          authorHandle: users.handle,
+          authorRole: users.role,
+          authorAvatarUrl: users.avatarUrl,
+          authorVerified: users.verified,
+          authorIntent: users.intent,
+          isLiked: currentUserId
+            ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
+            : sql<boolean>`false`,
+          isSaved: currentUserId
+            ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
+            : sql<boolean>`false`,
+        })
+        .from(posts)
+        .innerJoin(users, eq(posts.authorId, users.id))
+        .where(and(eq(posts.authorId, row.id), isNull(posts.deletedAt)))
+        .orderBy(desc(posts.createdAt));
 
-    // 2. Fetch posts with active discussions that user authored or participated in
-    const discussionRows = await db
-      .selectDistinctOn([posts.id], {
-        id: posts.id,
-        title: posts.title,
-        content: posts.content,
-        postType: posts.postType,
-        projectUrl: posts.projectUrl,
-        projectStage: posts.projectStage,
-        lookingFor: posts.lookingFor,
-        mediaUrls: posts.mediaUrls,
-        readingTimeMinutes: posts.readingTimeMinutes,
-        likesCount: posts.likesCount,
-        commentsCount: posts.commentsCount,
-        sharesCount: posts.sharesCount,
-        viewsCount: posts.viewsCount,
-        createdAt: posts.createdAt,
-        authorId: users.id,
-        authorName: users.name,
-        authorHandle: users.handle,
-        authorRole: users.role,
-        authorAvatarUrl: users.avatarUrl,
-        authorVerified: users.verified,
-        authorIntent: users.intent,
-        isLiked: currentUserId
-          ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
-          : sql<boolean>`false`,
-        isSaved: currentUserId
-          ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
-          : sql<boolean>`false`,
-      })
-      .from(posts)
-      .innerJoin(users, eq(posts.authorId, users.id))
-      .leftJoin(comments, eq(comments.postId, posts.id))
-      .where(
-        and(
-          or(
-            eq(posts.authorId, row.id),
-            eq(comments.authorId, row.id)
-          ),
-          sql`${posts.commentsCount} >= 1`,
-          isNull(posts.deletedAt)
+      formattedPosts = userPostsRows.map((p) => ({
+        id: p.id,
+        title: p.title,
+        content: p.content,
+        postType: (p.postType as any) || "thought",
+        projectUrl: p.projectUrl || null,
+        projectStage: (p.projectStage as any) || null,
+        lookingFor: (p.lookingFor as any) || null,
+        mediaUrls: (p.mediaUrls as string[]) || [],
+        readingTimeMinutes: p.readingTimeMinutes,
+        likesCount: p.likesCount,
+        commentsCount: p.commentsCount,
+        sharesCount: p.sharesCount,
+        viewsCount: p.viewsCount,
+        createdAt: p.createdAt.toISOString(),
+        isLiked: Boolean(p.isLiked),
+        isSaved: Boolean(p.isSaved),
+        author: {
+          id: p.authorId,
+          name: p.authorName,
+          handle: p.authorHandle,
+          role: p.authorRole,
+          avatarUrl: p.authorAvatarUrl,
+          verified: p.authorVerified,
+          intent: (p.authorIntent as any) || "none",
+        },
+      }));
+    }
+
+    // 2. Fetch posts with active discussions that user authored or participated in (only if not restricted private)
+    let formattedDiscussions: PostResponse[] = [];
+    if (!isRestrictedPrivate) {
+      const discussionRows = await db
+        .selectDistinctOn([posts.id], {
+          id: posts.id,
+          title: posts.title,
+          content: posts.content,
+          postType: posts.postType,
+          projectUrl: posts.projectUrl,
+          projectStage: posts.projectStage,
+          lookingFor: posts.lookingFor,
+          mediaUrls: posts.mediaUrls,
+          readingTimeMinutes: posts.readingTimeMinutes,
+          likesCount: posts.likesCount,
+          commentsCount: posts.commentsCount,
+          sharesCount: posts.sharesCount,
+          viewsCount: posts.viewsCount,
+          createdAt: posts.createdAt,
+          authorId: users.id,
+          authorName: users.name,
+          authorHandle: users.handle,
+          authorRole: users.role,
+          authorAvatarUrl: users.avatarUrl,
+          authorVerified: users.verified,
+          authorIntent: users.intent,
+          isLiked: currentUserId
+            ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
+            : sql<boolean>`false`,
+          isSaved: currentUserId
+            ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
+            : sql<boolean>`false`,
+        })
+        .from(posts)
+        .innerJoin(users, eq(posts.authorId, users.id))
+        .leftJoin(comments, eq(comments.postId, posts.id))
+        .where(
+          and(
+            or(
+              eq(posts.authorId, row.id),
+              eq(comments.authorId, row.id)
+            ),
+            sql`${posts.commentsCount} >= 1`,
+            isNull(posts.deletedAt)
+          )
         )
-      )
-      .orderBy(posts.id, desc(posts.createdAt));
+        .orderBy(posts.id, desc(posts.createdAt));
 
-    const formattedDiscussions: PostResponse[] = discussionRows.map((p) => ({
-      id: p.id,
-      title: p.title,
-      content: p.content,
-      postType: (p.postType as any) || "thought",
-      projectUrl: p.projectUrl || null,
-      projectStage: (p.projectStage as any) || null,
-      lookingFor: (p.lookingFor as any) || null,
-      mediaUrls: (p.mediaUrls as string[]) || [],
-      readingTimeMinutes: p.readingTimeMinutes,
-      likesCount: p.likesCount,
-      commentsCount: p.commentsCount,
-      sharesCount: p.sharesCount,
-      viewsCount: p.viewsCount,
-      createdAt: p.createdAt.toISOString(),
-      isLiked: Boolean(p.isLiked),
-      isSaved: Boolean(p.isSaved),
-      author: {
-        id: p.authorId,
-        name: p.authorName,
-        handle: p.authorHandle,
-        role: p.authorRole,
-        avatarUrl: p.authorAvatarUrl,
-        verified: p.authorVerified,
-        intent: (p.authorIntent as any) || "none",
-      },
-    }));
+      formattedDiscussions = discussionRows.map((p) => ({
+        id: p.id,
+        title: p.title,
+        content: p.content,
+        postType: (p.postType as any) || "thought",
+        projectUrl: p.projectUrl || null,
+        projectStage: (p.projectStage as any) || null,
+        lookingFor: (p.lookingFor as any) || null,
+        mediaUrls: (p.mediaUrls as string[]) || [],
+        readingTimeMinutes: p.readingTimeMinutes,
+        likesCount: p.likesCount,
+        commentsCount: p.commentsCount,
+        sharesCount: p.sharesCount,
+        viewsCount: p.viewsCount,
+        createdAt: p.createdAt.toISOString(),
+        isLiked: Boolean(p.isLiked),
+        isSaved: Boolean(p.isSaved),
+        author: {
+          id: p.authorId,
+          name: p.authorName,
+          handle: p.authorHandle,
+          role: p.authorRole,
+          avatarUrl: p.authorAvatarUrl,
+          verified: p.authorVerified,
+          intent: (p.authorIntent as any) || "none",
+        },
+      }));
+    }
 
     const totalDiscussionsCount = Math.max(
       Number(row.commentsReceivedCount || 0),
@@ -309,6 +335,22 @@ export async function toggleFollow(
 
     if (target.id === currentUserId) {
       throw AppError.badRequest("O‘zingizni kuzata olmaysiz");
+    }
+
+    // Check if either party blocked the other
+    const [blockedRecord] = await db
+      .select({ blockerId: userBlocks.blockerId })
+      .from(userBlocks)
+      .where(
+        or(
+          and(eq(userBlocks.blockerId, target.id), eq(userBlocks.blockedId, currentUserId)),
+          and(eq(userBlocks.blockerId, currentUserId), eq(userBlocks.blockedId, target.id))
+        )
+      )
+      .limit(1);
+
+    if (blockedRecord) {
+      throw AppError.forbidden("Bloklangan foydalanuvchi bilan o'zaro aloqa qilish taqiqlangan");
     }
 
     const [existing] = await db

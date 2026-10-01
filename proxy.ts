@@ -21,33 +21,59 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // 0. Handle CORS and Preflight for all API routes
+  // 0. Handle CORS and Preflight for all API routes safely
   if (pathname.startsWith("/api")) {
-    const origin = request.headers.get("origin") || "*";
+    const origin = request.headers.get("origin");
+    const allowedOrigins = new Set([
+      process.env.NEXT_PUBLIC_APP_URL,
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+    ].filter(Boolean));
+
+    let isAllowed = false;
+    if (origin) {
+      if (allowedOrigins.has(origin)) {
+        isAllowed = true;
+      } else if (process.env.NEXT_PUBLIC_APP_URL) {
+        try {
+          const appOrigin = new URL(process.env.NEXT_PUBLIC_APP_URL).origin;
+          if (origin === appOrigin) isAllowed = true;
+        } catch {
+          // ignore
+        }
+      }
+    }
 
     // Handle OPTIONS preflight requests
     if (request.method === "OPTIONS") {
+      const preflightHeaders: Record<string, string> = {
+        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers":
+          "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization",
+        "Access-Control-Max-Age": "86400",
+      };
+
+      if (isAllowed && origin) {
+        preflightHeaders["Access-Control-Allow-Origin"] = origin;
+        preflightHeaders["Access-Control-Allow-Credentials"] = "true";
+      }
+
       return new NextResponse(null, {
-        status: 204,
-        headers: {
-          "Access-Control-Allow-Origin": origin,
-          "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-          "Access-Control-Allow-Headers":
-            "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization",
-          "Access-Control-Allow-Credentials": "true",
-          "Access-Control-Max-Age": "86400",
-        },
+        status: isAllowed || !origin ? 204 : 403,
+        headers: preflightHeaders,
       });
     }
 
     const response = NextResponse.next();
-    response.headers.set("Access-Control-Allow-Origin", origin);
-    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    response.headers.set(
-      "Access-Control-Allow-Headers",
-      "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
-    );
-    response.headers.set("Access-Control-Allow-Credentials", "true");
+    if (isAllowed && origin) {
+      response.headers.set("Access-Control-Allow-Origin", origin);
+      response.headers.set("Access-Control-Allow-Credentials", "true");
+      response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+      response.headers.set(
+        "Access-Control-Allow-Headers",
+        "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+      );
+    }
     return response;
   }
 

@@ -1,6 +1,6 @@
-import { eq, and, isNull, sql } from "drizzle-orm";
+import { eq, and, or, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { comments, posts, users, commentLikes } from "@/server/db/schema";
+import { comments, posts, users, commentLikes, userBlocks } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import { sanitizeRichContent } from "@/server/common/sanitizer";
 import { triggerNotification } from "@/server/modules/notifications/notifications.service";
@@ -117,13 +117,31 @@ export async function addComment(
   try {
     // Check if post exists
     const [post] = await db
-      .select({ id: posts.id })
+      .select({ id: posts.id, authorId: posts.authorId })
       .from(posts)
       .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
       .limit(1);
 
     if (!post) {
       throw AppError.notFound("Post topilmadi");
+    }
+
+    // Check if either party blocked the other
+    if (post.authorId !== userId) {
+      const [blockRecord] = await db
+        .select({ blockerId: userBlocks.blockerId })
+        .from(userBlocks)
+        .where(
+          or(
+            and(eq(userBlocks.blockerId, post.authorId), eq(userBlocks.blockedId, userId)),
+            and(eq(userBlocks.blockerId, userId), eq(userBlocks.blockedId, post.authorId))
+          )
+        )
+        .limit(1);
+
+      if (blockRecord) {
+        throw AppError.forbidden("Bloklangan foydalanuvchining postiga izoh yozish taqiqlangan");
+      }
     }
 
     // If replying, check if parent comment exists and belongs to this post

@@ -5,10 +5,10 @@ import { posts } from "@/server/db/schema";
 import { enforceAdminGuard } from "@/server/common/admin-guard";
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const guardResponse = enforceAdminGuard();
+  const guardResponse = await enforceAdminGuard(req);
   if (guardResponse) return guardResponse;
   try {
     const { id } = await params;

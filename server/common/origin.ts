@@ -7,38 +7,17 @@ import { type NextRequest } from "next/server";
  * Prevents production from accidentally redirecting to localhost:3000.
  */
 export function getAppOrigin(req: NextRequest): string {
-  // 1. Check incoming request host headers (standard on Vercel, Cloudflare, Nginx, AWS)
-  const forwardedHost = req.headers.get("x-forwarded-host");
-  if (forwardedHost) {
-    const host = forwardedHost.split(",")[0].trim();
-    const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
-    // If the request arrived at a real public domain, always use that domain!
-    if (!isLocalhost) {
-      const proto = req.headers.get("x-forwarded-proto") || "https";
-      return `${proto}://${host}`;
-    }
-  }
-
-  const hostHeader = req.headers.get("host");
-  if (hostHeader) {
-    const isLocalhost = hostHeader.includes("localhost") || hostHeader.includes("127.0.0.1");
-    if (!isLocalhost) {
-      const proto = req.headers.get("x-forwarded-proto") || "https";
-      return `${proto}://${hostHeader}`;
-    }
-  }
-
-  // 2. Explicit environment variable if valid and not pointing to localhost
+  // 1. Authoritative environment variable in production
   const envUrl = (
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.APP_URL
   )?.replace(/\/$/, "");
 
-  if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+  if (envUrl && process.env.NODE_ENV === "production" && !envUrl.includes("localhost")) {
     return envUrl;
   }
 
-  // 3. Vercel deployment system environment variables
+  // 2. Vercel deployment system environment variables (trusted system-level envs)
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, "")}`;
   }
@@ -46,11 +25,14 @@ export function getAppOrigin(req: NextRequest): string {
     return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
   }
 
-  // 4. NextURL origin if not localhost
-  if (req.nextUrl && req.nextUrl.origin) {
-    const nextOrigin = req.nextUrl.origin;
-    if (!nextOrigin.includes("localhost") && !nextOrigin.includes("127.0.0.1")) {
-      return nextOrigin;
+  // 3. Fallback to request host headers in local / container environments
+  const hostHeader = req.headers.get("host") || req.headers.get("x-forwarded-host");
+  if (hostHeader) {
+    const cleanHost = hostHeader.split(",")[0].trim();
+    // Validate host format (alphanumeric, dots, dashes, optional port)
+    if (/^[a-zA-Z0-9.-]+(:\d+)?$/.test(cleanHost)) {
+      const proto = req.headers.get("x-forwarded-proto") || (cleanHost.includes("localhost") ? "http" : "https");
+      return `${proto}://${cleanHost}`;
     }
   }
 

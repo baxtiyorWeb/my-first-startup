@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { botService } from "@/server/bot-engine/bot-service";
 import { enforceAdminGuard } from "@/server/common/admin-guard";
 
-export async function GET() {
-  const guardResponse = enforceAdminGuard();
+export async function GET(req: NextRequest) {
+  const guardResponse = await enforceAdminGuard(req);
   if (guardResponse) return guardResponse;
   try {
     const stats = await botService.getOverviewStats();

@@ -5,7 +5,7 @@ import { posts, users } from "@/server/db/schema";
 import { enforceAdminGuard } from "@/server/common/admin-guard";
 
 export async function GET(req: NextRequest) {
-  const guardResponse = enforceAdminGuard();
+  const guardResponse = await enforceAdminGuard(req);
   if (guardResponse) return guardResponse;
   try {
     const { searchParams } = new URL(req.url);

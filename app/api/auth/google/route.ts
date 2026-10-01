@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import crypto from "crypto";
 import { DEFAULT_LOCALE, isValidLocale } from "@/lib/i18n/config";
 import { getAppOrigin } from "@/server/common/origin";
 
@@ -15,8 +16,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/${locale}/auth/${mode}?error=google_not_configured`);
   }
 
-  // State encodes locale and mode so callback can preserve language
-  const state = Buffer.from(JSON.stringify({ locale, mode })).toString("base64url");
+  // Generate cryptographically random CSRF nonce to prevent OAuth Login CSRF
+  const stateNonce = crypto.randomBytes(32).toString("hex");
+
+  // State encodes nonce, locale and mode
+  const state = Buffer.from(JSON.stringify({ nonce: stateNonce, locale, mode })).toString("base64url");
 
   // Determine redirect URI dynamically from public origin
   const redirectUri = `${origin}/api/auth/google/callback`;
@@ -30,5 +34,17 @@ export async function GET(req: NextRequest) {
   googleAuthUrl.searchParams.set("prompt", "select_account");
   googleAuthUrl.searchParams.set("state", state);
 
-  return NextResponse.redirect(googleAuthUrl.toString());
+  const response = NextResponse.redirect(googleAuthUrl.toString());
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // Set short-lived HttpOnly anti-CSRF state cookie
+  response.cookies.set("gogetters_oauth_state", stateNonce, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 600, // 10 minutes
+  });
+
+  return response;
 }

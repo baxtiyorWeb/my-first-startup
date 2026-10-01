@@ -10,28 +10,39 @@ export async function GET(req: NextRequest) {
   const rawState = searchParams.get("state");
   const error = searchParams.get("error");
 
+  const expectedStateNonce = req.cookies.get("gogetters_oauth_state")?.value;
+  const origin = getAppOrigin(req);
+
   let locale = DEFAULT_LOCALE;
+  let receivedNonce: string | null = null;
+
   if (rawState) {
     try {
       const decoded = JSON.parse(Buffer.from(rawState, "base64url").toString("utf-8"));
       if (decoded.locale && isValidLocale(decoded.locale)) {
         locale = decoded.locale;
       }
+      if (typeof decoded.nonce === "string") {
+        receivedNonce = decoded.nonce;
+      }
     } catch {
       // Use default locale
     }
   }
 
-
-
-
-
-  const origin = getAppOrigin(req);
-
+  // Validate CSRF state nonce
+  if (!expectedStateNonce || !receivedNonce || receivedNonce !== expectedStateNonce) {
+    console.error("[GOOGLE AUTH CALLBACK] Anti-CSRF OAuth state verification failed");
+    const errRes = NextResponse.redirect(`${origin}/${locale}/auth/login?error=csrf_verification_failed`);
+    errRes.cookies.delete("gogetters_oauth_state");
+    return errRes;
+  }
 
   if (error || !code) {
     console.error("[GOOGLE AUTH CALLBACK] Error or missing code:", error);
-    return NextResponse.redirect(`${origin}/${locale}/auth/login?error=google_auth_failed`);
+    const errRes = NextResponse.redirect(`${origin}/${locale}/auth/login?error=google_auth_failed`);
+    errRes.cookies.delete("gogetters_oauth_state");
+    return errRes;
   }
 
   const clientId = process.env.GOOGLE_AUTH_CLIENT_ID;
@@ -40,7 +51,9 @@ export async function GET(req: NextRequest) {
 
   if (!clientId || !clientSecret) {
     console.error("[GOOGLE AUTH CALLBACK] Missing Google OAuth credentials in environment");
-    return NextResponse.redirect(`${origin}/${locale}/auth/login?error=server_config_error`);
+    const errRes = NextResponse.redirect(`${origin}/${locale}/auth/login?error=server_config_error`);
+    errRes.cookies.delete("gogetters_oauth_state");
+    return errRes;
   }
 
   const redirectUri = `${origin}/api/auth/google/callback`;
@@ -109,6 +122,8 @@ export async function GET(req: NextRequest) {
       path: cookieOpts.path,
       maxAge: cookieOpts.maxAge,
     });
+
+    response.cookies.delete("gogetters_oauth_state");
 
     return response;
   } catch (err) {

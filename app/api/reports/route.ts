@@ -4,6 +4,7 @@ import { getOptionalAuth } from "@/server/common/auth-guard";
 import { createReport } from "@/server/modules/reports/reports.service";
 import { successResponse, errorResponse } from "@/server/common/response";
 import { AppError } from "@/server/common/errors";
+import { enforceRateLimit } from "@/server/common/rate-limiter";
 
 const ReportSchema = z.object({
   targetId: z.string().min(1, "Obyekt ID si ko‘rsatilishi shart"),
@@ -29,6 +30,10 @@ export async function POST(req: NextRequest) {
     }
 
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+
+    // Rate limit: max 10 reports per 10 minutes
+    enforceRateLimit(`report:${authUser?.userId || ip}`, 10, 600);
+
     const result = await createReport(
       authUser?.userId || null,
       parseResult.data,

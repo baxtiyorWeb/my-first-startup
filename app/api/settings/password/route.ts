@@ -6,6 +6,8 @@ import { AppError } from "@/server/common/errors";
 import { db } from "@/server/db";
 import { users } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
+import { hashPassword, verifyPassword } from "@/server/common/crypto";
+import { enforceRateLimit } from "@/server/common/rate-limiter";
 
 const PasswordSchema = z.object({
   currentPassword: z.string().min(1, "Eski parolni kiriting"),
@@ -15,6 +17,10 @@ const PasswordSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const authUser = await requireAuth(req);
+
+    // Rate limit: max 5 attempts per 15 minutes per user
+    enforceRateLimit(`pwd_change:${authUser.userId}`, 5, 900);
+
     const body = await req.json().catch(() => ({}));
     const parseResult = PasswordSchema.safeParse(body);
 
@@ -37,15 +43,20 @@ export async function POST(req: NextRequest) {
       .where(eq(users.id, authUser.userId))
       .limit(1);
 
-    if (userRow?.passwordHash && userRow.passwordHash !== currentPassword) {
-      throw AppError.badRequest("Eski parol noto‘g‘ri kiritildi");
+    if (userRow?.passwordHash) {
+      const isValid = await verifyPassword(currentPassword, userRow.passwordHash);
+      if (!isValid) {
+        throw AppError.badRequest("Eski parol noto‘g‘ri kiritildi");
+      }
     }
 
-    // Update password hash
+    // Cryptographically hash the new password using scrypt with random salt
+    const secureHashedPassword = await hashPassword(newPassword);
+
     await db
       .update(users)
       .set({
-        passwordHash: newPassword, // stored securely
+        passwordHash: secureHashedPassword,
         updatedAt: new Date(),
       })
       .where(eq(users.id, authUser.userId));
