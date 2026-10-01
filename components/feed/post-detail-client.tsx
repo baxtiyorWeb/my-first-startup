@@ -699,9 +699,9 @@ function PostDetailInner({
                         {comment.author.handle}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 mt-0.5">
-                      {comment.content}
-                    </p>
+                    <div className="text-xs text-slate-700 dark:text-slate-300 mt-0.5">
+                      <RichContent content={comment.content} />
+                    </div>
                     <div className="flex items-center gap-3 mt-1 text-[11px] text-slate-400 dark:text-slate-500">
                       <button
                         type="button"
@@ -752,9 +752,9 @@ function PostDetailInner({
                               {reply.author.handle}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-700 dark:text-slate-300 mt-0.5">
-                            {reply.content}
-                          </p>
+                          <div className="text-xs text-slate-700 dark:text-slate-300 mt-0.5">
+                            <RichContent content={reply.content} />
+                          </div>
                         </div>
                       </div>
                     ))}

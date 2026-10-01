@@ -103,22 +103,31 @@ export class GeminiClient {
   }
 
   /**
-   * Guarantee identity consistency and strip hallucinated author names.
+   * Guarantee identity consistency, strip hallucinated author names, and remove redundant self-introductions.
    */
   public sanitizeAuthorIdentity(text: string, botName: string): string {
     if (!text || !botName) return text;
 
     const firstName = botName.split(" ")[0] || botName;
 
-    // Pattern 1: "Men [Other Name], ..." or "Men [Other Name] ..."
-    let cleaned = text.replace(/Men\s+([A-ZÀ-Ўa-zà-ў']+(?:\s+[A-ZÀ-Ўa-zà-ў']+)?)(?=,|\s+—|\s+sun'iy|\s+dasturchi|\s+mutaxassis|\s+va\b)/g, (match, capturedName) => {
+    // Strip redundant leading self-introductions like "Men, Malika Rustamova, " or "Men Malika Rustamova, "
+    let cleaned = text
+      .replace(/^Men,?\s*[A-ZÀ-Ўa-zà-ў']+\s+[A-ZÀ-Ўa-zà-ў']+(?:,\s*|\s+)/gi, "")
+      .replace(/^Ismim\s+[A-ZÀ-Ўa-zà-ў']+\s+[A-ZÀ-Ўa-zà-ў']+(?:,\s*|\s+)/gi, "");
+
+    if (cleaned.length > 0) {
+      cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    }
+
+    // Pattern 1: Inline "Men [Other Name], ..."
+    cleaned = cleaned.replace(/Men\s+([A-ZÀ-Ўa-zà-ў']+(?:\s+[A-ZÀ-Ўa-zà-ў']+)?)(?=,|\s+—|\s+sun'iy|\s+dasturchi|\s+mutaxassis|\s+va\b)/g, (match, capturedName) => {
       if (capturedName.toLowerCase().includes(firstName.toLowerCase()) || botName.toLowerCase().includes(capturedName.toLowerCase())) {
         return match;
       }
       return `Men ${botName}`;
     });
 
-    // Pattern 2: "Ismim [Other Name]"
+    // Pattern 2: Inline "Ismim [Other Name]"
     cleaned = cleaned.replace(/Ismim\s+([A-ZÀ-Ўa-zà-ў']+(?:\s+[A-ZÀ-Ўa-zà-ў']+)?)/g, (match, capturedName) => {
       if (capturedName.toLowerCase().includes(firstName.toLowerCase())) {
         return match;
@@ -134,7 +143,7 @@ export class GeminiClient {
       return `— ${botName}`;
     });
 
-    return cleaned;
+    return cleaned.trim();
   }
 
   /**

@@ -347,9 +347,9 @@ export function DiscussionDrawer({
                       )}
                     </div>
 
-                    <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line">
-                      {item.content}
-                    </p>
+                    <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
+                      <RichContent content={item.content} />
+                    </div>
 
                     {/* Actions Row */}
                     <div className="mt-3 flex items-center gap-4 text-xs">
@@ -463,9 +463,9 @@ export function DiscussionDrawer({
                             )}
                           </div>
 
-                          <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-line">
-                            {reply.content}
-                          </p>
+                          <div className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
+                            <RichContent content={reply.content} />
+                          </div>
 
                           <div className="mt-2 flex items-center gap-2">
                             <button
