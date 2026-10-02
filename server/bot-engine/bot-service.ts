@@ -288,8 +288,8 @@ export class BotService {
       generated.content = `<p><em>${bot.name} (${bot.role}) kuzatuvi:</em></p>` + generated.content;
     }
 
-    const coverImage = gemini.getTopicCoverImage(topicCategory.label, bot.role);
-    const mediaUrls = [coverImage];
+    // Bots do not attach stock images — thoughts are clean, organic and text-first
+    const mediaUrls: string[] = [];
 
     const [newPost] = await db
       .insert(posts)
@@ -1005,10 +1005,9 @@ export class BotService {
         needsUpdate = true;
       }
 
-      // Check if post is missing mediaUrls image and enrich it
-      if (mediaList.length === 0 && Math.random() < 0.8) {
-        const coverImg = gemini.getTopicCoverImage(p.title || p.content, p.authorRole || undefined);
-        mediaList = [coverImg];
+      // Ensure bot posts do not have repetitive stock images attached
+      if (mediaList.length > 0) {
+        mediaList = [];
         needsUpdate = true;
       }
 
