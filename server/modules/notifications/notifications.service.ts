@@ -84,6 +84,10 @@ export async function sendOneSignalPush(
     }
 
     const data = await response.json();
+    if (data.errors && data.errors.length > 0) {
+      console.warn(`[ONESIGNAL PUSH DISPATCH WARNING]:`, data.errors);
+      return { success: false, error: data.errors.join(", "), ...data };
+    }
     return { success: true, ...data };
   } catch (err: any) {
     console.error("[ONESIGNAL PUSH ERROR]:", err);

@@ -45,8 +45,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/components/theme/theme-context";
 import { generateRandomAvatar } from "@/lib/avatar";
-import { promptPushNotification, getPushPermissionStatus } from "@/components/notifications/onesignal-initializer";
-import { usePwaInstall } from "@/components/pwa/pwa-install-context";
+import { promptPushNotification, getPushPermissionStatus, getPushSubscriptionDetails } from "@/components/notifications/onesignal-initializer";
+import { usePwaInstall } from "@/components/pwa";
 
 function GithubIcon({ size = 14 }: { size?: number }) {
   return (
@@ -486,14 +486,26 @@ export default function SettingsPage() {
   const { promptInstall, isInstalled } = usePwaInstall();
   const [isSendingTestPush, setIsSendingTestPush] = useState(false);
   const [pushStatus, setPushStatus] = useState<"default" | "granted" | "denied">("default");
+  const [subDetails, setSubDetails] = useState<{
+    permission: "default" | "granted" | "denied";
+    subscriptionId?: string | null;
+    optedIn: boolean;
+  }>({ permission: "default", optedIn: false });
 
   useEffect(() => {
     setPushStatus(getPushPermissionStatus());
+    setSubDetails(getPushSubscriptionDetails());
+    const interval = setInterval(() => {
+      setSubDetails(getPushSubscriptionDetails());
+      setPushStatus(getPushPermissionStatus());
+    }, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleEnablePush = async () => {
     const granted = await promptPushNotification();
     setPushStatus(granted ? "granted" : "denied");
+    setSubDetails(getPushSubscriptionDetails());
     if (granted) {
       toast.success("Push bildirishnomalar muvaffaqiyatli yoqildi!");
       setPushEnabled(true);
@@ -1539,9 +1551,20 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Ilova ochiq bo‘lmaganda ham yangi xabar, layk va izohlar haqida telefon yoki kompyuteringiz ekraniga tezkor xabarnomalar kelishi uchun push bildirishnomalarni yoqing.
-              </p>
+              <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/50 space-y-1.5 text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 dark:text-slate-400">OneSignal obunasi:</span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    {subDetails.optedIn && subDetails.subscriptionId ? "✅ Faol ulangan" : "⚠️ Obuna kutilmoqda"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2 overflow-hidden">
+                  <span className="text-slate-500 dark:text-slate-400 shrink-0">Qurilma ID:</span>
+                  <code className="text-[10px] font-mono text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
+                    {subDetails.subscriptionId || "Ro‘yxatdan o‘tilmagan"}
+                  </code>
+                </div>
+              </div>
 
               <div className="flex flex-wrap items-center gap-2.5 pt-1">
                 {pushStatus !== "granted" ? (

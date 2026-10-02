@@ -20,14 +20,23 @@ export async function promptPushNotification(): Promise<boolean> {
   if (typeof window === "undefined" || !window.OneSignal) return false;
 
   try {
+    // 1. Request native permission
     if (window.OneSignal.Notifications && typeof window.OneSignal.Notifications.requestPermission === "function") {
       await window.OneSignal.Notifications.requestPermission();
-      return window.OneSignal.Notifications.permission === "granted";
+    } else if (typeof Notification !== "undefined") {
+      await Notification.requestPermission();
     }
-    if (typeof Notification !== "undefined") {
-      const res = await Notification.requestPermission();
-      return res === "granted";
+
+    const isGranted =
+      window.OneSignal?.Notifications?.permission === "granted" ||
+      (typeof Notification !== "undefined" && Notification.permission === "granted");
+
+    // 2. Explicitly Opt In to Push Subscription in OneSignal v16
+    if (isGranted && window.OneSignal?.User?.PushSubscription?.optIn) {
+      await window.OneSignal.User.PushSubscription.optIn();
     }
+
+    return Boolean(isGranted);
   } catch (err) {
     console.warn("[ONESIGNAL PROMPT WARN]:", err);
   }
@@ -46,6 +55,21 @@ export function getPushPermissionStatus(): "default" | "granted" | "denied" {
     return Notification.permission as "default" | "granted" | "denied";
   }
   return "default";
+}
+
+/**
+ * Get detailed subscription state
+ */
+export function getPushSubscriptionDetails(): {
+  permission: "default" | "granted" | "denied";
+  subscriptionId?: string | null;
+  optedIn: boolean;
+} {
+  if (typeof window === "undefined") return { permission: "default", optedIn: false };
+  const permission = getPushPermissionStatus();
+  const subscriptionId = window.OneSignal?.User?.PushSubscription?.id || null;
+  const optedIn = Boolean(window.OneSignal?.User?.PushSubscription?.optedIn);
+  return { permission, subscriptionId, optedIn };
 }
 
 export function OneSignalInitializer() {
@@ -79,6 +103,24 @@ export function OneSignalInitializer() {
         if (process.env.NODE_ENV !== "production") {
           console.log("[ONESIGNAL] SDK initialized successfully.");
         }
+
+        // Listen for subscription changes (e.g., when user clicks Allow)
+        if (OneSignal.User?.PushSubscription?.addEventListener) {
+          OneSignal.User.PushSubscription.addEventListener("change", (change: any) => {
+            if (process.env.NODE_ENV !== "production") {
+              console.log("[ONESIGNAL] PushSubscription changed:", change?.current);
+            }
+          });
+        }
+
+        // Prompt politely if user hasn't chosen yet
+        setTimeout(() => {
+          if (typeof Notification !== "undefined" && Notification.permission === "default") {
+            if (OneSignal.Slidedown?.promptPush) {
+              OneSignal.Slidedown.promptPush({ force: true }).catch(() => {});
+            }
+          }
+        }, 2500);
       } catch (err: any) {
         if (err?.message?.includes("already initialized")) {
           window.__onesignal_initialized = true;
@@ -109,7 +151,6 @@ export function OneSignalInitializer() {
           window.__onesignal_logged_user_id = null;
         }
       } catch (err: any) {
-        // non-blocking
         console.warn("[ONESIGNAL AUTH SYNC WARN]:", err?.message || err);
       }
     });
