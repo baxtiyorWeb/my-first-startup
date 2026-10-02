@@ -1,10 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/components/auth/auth-context";
 import { ThemeProvider } from "@/components/theme/theme-context";
 import { OneSignalInitializer } from "@/components/notifications/onesignal-initializer";
+import {
+  PwaInstallProvider,
+  InstallModal,
+  MobileInstallBanner,
+} from "@/components/pwa";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -12,9 +17,22 @@ const inter = Inter({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#090d16",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata: Metadata = {
   title: "The Go-getters — Intiluvchan insonlar, o'ziga xos g'oyalar va yangi startaplar tarmog'i",
   description: "Maqsadi baland tadbirkorlar, dasturchilar, startapchilar va g‘oya egalari uchun ijtimoiy tarmoq",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Go-getters",
+  },
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
@@ -39,8 +57,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} min-h-full flex flex-col font-sans`}>
         <ThemeProvider>
           <AuthProvider>
-            <OneSignalInitializer />
-            <ToastProvider>{children}</ToastProvider>
+            <PwaInstallProvider>
+              <OneSignalInitializer />
+              <ToastProvider>{children}</ToastProvider>
+              <InstallModal />
+              <MobileInstallBanner />
+            </PwaInstallProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

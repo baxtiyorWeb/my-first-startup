@@ -1,0 +1,43 @@
+{
+  "name": "The Go-getters",
+  "short_name": "Go-getters",
+  "description": "Intiluvchan insonlar, o'ziga xos g'oyalar va yangi startaplar tarmog'i",
+  "start_url": "/dashboard",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Yangi post",
+      "short_name": "Post",
+      "description": "Yangi g‘oya yoki post yozish",
+      "url": "/dashboard/create",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Xabarlar",
+      "short_name": "Xabarlar",
+      "description": "Shaxsiy xabarlarni ochish",
+      "url": "/dashboard/messages",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    }
+  ]
+}

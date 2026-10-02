@@ -10,7 +10,7 @@ import {
   UserIcon,
   SettingsIcon,
 } from "@/components/icons";
-import { LogOut, Shield, MessageSquare } from "lucide-react";
+import { LogOut, Shield, MessageSquare, Download } from "lucide-react";
 import {
   useShell,
   SIDEBAR_EXPANDED_WIDTH,
@@ -22,14 +22,16 @@ import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { useMessages } from "@/components/messages/messages-context";
+import { usePwaInstall } from "@/components/pwa";
 
 export function Sidebar() {
   const router = useRouter();
   const { isCollapsed } = useShell();
   const pathname = usePathname();
   const { session, logout } = useAuth();
-  const { t, localePath } = useI18n();
+  const { t, localePath, locale } = useI18n();
   const { totalUnreadCount } = useMessages();
+  const { promptInstall, isInstalled } = usePwaInstall();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
@@ -54,9 +56,12 @@ export function Sidebar() {
     },
   ];
 
+  const userRole = (session.user?.role || "").toUpperCase();
+  const isAdminUser = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
   const isAdminAllowed =
-    process.env.NODE_ENV !== "production" ||
-    process.env.NEXT_PUBLIC_ENABLE_ADMIN === "true";
+    isAdminUser &&
+    (process.env.NODE_ENV !== "production" ||
+      process.env.NEXT_PUBLIC_ENABLE_ADMIN === "true");
 
   const secondaryNavItems = [
     { label: t("nav.profile"), rawHref: "/dashboard/profile", icon: UserIcon },
@@ -236,6 +241,49 @@ export function Sidebar() {
                   </div>
                 );
               })}
+
+              {/* Install App button (hidden once app is installed) */}
+              {!isInstalled && (
+                <div className="relative group pt-1">
+                  <button
+                    type="button"
+                    onClick={promptInstall}
+                    className="w-full flex items-center gap-3 px-2.5 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50/80 dark:hover:bg-blue-950/40 rounded-lg transition-colors cursor-pointer focus-visible:outline-none"
+                    aria-label="Ilovani telefon yoki kompyuterga o‘rnatish"
+                  >
+                    <div className="relative shrink-0 flex items-center justify-center w-5 h-5 text-blue-600 dark:text-blue-400">
+                      <Download size={18} />
+                    </div>
+
+                    <span
+                      className={`flex-1 text-left transition-all duration-200 overflow-hidden whitespace-nowrap ${
+                        isCollapsed
+                          ? "opacity-0 w-0 pointer-events-none"
+                          : "opacity-100 w-auto"
+                      }`}
+                    >
+                      {locale === "ru"
+                        ? "Установить приложение"
+                        : locale === "en"
+                        ? "Install App"
+                        : "Ilovani o‘rnatish"}
+                    </span>
+                  </button>
+
+                  {isCollapsed && (
+                    <div
+                      role="tooltip"
+                      className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2 py-1 rounded-md bg-blue-600 text-white text-xs font-medium whitespace-nowrap shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                    >
+                      {locale === "ru"
+                        ? "Установить"
+                        : locale === "en"
+                        ? "Install"
+                        : "Ilovani o‘rnatish"}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* User card + quick logout OR Guest sign in button */}

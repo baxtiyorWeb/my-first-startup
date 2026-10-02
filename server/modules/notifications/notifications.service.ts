@@ -27,47 +27,67 @@ export interface NotificationItem {
 /**
  * Send Web Push notification via OneSignal REST API (Non-blocking)
  */
-async function sendOneSignalPush(
+/**
+ * Send Web Push notification via OneSignal REST API (Non-blocking)
+ */
+export async function sendOneSignalPush(
   recipientUserIds: string[],
   title: string,
   message: string,
   link: string
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
   const apiKey = process.env.ONESIGNAL_REST_API_KEY;
 
   if (!appId || !apiKey) {
-    // OneSignal credentials not configured yet, skip Push (In-App notifications still work)
-    return;
+    // OneSignal credentials not configured yet, skip Push
+    return { success: false, error: "OneSignal API kalitlari .env da belgilanmagan" };
   }
 
-  if (recipientUserIds.length === 0) return;
+  if (recipientUserIds.length === 0) return { success: true };
+
+  const cleanApiKey = apiKey.trim().replace(/^Basic\s+/i, "").replace(/^Key\s+/i, "");
+  const authHeader = `Key ${cleanApiKey}`;
+
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+  const fullLink = link.startsWith("http") ? link : `${appUrl}${link.startsWith("/") ? "" : "/"}${link}`;
+  const iconUrl = `${appUrl}/logo.png`;
 
   try {
+    const payload = {
+      app_id: appId,
+      include_aliases: {
+        external_id: recipientUserIds,
+      },
+      target_channel: "push",
+      headings: { en: title, uz: title, ru: title },
+      contents: { en: message, uz: message, ru: message },
+      url: fullLink,
+      chrome_web_icon: iconUrl,
+      firefox_icon: iconUrl,
+      large_icon: iconUrl,
+    };
+
     const response = await fetch("https://onesignal.com/api/v1/notifications", {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        Authorization: `Basic ${apiKey}`,
+        Authorization: authHeader,
       },
-      body: JSON.stringify({
-        app_id: appId,
-        include_aliases: {
-          external_id: recipientUserIds,
-        },
-        target_channel: "push",
-        headings: { en: title, uz: title, ru: title },
-        contents: { en: message, uz: message, ru: message },
-        url: link,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const errText = await response.text().catch(() => "");
       console.warn(`[ONESIGNAL PUSH WARNING] HTTP ${response.status}:`, errText);
+      return { success: false, error: `OneSignal HTTP ${response.status}: ${errText}` };
     }
-  } catch (err) {
+
+    const data = await response.json();
+    return { success: true, ...data };
+  } catch (err: any) {
     console.error("[ONESIGNAL PUSH ERROR]:", err);
+    return { success: false, error: err?.message || "Push yuborishda xatolik" };
   }
 }
 
