@@ -637,22 +637,25 @@ export class MessagesService {
       },
     });
 
-    // 6. Push / In-App Notification for offline peers
+    // 6. Push & In-App Notification for message recipients
+    const messagePreview =
+      content.length > 80 ? `${content.slice(0, 80)}...` : content || "Rasm yuborildi 📷";
+    const senderTitle = senderUser?.name || "Yangi xabar";
+    const chatLink = `/dashboard/messages?conv=${conversationId}`;
+
     for (const peerId of peerIds) {
-      // If peer is not currently online or not in this conversation, notify
-      const isOnline = realtimeHub.isUserOnline(peerId);
-      if (!isOnline) {
-        triggerNotification({
-          recipientId: peerId,
-          actorId: currentUserId,
-          type: "comment", // notifications type
-          targetId: conversationId,
-          targetType: "user",
-          title: senderUser?.name || "Yangi xabar",
-          message: content.length > 60 ? `${content.slice(0, 60)}...` : content,
-          link: `/dashboard/messages?conv=${conversationId}`,
-        }).catch(() => {});
-      }
+      triggerNotification({
+        recipientId: peerId,
+        actorId: currentUserId,
+        type: "message",
+        targetId: conversationId,
+        targetType: "user",
+        title: senderTitle,
+        message: messagePreview,
+        link: chatLink,
+      }).catch((err) => {
+        console.warn("[MESSAGE NOTIFICATION WARN]:", err);
+      });
     }
 
     return messageDTO;

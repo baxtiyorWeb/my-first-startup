@@ -97,7 +97,7 @@ export async function sendOneSignalPush(
 export async function triggerNotification(input: {
   recipientId: string;
   actorId?: string;
-  type: "like" | "comment" | "reply" | "follow" | "new_post";
+  type: "like" | "comment" | "reply" | "follow" | "new_post" | "message";
   targetId?: string;
   targetType?: "post" | "comment" | "user";
   title: string;
