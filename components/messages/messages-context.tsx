@@ -243,9 +243,15 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
           lastSyncTimestampRef.current = message.createdAt || new Date().toISOString();
 
           const isFromMe = message.senderId === currentUserId;
-          const isCurrentActive = activeConversationIdRef.current === conversationId;
-          const isPageVisible =
-            typeof document !== "undefined" && document.visibilityState === "visible";
+          const isMessagesPage =
+            typeof window !== "undefined" &&
+            window.location.pathname.includes("/dashboard/messages");
+          const isWindowFocused =
+            typeof document !== "undefined" &&
+            document.visibilityState === "visible" &&
+            (typeof document.hasFocus === "function" ? document.hasFocus() : true);
+          const isCurrentActive =
+            isMessagesPage && isWindowFocused && activeConversationIdRef.current === conversationId;
 
           // 1. Update message map
           setMessagesMap((prev) => {
@@ -280,7 +286,7 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
                   isFromMe,
                 },
                 unreadCount:
-                  isFromMe || (isCurrentActive && isPageVisible)
+                  isFromMe || isCurrentActive
                     ? 0
                     : (existing.unreadCount || 0) + 1,
                 updatedAt: message.createdAt,
@@ -296,14 +302,14 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
 
           // 3. Handle read receipts and notifications for peer messages
           if (!isFromMe) {
-            if (isCurrentActive && isPageVisible) {
-              // Active chat: immediately mark as read so the sender sees the double checkmark!
+            if (isCurrentActive) {
+              // Active focused chat: immediately mark as read so the sender sees the double checkmark!
               apiClient(`/api/messages/conversations/${conversationId}/read`, {
                 method: "POST",
                 body: JSON.stringify({ messageId: message.id }),
               }).catch(() => {});
             } else {
-              // Inactive or background: play sound chime and notify with toast
+              // Inactive, other page, or background window: play sound chime and notify with toast
               playNotificationChime();
               const senderName = sender?.name || "Yangi xabar";
               const snippet =
@@ -416,7 +422,15 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return;
 
     const handleFocusOrVisible = () => {
-      if (document.visibilityState === "visible" && activeConversationIdRef.current) {
+      const isMessagesPage =
+        typeof window !== "undefined" &&
+        window.location.pathname.includes("/dashboard/messages");
+      const isWindowFocused =
+        typeof document !== "undefined" &&
+        document.visibilityState === "visible" &&
+        (typeof document.hasFocus === "function" ? document.hasFocus() : true);
+
+      if (isMessagesPage && isWindowFocused && activeConversationIdRef.current) {
         const convId = activeConversationIdRef.current;
         apiClient(`/api/messages/conversations/${convId}/read`, {
           method: "POST",

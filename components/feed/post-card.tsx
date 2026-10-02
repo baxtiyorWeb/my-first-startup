@@ -91,6 +91,7 @@ export function PostCard({
   const [currentTitle, setCurrentTitle] = useState(post.title);
   const [currentContent, setCurrentContent] = useState(post.content);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
 
   useEffect(() => {
     setCurrentTitle(post.title);
@@ -398,13 +399,32 @@ export function PostCard({
               </h2>
             </Link>
           )}
-          <Link href={localePath(`/dashboard/posts/${post.id}`)} className="block group">
-            <RichContent
-              content={currentContent}
-              searchQuery={activeSearchQuery}
-              className="text-xs sm:text-[13.5px] group-hover:text-slate-950 dark:group-hover:text-slate-100 transition-colors"
-            />
-          </Link>
+          <div className="relative">
+            <div className={!isContentExpanded ? "line-clamp-4 overflow-hidden" : ""}>
+              <Link href={localePath(`/dashboard/posts/${post.id}`)} className="block group">
+                <RichContent
+                  content={currentContent}
+                  searchQuery={activeSearchQuery}
+                  className="text-xs sm:text-[13.5px] group-hover:text-slate-950 dark:group-hover:text-slate-100 transition-colors"
+                />
+              </Link>
+            </div>
+
+            {/* Read more toggle for posts longer than 4 lines or 200 chars */}
+            {(currentContent.length > 200 || (currentContent.match(/\n/g) || []).length >= 3) && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsContentExpanded((prev) => !prev);
+                }}
+                className="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer inline-flex items-center gap-0.5"
+              >
+                {isContentExpanded ? "Yashirish" : "Ko'proq o'qish"}
+              </button>
+            )}
+          </div>
 
           {/* Post Media Attachments (up to 3 images) */}
           {mediaList.length > 0 && (

@@ -215,7 +215,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             >
               <MessageSquare size={18} />
               {totalUnreadCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-slate-900 shadow-2xs animate-in zoom-in-75">
+                <span className="absolute -top-0.5 -right-0.5 z-10 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-slate-900 shadow-2xs animate-in zoom-in-75">
                   {totalUnreadCount > 9 ? "9+" : totalUnreadCount}
                 </span>
               )}

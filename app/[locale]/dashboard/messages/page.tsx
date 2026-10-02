@@ -84,6 +84,13 @@ export default function MessagesPage() {
     }
   }, [targetTo, targetConv, activeConversationId, setActiveConversationId, startDirectConversation]);
 
+  // Reset activeConversationId when navigating away from messages page
+  useEffect(() => {
+    return () => {
+      setActiveConversationId(null);
+    };
+  }, [setActiveConversationId]);
+
   // Active conversation object
   const activeConversation = useMemo(() => {
     return conversations.find((c) => c.id === activeConversationId) || null;

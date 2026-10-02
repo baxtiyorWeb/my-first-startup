@@ -62,6 +62,7 @@ export interface CallGeminiOptions {
   isJson?: boolean;
   enableSearch?: boolean;
   temperature?: number;
+  maxTokens?: number;
   retries?: number;
 }
 
@@ -319,6 +320,7 @@ export class GeminiClient {
       isJson = false,
       enableSearch = false,
       temperature = 0.82,
+      maxTokens,
       retries = 1,
     } = options;
 
@@ -328,7 +330,7 @@ export class GeminiClient {
     const generationConfig: Record<string, unknown> = {
       temperature,
       topP: 0.95,
-      maxOutputTokens: 4096,
+      maxOutputTokens: maxTokens ?? 4096,
     };
 
     const tools: Array<Record<string, unknown>> = [];
@@ -647,34 +649,32 @@ Ushbu mavzuni o'zingizning shaxsiyatingiz, insoniy tajribangiz va dunyoqarashing
 Ismingiz: ${botName} (${botRole})
 Xarakteringiz: ${botPersona}
 Uslubingiz: ${writingStyle}
-Nuqtai nazaringiz: ${thoughtAngle}
 
-MUHIM QOIDALAR (TABIIYLIK VA CHUQUR FIKRLASH):
-1. SHABLON VA SOXTA XUSHOMADDAN QOCHING:
-   - "Ajoyib post bo'libdi!", "Rahmat foydali ma'lumot uchun!", "To'liq qo'shilaman!" kabi sun'iy va ma'nosiz gaplarni YOG'DIRMANG.
-2. CHUQUR FIKRLASH (REASONING):
-   Postni chuqur tahlil qiling va quyidagi 4 ta usuldan BITTASINI tanlab yozing:
-   - A) Amaliy tajribangizdan 1 ta nozik misol keltiring ("Bizda ham xuddi shunday holat bo'lgan, ayniqsa...")
-   - B) O'yga soluvchi chuqur savol bering ("Yondashuv qiziq, lekin trafik 5 barobar oshganda bu arxitektura qanday javob beradi?")
-   - C) Do'stona, ammo konstruktiv muqobil fikr bildiring ("Lekin har doim ham bu qoida ishlamasa kerak, ayniqsa B2B sohasida...")
-   - D) Noodatiy va foydali kuzatuv qo'shing ("Aynan shu masalada ko'pchilik e'tibordan chetda qoldiradigan 1 ta nozik joyi bor...")
-3. HAJMI: Qisqa va o'tkir bo'lsin: 1 tadan 3 tagacha qisqa, ta'sirchan gap. Odamlar kommentga maqola yozmaydi!
-4. FAQAT va FAQAT sharh matnini qaytaring. Qo'shtirnoqsiz, prefikssiz, izohlarsiz.
-5. QAT'IY SHAXSIYAT QOIDASI: Sizning yagona va haqiqiy ismingiz FAQAT "${botName}". Siz HECH QACHON o'zingizni boshqa ism bilan tanishtirmaysiz (masalan, Abdulaziz, Sardor, Jasur deb yozish MUTLAQO TAQIQLANADI). Matnda ismingizni aytish lozim bo'lsa, FAQAT "${botName}" ismini ishlating.`;
+MUHIM QOIDALAR (TABIIY, INSONIY VA QISQA FIKR):
+1. O'TA QISQA VA LO'NDA BO'LSIN: Maksimal 1 YOKI 2 TA QISQA JONLI GAP (jami 12-25 ta so'zdan oshmasin).
+2. HECH QACHON uzun ma'ruza, maqola, kitobiy tahlil yoki bir necha xatboshi yozmang! Ijtimoiy tarmoqda insonlar izohni juda tez, lo'nda va tabiiy tilda yozadi.
+3. TABIIY VA SAMIMIY: Sun'iy intellektdek emas, xuddi Telegram yoki LinkedIn izohlarida fikr bildirayotgan tirik, samimiy insondek yozing.
+4. SOXTA XUSHOMADDAN QOCHING: "Ajoyib post bo'libdi!", "Rahmat foydali ma'lumot uchun!", "To'liq qo'shilaman!" kabi sun'iy gaplarni YOG'DIRMANG.
+5. FAQAT 1 TA NUQTA BILDIRING:
+   - Yo amaliy hayotiy tajribangizdan 1 ta qisqa misol ("Bizda ham shunday bo'lgan, ayniqsa boshida...")
+   - Yo o'yga soluvchi 1 ta qisqa savol ("Qiziq, lekin bu katta jamoalarda qanday ishlaydi?")
+   - Yo konstruktiv 1 ta nozik kuzatuv ("Fikr to'g'ri, faqat B2B sohasida sal boshqacharoq bo'lsa kerak.")
+6. FAQAT va FAQAT sharh matnini qaytaring. Qo'shtirnoqsiz, prefikssiz, izohlarsiz.
+7. QAT'IY SHAXSIYAT QOIDASI: Sizning yagona va haqiqiy ismingiz FAQAT "${botName}". Siz HECH QACHON o'zingizni boshqa ism bilan tanishtirmaysiz.`;
 
     let userPrompt = `Post sarlavhasi: "${postTitle || "Mulohaza"}"
 Post matni:
-"""${postContent.slice(0, 1000)}"""`;
+"""${postContent.slice(0, 800)}"""`;
 
     if (existingComments.length > 0) {
-      userPrompt += `\n\nAvvalgi bildirilgan fikrlar: ${existingComments.slice(0, 3).join(" | ")}`;
-      userPrompt += `\nYuqoridagi fikrlarni takrorlamagan holda, o'z xarakteringizga mos holda bitta teran, tabiiy izoh yozing:`;
+      userPrompt += `\n\nAvvalgi fikrlar: ${existingComments.slice(0, 2).join(" | ")}`;
+      userPrompt += `\nUshbu postga xarakteringizga mos 1-2 ta qisqa va tabiiy gapdan iborat ixcham izoh yozing:`;
     } else {
-      userPrompt += `\nUshbu postga xarakteringizga mos bitta teran, tabiiy izoh yozing:`;
+      userPrompt += `\nUshbu postga xarakteringizga mos 1-2 ta qisqa va tabiiy gapdan iborat ixcham izoh yozing:`;
     }
 
     if (withSearch) {
-      userPrompt += ` (Kerak bo'lsa, mavzu bo'yicha internetdagi eng yangi ma'lumot yoki faktni hisobga olib fikr bildiring).`;
+      userPrompt += ` (Kerak bo'lsa, eng yangi 1 ta amaliy faktni hisobga olib qisqa fikr bildiring).`;
     }
 
     let comment = "";
@@ -682,7 +682,8 @@ Post matni:
       comment = await this.callGemini(userPrompt, systemPrompt, {
         enableSearch: withSearch,
         isJson: false,
-        temperature: deepReasoning ? 0.78 : 0.85,
+        temperature: deepReasoning ? 0.75 : 0.82,
+        maxTokens: 90,
       });
     } catch (err) {
       if (withSearch) {
@@ -691,7 +692,8 @@ Post matni:
           comment = await this.callGemini(userPrompt, systemPrompt, {
             enableSearch: false,
             isJson: false,
-            temperature: deepReasoning ? 0.78 : 0.85,
+            temperature: deepReasoning ? 0.75 : 0.82,
+            maxTokens: 90,
           });
         } catch (innerErr) {
           console.warn("[AI] Comment generation failed, using offline fallback comment:", innerErr);
@@ -744,25 +746,26 @@ Post matni:
 Ismingiz: ${botName} (${botRole})
 Xarakteringiz: ${botPersona}
 Uslubingiz: ${writingStyle}
-Nuqtai nazaringiz: ${thoughtAngle}
 
 MUHIM QOIDALAR:
-1. Ishtirokchi (${parentCommentAuthor}) ning fikrini inkor qilmasdan, suhbatni mazmunli davom ettiring.
-2. Agar savol berilgan bo'lsa, amaliy misol bilan javob bering.
-3. Agar fikr bildirilgan bo'lsa, qo'shimcha bir nozik jihatni ochib bering yoki qiziqarli qarshi savol bering.
-4. Qisqa va lo'nda bo'lsin: 1-3 ta ixcham jumla.
-5. Soxta maqtov ("Qo'shilaman!", "Ajoyib!") yozmang, to'g'ridan-to'g'ri mavzuga kiring.
-6. QAT'IY SHAXSIYAT QOIDASI: Sizning yagona va haqiqiy ismingiz FAQAT "${botName}". Siz HECH QACHON o'zingizni boshqa ism bilan tanishtirmaysiz.`;
+1. Qisqa, jonli va lo'nda bo'lsin: 1 YOKI 2 TA IXCHAM GAP (15-25 ta so'z).
+2. Ishtirokchi (${parentCommentAuthor}) ning fikrini inkor qilmasdan, suhbatni mazmunli davom ettiring.
+3. Soxta maqtov ("Qo'shilaman!", "Ajoyib!") yozmang, to'g'ridan-to'g'ri nozik bir fikr yoki qisqa savol bering.
+4. FAQAT javob matnini qaytaring. Qo'shtirnoqsiz.
+5. QAT'IY SHAXSIYAT QOIDASI: Sizning yagona va haqiqiy ismingiz FAQAT "${botName}". Siz HECH QACHON o'zingizni boshqa ism bilan tanishtirmaysiz.`;
 
     const userPrompt = `Mavzu (Post): "${postTitle || "Fikr"}"
 Post mazmuni: "${postContent.slice(0, 400)}"
 ${parentCommentAuthor} ning izohi: "${parentCommentContent}"
 
-Sizning javobingiz:`;
+Sizning 1-2 ta ixcham gapdan iborat tabiiy javobingiz:`;
 
     let raw = "";
     try {
-      raw = await this.callGemini(userPrompt, systemPrompt);
+      raw = await this.callGemini(userPrompt, systemPrompt, {
+        maxTokens: 80,
+        temperature: 0.78,
+      });
     } catch (err) {
       console.warn("[AI] Reply generation failed, using offline fallback reply:", err);
       const fallback = this.getOfflineFallbackReply(parentCommentContent);
@@ -933,57 +936,28 @@ QAT'IY JSON FORMATIDA QAYTARING:
     };
   }
 
-  private getOfflineFallbackComment(postTitle?: string | null, postContent?: string): string {
-    const intros = [
-      "Juda teran va o'ylantiruvchi fikr bildiribsiz.",
-      "Aynan shu masalaga alohida urg'u berganingiz juda o'rinli bo'libdi.",
-      "Mavzuga tajribangiz prizmasidan qaraganingiz juda qiziqarli.",
-      "Amaliyotda ham bu yondashuv sezilarli natija beradi.",
-      "Ushbu qarashga to'liq qo'shilaman."
+  private getOfflineFallbackComment(postTitle?: string | null, _postContent?: string): string {
+    const comments = [
+      "Juda to'g'ri nuqta, ayniqsa amaliyotda buni ta'siri darhol seziladi.",
+      "Qiziq yondashuv. Jamoa kattalashgan sari bu qoidani qo'llash yanada muhim bo'lib qoladi.",
+      "Bizda ham aynan shu holat kuzatilgan, yechim haqiqatan ham o'zini oqlagan.",
+      "Fikr qiziq, lekin har doim ham bu qoida ishlamasa kerak, ayniqsa qisqa muddatli loyihalarda.",
+      "Aynan shu masalada ko'pchilik e'tibordan chetda qoldiradigan nozik jihat bor.",
+      "Tajribadan kelib chiqib aytganda, bu usul ko'p vaqt va asabni tejaydi.",
+      "To'g'ri mulohaza, boshlanishida biroz qiyin bo'lsa ham, natijasi arziydi.",
+      "Mavzu o'rinli ko'tarilibdi, ayniqsa jamoada ochiq muloqot yetishmayotgan paytda."
     ];
-
-    const observations = [
-      "Biz ham yaqinda o'z loyihamizda shunga o'xshash vaziyatga duch kelgandik.",
-      "Ko'pincha ko'pchilik bu nozik jihatni e'tibordan chetda qoldirib ketadi.",
-      "Ayniqsa masshtablash bosqichida bu omil hal qiluvchi rol o'ynaydi.",
-      "Aynan shu nuqtada to'g'ri qaror qabul qilish vaqt va resursni tejaydi.",
-      "Tizimli yondashuv bo'lmasa, bu muammo keyinchalik murakkablashadi."
-    ];
-
-    const questionsOrConclusions = [
-      "Kelgusida bu bo'yicha batafsil amaliy keyslarni ham kutib qolamiz!",
-      "Sizningcha, bunga erishishda eng birinchi qadam nima bo'lishi kerak?",
-      "Tajribangiz bilan bo'lishganingiz uchun rahmat!",
-      "Keyingi postlaringizda ham shunday chuqur tahlillarni kutamiz.",
-      "Shu masalada sizda yana qanday muqobil yechimlar bor?"
-    ];
-
-    const i = intros[Math.floor(Math.random() * intros.length)];
-    const o = observations[Math.floor(Math.random() * observations.length)];
-    const q = questionsOrConclusions[Math.floor(Math.random() * questionsOrConclusions.length)];
-
-    return `${i} ${o} ${q}`;
+    return comments[Math.floor(Math.random() * comments.length)];
   }
 
   private getOfflineFallbackReply(parentCommentContent?: string): string {
-    const intros = [
-      "Javobingiz va fikringiz uchun rahmat!",
-      "O'rinli nuqtaga e'tibor qaratdingiz.",
-      "Fikringizga to'liq qo'shilaman.",
-      "Bu holatda yondashuv haqiqatdan ham muhim."
+    const replies = [
+      "To'g'ri ta'kidladingiz, amalda bu ko'pincha sezilarli ijobiy ta'sir ko'rsatadi.",
+      "O'rinli nuqta. Siz aytgan variant jamoaviy muhitda eng maqbuli bo'lsa kerak.",
+      "Qo'shilaman, aynan shu omil ko'p masalani hal qiladi.",
+      "Yaxshi fikr, kelgusida buni o'z jarayonlarimizda ham sinab ko'ramiz."
     ];
-
-    const details = [
-      "Ayniqsa amaliyotda bu sezilarli darajada ijobiy ta'sir ko'rsatadi.",
-      "Bu masala bo'yicha turli qarashlar bor, lekin siz aytgan variant eng maqbuli.",
-      "Shu bilan birga, jamoaviy muvofiqlik ham hal qiluvchi rol o'ynaydi.",
-      "Kelajakda bu tajribani o'z ish jarayonimizda ham qo'llab ko'ramiz."
-    ];
-
-    const i = intros[Math.floor(Math.random() * intros.length)];
-    const d = details[Math.floor(Math.random() * details.length)];
-
-    return `${i} ${d}`;
+    return replies[Math.floor(Math.random() * replies.length)];
   }
 
   private getOfflineFallbackProfile(existingHandles: string[]): {
