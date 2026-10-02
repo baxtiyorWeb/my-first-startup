@@ -56,7 +56,7 @@ export function ProfileHeader({
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Muqova rasmi 10MB dan oshmasligi kerak");
+      toast.error(t("profile.cover.coverSizeLimit"));
       return;
     }
 
@@ -66,9 +66,9 @@ export function ProfileHeader({
       setCoverPhotoUrl(res.url);
       await updateCurrentUser({ coverPhotoUrl: res.url });
       onProfileUpdate?.({ coverPhotoUrl: res.url });
-      toast.success("Muqova rasmi muvaffaqiyatli yangilandi");
+      toast.success(t("profile.cover.coverUpdated"));
     } catch {
-      toast.error("Muqova rasmini yuklashda xatolik yuz berdi");
+      toast.error(t("profile.cover.coverUploadError"));
     } finally {
       setIsUploadingCover(false);
       if (coverInputRef.current) {
@@ -83,9 +83,9 @@ export function ProfileHeader({
       setCoverPhotoUrl("");
       await updateCurrentUser({ coverPhotoUrl: "" });
       onProfileUpdate?.({ coverPhotoUrl: "" });
-      toast.success("Muqova rasmi olib tashlandi");
+      toast.success(t("profile.cover.coverRemoved"));
     } catch {
-      toast.error("Muqovani o'chirishda xatolik yuz berdi");
+      toast.error(t("profile.cover.coverDeleteError"));
     } finally {
       setIsUploadingCover(false);
       if (coverInputRef.current) {
@@ -96,7 +96,7 @@ export function ProfileHeader({
 
   const handleFollow = () => {
     if (isSelfUser) {
-      toast.error("O‘zingizni kuzata olmaysiz");
+      toast.error(t("profile.cannotFollowSelf"));
       return;
     }
     const nextState = !isFollowing;
@@ -167,12 +167,12 @@ export function ProfileHeader({
               {isUploadingCover ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
-                  <span>Yuklanmoqda...</span>
+                  <span>{t("profile.cover.uploading")}</span>
                 </>
               ) : (
                 <>
                   <Camera size={14} />
-                  <span>{coverPhotoUrl ? "Muqovani almashtirish" : "Muqova qo‘yish"}</span>
+                  <span>{coverPhotoUrl ? t("profile.cover.changeCover") : t("profile.cover.uploadCover")}</span>
                 </>
               )}
             </button>
@@ -180,7 +180,7 @@ export function ProfileHeader({
               <button
                 type="button"
                 onClick={handleRemoveCover}
-                title="Muqova rasmini olib tashlash"
+                title={t("profile.cover.removeCover")}
                 className="p-1.5 rounded-xl bg-black/60 hover:bg-rose-600 backdrop-blur-md text-white/80 hover:text-white transition-all cursor-pointer shadow-sm"
               >
                 <Trash2 size={14} />
@@ -228,8 +228,8 @@ export function ProfileHeader({
                 <button
                   type="button"
                   onClick={() => setIsMenuModalOpen(true)}
-                  aria-label="Profil Menyusi"
-                  title="Profil Menyusi"
+                  aria-label={t("profile.menu.profileMenu")}
+                  title={t("profile.menu.profileMenu")}
                   className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   <Menu size={18} />

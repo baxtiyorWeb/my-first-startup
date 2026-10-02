@@ -84,7 +84,7 @@ function ProfileEditForm({
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Rasm hajmi 10MB dan oshmasligi kerak");
+      toast.error(t("profile.cover.coverSizeLimit"));
       return;
     }
 
@@ -104,7 +104,7 @@ function ProfileEditForm({
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Rasm hajmi 10MB dan oshmasligi kerak");
+      toast.error(t("profile.cover.coverSizeLimit"));
       return;
     }
 
@@ -343,7 +343,7 @@ function ProfileEditForm({
               type="text"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              placeholder="Masalan: Senior Software Architect"
+              placeholder={t("settings.rolePlaceholder")}
               className="w-full h-9 px-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
           </div>
@@ -372,6 +372,7 @@ function ProfileEditForm({
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={3}
+            placeholder={t("settings.bioPlaceholder")}
             className="w-full p-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400 resize-none leading-relaxed"
           />
         </div>
@@ -379,26 +380,26 @@ function ProfileEditForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Hudud / Shahar
+              {t("settings.location")}
             </label>
             <input
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Toshkent, O‘zbekiston"
+              placeholder={t("settings.locationPlaceholder")}
               className="w-full h-9 px-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Veb-sayt yoki GitHub
+              {t("settings.tabs.account.websiteUrl")}
             </label>
             <input
               type="text"
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
-              placeholder="github.com/username"
+              placeholder="https://example.com"
               className="w-full h-9 px-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
           </div>
@@ -407,7 +408,7 @@ function ProfileEditForm({
         {/* Cover Image Uploader */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-            Muqova rasmi (Cover Photo)
+            {t("settings.tabs.account.changeCover")}
           </label>
           <input
             ref={coverFileInputRef}
@@ -426,7 +427,7 @@ function ProfileEditForm({
               />
             ) : (
               <span className="text-xs text-slate-400 font-medium">
-                Muqova rasmi tanlanmagan
+                {t("profile.cover.noCover")}
               </span>
             )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -437,7 +438,7 @@ function ProfileEditForm({
                 className="px-3 py-1.5 rounded-lg bg-white/90 hover:bg-white text-slate-900 text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <Camera size={13} />
-                <span>Fayldan tanlash</span>
+                <span>{t("settings.tabs.account.uploadAvatar")}</span>
               </button>
               {previewCoverUrl && (
                 <button
@@ -447,7 +448,7 @@ function ProfileEditForm({
                   className="px-3 py-1.5 rounded-lg bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Trash2 size={13} />
-                  <span>O‘chirish</span>
+                  <span>{t("common.delete")}</span>
                 </button>
               )}
             </div>

@@ -170,7 +170,7 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Rasm hajmi 10MB dan oshmasligi kerak");
+      toast.error(t("profile.cover.coverSizeLimit"));
       return;
     }
     setIsUploadingSettingsCover(true);
@@ -178,9 +178,9 @@ export default function SettingsPage() {
       const res = await uploadFile(file, "covers");
       setCoverPhotoUrl(res.url);
       await updateCurrentUser({ coverPhotoUrl: res.url });
-      toast.success("Muqova rasmi yuklandi");
+      toast.success(t("settings.tabs.account.coverSaved"));
     } catch {
-      toast.error("Muqova rasmini yuklashda xatolik");
+      toast.error(t("profile.cover.coverUploadError"));
     } finally {
       setIsUploadingSettingsCover(false);
       if (settingsCoverRef.current) settingsCoverRef.current.value = "";
@@ -191,7 +191,7 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Rasm hajmi 10MB dan oshmasligi kerak");
+      toast.error(t("profile.cover.coverSizeLimit"));
       return;
     }
     setIsUploadingSettingsAvatar(true);
@@ -199,9 +199,9 @@ export default function SettingsPage() {
       const res = await uploadFile(file, "avatars");
       setAvatarUrl(res.url);
       await updateCurrentUser({ avatarUrl: res.url });
-      toast.success("Profil rasmi yuklandi");
+      toast.success(t("settings.tabs.account.avatarSaved"));
     } catch {
-      toast.error("Profil rasmini yuklashda xatolik");
+      toast.error(t("settings.errorSaved"));
     } finally {
       setIsUploadingSettingsAvatar(false);
       if (settingsAvatarRef.current) settingsAvatarRef.current.value = "";
@@ -213,9 +213,9 @@ export default function SettingsPage() {
     setAvatarUrl(newAvatar);
     try {
       await updateCurrentUser({ avatarUrl: newAvatar });
-      toast.success("Tasodifiy avatar o‘rnatildi");
+      toast.success(t("settings.tabs.account.avatarRandomSuccess"));
     } catch {
-      toast.error("Avatarni saqlashda xatolik");
+      toast.error(t("settings.errorSaved"));
     }
   };
 
@@ -223,9 +223,9 @@ export default function SettingsPage() {
     setAvatarUrl("");
     try {
       await updateCurrentUser({ avatarUrl: "" });
-      toast.success("Profil rasmi olib tashlandi");
+      toast.success(t("settings.tabs.account.avatarRemoveSuccess"));
     } catch {
-      toast.error("Rasmni o'chirishda xatolik");
+      toast.error(t("settings.errorSaved"));
     }
   };
 
@@ -233,9 +233,9 @@ export default function SettingsPage() {
     setCoverPhotoUrl("");
     try {
       await updateCurrentUser({ coverPhotoUrl: "" });
-      toast.success("Muqova rasmi olib tashlandi");
+      toast.success(t("settings.tabs.account.coverRemoveSuccess"));
     } catch {
-      toast.error("Muqovani o'chirishda xatolik");
+      toast.error(t("profile.cover.coverDeleteError"));
     }
   };
 
@@ -346,7 +346,7 @@ export default function SettingsPage() {
       });
 
       setSavedSuccess(true);
-      toast.success("Hisob ma'lumotlari saqlandi");
+      toast.success(t("settings.successSaved"));
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch {
       toast.error(t("settings.errorSaved"));
@@ -366,9 +366,9 @@ export default function SettingsPage() {
         showOnlineStatus,
       });
 
-      toast.success("Maxfiylik sozlamalari yangilandi");
+      toast.success(t("settings.tabs.privacy.savePrivacy"));
     } catch {
-      toast.error("Xatolik yuz berdi");
+      toast.error(t("settings.errorSaved"));
     } finally {
       setIsSubmitting(false);
     }
@@ -379,9 +379,9 @@ export default function SettingsPage() {
     try {
       await apiClient(`/api/settings/blocks?userId=${userId}`, { method: "DELETE" });
       setBlockedUsers((prev) => prev.filter((u) => u.id !== userId));
-      toast.success("Foydalanuvchi blokdan chiqarildi");
+      toast.success(t("settings.tabs.privacy.unblockSuccess"));
     } catch {
-      toast.error("Amalni bajarib bo'lmadi");
+      toast.error(t("common.errorOccurred"));
     }
   };
 
@@ -389,15 +389,15 @@ export default function SettingsPage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (hasPassword && !currentPassword) {
-      toast.error("Eski parolni kiriting");
+      toast.error(t("settings.tabs.security.currentPassword"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Yangi parollar mos kelmadi");
+      toast.error(t("settings.tabs.security.passwordMismatch"));
       return;
     }
     if (newPassword.length < 6) {
-      toast.error("Yangi parol kamida 6 ta belgidan iborat bo'lishi kerak");
+      toast.error(t("settings.tabs.security.passwordMinLength"));
       return;
     }
 
@@ -410,17 +410,13 @@ export default function SettingsPage() {
           newPassword,
         }),
       });
-      toast.success(
-        hasPassword
-          ? "Parol muvaffaqiyatli o'zgartirildi"
-          : "Parol muvaffaqiyatli o'rnatildi"
-      );
+      toast.success(t("settings.tabs.security.passwordChangedSuccess"));
       setHasPassword(true);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      toast.error(err.message || "Xatolik yuz berdi");
+      toast.error(err.message || t("settings.errorSaved"));
     } finally {
       setIsChangingPassword(false);
     }
@@ -435,9 +431,9 @@ export default function SettingsPage() {
         twoFactorEnabled: enabled,
         twoFactorType: type,
       });
-      toast.success(enabled ? "Ikki bosqichli autentifikatsiya yoqildi" : "2FA o'chirildi");
+      toast.success(t("settings.tabs.security.twoFactorUpdated"));
     } catch {
-      toast.error("Sozlamani saqlashda xatolik");
+      toast.error(t("settings.errorSaved"));
     }
   };
 
@@ -450,13 +446,13 @@ export default function SettingsPage() {
       await apiClient(url, { method: "DELETE" });
       if (sessionId) {
         setActiveSessions((prev) => prev.filter((s) => s.id !== sessionId));
-        toast.success("Seans yakunlandi");
+        toast.success(t("settings.tabs.security.sessionTerminatedSuccess"));
       } else {
         setActiveSessions((prev) => prev.filter((s) => s.isCurrent));
-        toast.success("Barcha boshqa seanslardan chiqildi");
+        toast.success(t("settings.tabs.security.allSessionsTerminatedSuccess"));
       }
     } catch {
-      toast.error("Seansni yakunlashda xatolik");
+      toast.error(t("settings.errorSaved"));
     }
   };
 
@@ -477,9 +473,9 @@ export default function SettingsPage() {
           emailSecurity,
         }),
       });
-      toast.success("Bildirishnoma sozlamalari saqlandi");
+      toast.success(t("settings.tabs.notifications.notificationsSavedSuccess"));
     } catch {
-      toast.error("Xatolik yuz berdi");
+      toast.error(t("settings.errorSaved"));
     } finally {
       setIsSubmitting(false);
     }
@@ -497,7 +493,7 @@ export default function SettingsPage() {
       setAppTheme(newTheme);
     }
     updateCurrentUser({ theme: newTheme }).catch(() => {});
-    toast.success("Mavzu yangilandi");
+    toast.success(t("settings.tabs.system.themeUpdated"));
   };
 
   // GDPR Data Export
@@ -515,9 +511,9 @@ export default function SettingsPage() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      toast.success("Ma'lumotlar arxiv sifatida ko'chirib olindi");
+      toast.success(t("settings.tabs.system.exportSuccess"));
     } catch {
-      toast.error("Arxiv yuklab olishda xatolik");
+      toast.error(t("settings.tabs.system.exportError"));
     } finally {
       setIsExporting(false);
     }
@@ -530,10 +526,10 @@ export default function SettingsPage() {
         method: "POST",
         body: JSON.stringify({ action: "deactivate" }),
       });
-      toast.success("Hisobingiz vaqtincha muzlatildi");
+      toast.success(t("settings.modals.deactivate.success"));
       logout();
     } catch {
-      toast.error("Xatolik yuz berdi");
+      toast.error(t("common.errorOccurred"));
     }
   };
 
@@ -541,10 +537,10 @@ export default function SettingsPage() {
   const handleDeleteAccount = async () => {
     try {
       await apiClient("/api/settings/account", { method: "DELETE" });
-      toast.success("Hisobingiz butunlay o'chirildi");
+      toast.success(t("settings.modals.deleteAccount.success"));
       logout();
     } catch {
-      toast.error("Hisobni o'chirishda xatolik");
+      toast.error(t("settings.modals.deleteAccount.error"));
     }
   };
 
@@ -560,38 +556,38 @@ export default function SettingsPage() {
   const menuItems = [
     {
       id: "account",
-      title: "1. Hisob va Profil sozlamalari",
-      desc: "Ism, muqova rasmi, ijtimoiy tarmoqlar (GitHub, LinkedIn) va joylashuv",
+      title: t("settings.tabs.account.title"),
+      desc: t("settings.tabs.account.desc"),
       icon: User,
-      badge: "Profil",
+      badge: t("settings.tabs.account.badge"),
     },
     {
       id: "privacy",
-      title: "2. Maxfiylik (Privacy)",
-      desc: "Profil ko'rinuvchanligi, DM huquqlari, online indikator, qora ro'yxat",
+      title: t("settings.tabs.privacy.title"),
+      desc: t("settings.tabs.privacy.desc"),
       icon: Eye,
-      badge: "Himoya",
+      badge: t("settings.tabs.privacy.badge"),
     },
     {
       id: "security",
-      title: "3. Xavfsizlik (Security)",
-      desc: "Parolni o'zgartirish, 2FA autentifikatsiya, faol seanslar, hisobni o'chirish",
+      title: t("settings.tabs.security.title"),
+      desc: t("settings.tabs.security.desc"),
       icon: Lock,
-      badge: "Parol & 2FA",
+      badge: t("settings.tabs.security.badge"),
     },
     {
       id: "notifications",
-      title: "4. Bildirishnomalar",
-      desc: "Push & Veb xabarnomalar (layklar, izohlar), email dayjestlar",
+      title: t("settings.tabs.notifications.title"),
+      desc: t("settings.tabs.notifications.desc"),
       icon: Bell,
-      badge: "Xabarnoma",
+      badge: t("settings.tabs.notifications.badge"),
     },
     {
       id: "system",
-      title: "5. Interfeys va Tizim",
-      desc: "Tungi/Kunduzgi rejim (Theme), alifbo, GDPR ma'lumotlarni eksport qilish",
+      title: t("settings.tabs.system.title"),
+      desc: t("settings.tabs.system.desc"),
       icon: Monitor,
-      badge: "GDPR & Mavzu",
+      badge: t("settings.tabs.system.badge"),
     },
   ];
 
@@ -604,7 +600,7 @@ export default function SettingsPage() {
             {t("settings.title")}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Tizim, xavfsizlik va profil sozlamalarini boshqaring
+            {t("settings.subtitle")}
           </p>
         </div>
       </div>
@@ -618,7 +614,7 @@ export default function SettingsPage() {
         {!currentTab ? (
           <div className="space-y-3">
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-              Sozlama bo'limini tanlang:
+              {t("settings.selectSection")}
             </p>
             {menuItems.map((item) => {
               const IconComp = item.icon;
@@ -659,7 +655,7 @@ export default function SettingsPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 transition-colors"
             >
               <ArrowLeft size={14} />
-              <span>Sozlamalarga qaytish</span>
+              <span>{t("settings.backToSettings")}</span>
             </button>
 
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5">
@@ -715,23 +711,23 @@ export default function SettingsPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl">
             <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
               <AlertTriangle size={24} />
-              <h3 className="text-base font-bold">Hisobni vaqtincha muzlatish</h3>
+              <h3 className="text-base font-bold">{t("settings.modals.deactivate.title")}</h3>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Hisobingiz vaqtincha muzlatiladi. Boshqa foydalanuvchilar sizning profillingizni ko'ra olishmaydi. Qayta kiringiz bilan hisob faollashadi.
+              {t("settings.modals.deactivate.desc")}
             </p>
             <div className="flex justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setShowDeactivateModal(false)}
-                className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold"
+                className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer"
               >
-                Bekor qilish
+                {t("settings.modals.deactivate.cancel")}
               </button>
               <button
                 onClick={handleDeactivate}
-                className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold"
+                className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold cursor-pointer"
               >
-                Muzlatishni tasdiqlash
+                {t("settings.modals.deactivate.confirm")}
               </button>
             </div>
           </div>
@@ -744,23 +740,23 @@ export default function SettingsPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl">
             <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
               <Trash2 size={24} />
-              <h3 className="text-base font-bold">Hisobni butunlay o'chirish</h3>
+              <h3 className="text-base font-bold">{t("settings.modals.deleteAccount.title")}</h3>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Diqqat! Ushbu amal qaytarilmas. Barcha postlaringiz, izohlaringiz va shaxsiy ma'lumotlaringiz o'chib ketadi.
+              {t("settings.modals.deleteAccount.desc")}
             </p>
             <div className="flex justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold"
+                className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer"
               >
-                Bekor qilish
+                {t("settings.modals.deleteAccount.cancel")}
               </button>
               <button
                 onClick={handleDeleteAccount}
-                className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold"
+                className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold cursor-pointer"
               >
-                O'chirishni tasdiqlash
+                {t("settings.modals.deleteAccount.confirm")}
               </button>
             </div>
           </div>
@@ -781,10 +777,10 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <User size={16} />
-                <span>1. Hisob va Profil sozlamalari (Kengaytirilgan)</span>
+                <span>{t("settings.tabs.account.heading")}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Profil ma'lumotlari, muqova rasmi va ijtimoiy tarmoqlar
+                {t("settings.tabs.account.subheading")}
               </p>
             </div>
 
@@ -793,10 +789,10 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                    Muqova rasmi va Profil rasmi
+                    {t("settings.tabs.account.coverAndAvatar")}
                   </span>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    O'zingizga mos profil va muqova rasmini yuklang yoki tasodifiy avatar yarating
+                    {t("settings.tabs.account.coverAndAvatarDesc")}
                   </p>
                 </div>
               </div>
@@ -812,7 +808,7 @@ export default function SettingsPage() {
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-xs text-slate-400 gap-1 select-none">
                     <ImageIcon size={20} className="opacity-50" />
-                    <span className="text-[11px]">Muqova rasmi yuklanmagan</span>
+                    <span className="text-[11px]">{t("settings.tabs.account.noCover")}</span>
                   </div>
                 )}
 
@@ -829,7 +825,7 @@ export default function SettingsPage() {
                     ) : (
                       <Camera size={13} />
                     )}
-                    <span>{coverPhotoUrl ? "Muqovani almashtirish" : "Muqova yuklash"}</span>
+                    <span>{coverPhotoUrl ? t("settings.tabs.account.changeCover") : t("settings.tabs.account.uploadCover")}</span>
                   </button>
 
                   {coverPhotoUrl && (
@@ -837,7 +833,7 @@ export default function SettingsPage() {
                       type="button"
                       disabled={isUploadingSettingsCover}
                       onClick={handleRemoveCover}
-                      title="Muqova rasmini olib tashlash"
+                      title={t("settings.tabs.account.removeCover")}
                       className="p-1.5 rounded-lg bg-black/60 hover:bg-rose-600 backdrop-blur-md text-white/80 hover:text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
                     >
                       <Trash2 size={13} />
@@ -874,7 +870,7 @@ export default function SettingsPage() {
               {/* Avatar management actions */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 mr-1">
-                  Profil rasmi:
+                  {t("settings.tabs.account.avatarLabel")}
                 </span>
                 <button
                   type="button"
@@ -887,7 +883,7 @@ export default function SettingsPage() {
                   ) : (
                     <Camera size={13} />
                   )}
-                  <span>Fayldan yuklash</span>
+                  <span>{t("settings.tabs.account.uploadAvatar")}</span>
                 </button>
 
                 <button
@@ -896,7 +892,7 @@ export default function SettingsPage() {
                   className="px-3 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-950/50 border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/60 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
                 >
                   <Dice5 size={13} />
-                  <span>Tasodifiy avatar</span>
+                  <span>{t("settings.tabs.account.randomAvatar")}</span>
                 </button>
 
                 {avatarUrl && (
@@ -906,7 +902,7 @@ export default function SettingsPage() {
                     className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer flex items-center gap-1"
                   >
                     <Trash2 size={12} />
-                    <span>O'chirish</span>
+                    <span>{t("settings.tabs.account.removeAvatar")}</span>
                   </button>
                 )}
               </div>
@@ -922,13 +918,14 @@ export default function SettingsPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  placeholder={t("settings.fullNamePlaceholder")}
                   className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Taxallus (Username)
+                  {t("settings.username")}
                 </label>
                 <input
                   type="text"
@@ -941,13 +938,13 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Rol / Kasb (Role)
+                  {t("settings.role")}
                 </label>
                 <input
                   type="text"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  placeholder="Senior Frontend Developer"
+                  placeholder={t("settings.rolePlaceholder")}
                   className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                 />
               </div>
@@ -955,13 +952,13 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <MapPin size={12} />
-                  <span>Joylashuv (Shahar / Davlat)</span>
+                  <span>{t("settings.location")}</span>
                 </label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Toshkent, O'zbekiston"
+                  placeholder={t("settings.locationPlaceholder")}
                   className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                 />
               </div>
@@ -969,13 +966,13 @@ export default function SettingsPage() {
 
             <div>
               <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Bio (Shaxsiy tavsif)
+                {t("settings.bio")}
               </label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={2}
-                placeholder="O'zingiz haqingizda qisqacha yozing..."
+                placeholder={t("settings.bioPlaceholder")}
                 className="w-full p-2 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100 resize-none"
               />
             </div>
@@ -983,20 +980,20 @@ export default function SettingsPage() {
             {/* Social Media Links */}
             <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                Ijtimoiy tarmoq integratsiyasi (Social Links)
+                {t("settings.tabs.account.socialHeading")}
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
                     <GithubIcon size={13} />
-                    <span>GitHub URL</span>
+                    <span>{t("settings.tabs.account.githubUrl")}</span>
                   </label>
                   <input
                     type="text"
                     value={github}
                     onChange={(e) => setGithub(e.target.value)}
-                    placeholder="https://github.com/username yoki @username"
+                    placeholder="https://github.com/username"
                     className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                   />
                 </div>
@@ -1004,7 +1001,7 @@ export default function SettingsPage() {
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
                     <LinkedinIcon size={13} />
-                    <span>LinkedIn URL</span>
+                    <span>{t("settings.tabs.account.linkedinUrl")}</span>
                   </label>
                   <input
                     type="text"
@@ -1018,13 +1015,13 @@ export default function SettingsPage() {
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
                     <TwitterIcon size={13} />
-                    <span>Twitter / X URL</span>
+                    <span>{t("settings.tabs.account.twitterUrl")}</span>
                   </label>
                   <input
                     type="text"
                     value={twitter}
                     onChange={(e) => setTwitter(e.target.value)}
-                    placeholder="https://twitter.com/username yoki @username"
+                    placeholder="https://twitter.com/username"
                     className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                   />
                 </div>
@@ -1032,13 +1029,13 @@ export default function SettingsPage() {
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
                     <Globe size={13} />
-                    <span>Shaxsiy veb-sayt URL</span>
+                    <span>{t("settings.tabs.account.websiteUrl")}</span>
                   </label>
                   <input
                     type="text"
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
-                    placeholder="https://mywebsite.com yoki mywebsite.com"
+                    placeholder="https://mywebsite.com"
                     className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
                   />
                 </div>
@@ -1054,16 +1051,16 @@ export default function SettingsPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 size={13} className="animate-spin" />
-                    <span>Saqlanmoqda...</span>
+                    <span>{t("settings.savingChanges")}</span>
                   </>
                 ) : (
-                  <span>O'zgarishlarni saqlash</span>
+                  <span>{t("settings.saveChanges")}</span>
                 )}
               </button>
               {savedSuccess && (
                 <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                   <Check size={14} />
-                  <span>Saqlandi!</span>
+                  <span>{t("settings.savedBadge")}</span>
                 </span>
               )}
             </div>
@@ -1076,17 +1073,17 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <Eye size={16} />
-                <span>2. Maxfiylik sozlamalari (Privacy)</span>
+                <span>{t("settings.tabs.privacy.heading")}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Profil ko'rinuvchanligi, DM ruxsatlari va qora ro'yxat
+                {t("settings.tabs.privacy.subheading")}
               </p>
             </div>
 
             {/* Profile Visibility */}
             <div className="p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
               <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                Profil ko'rinuvchanligi (Public / Private)
+                {t("settings.tabs.privacy.visibilityHeading")}
               </label>
               <div className="grid grid-cols-2 gap-2.5">
                 <button
@@ -1100,9 +1097,9 @@ export default function SettingsPage() {
                 >
                   <div className="flex items-center gap-2 font-bold mb-0.5">
                     <Globe size={14} />
-                    <span>Ommaviy (Public)</span>
+                    <span>{t("settings.tabs.privacy.publicProfile")}</span>
                   </div>
-                  <p className="text-[10px] text-slate-400">Barcha platforma foydalanuvchilari ko'ra oladi</p>
+                  <p className="text-[10px] text-slate-400">{t("settings.tabs.privacy.publicDesc")}</p>
                 </button>
 
                 <button
@@ -1116,9 +1113,9 @@ export default function SettingsPage() {
                 >
                   <div className="flex items-center gap-2 font-bold mb-0.5">
                     <EyeOff size={14} />
-                    <span>Yopiq (Private)</span>
+                    <span>{t("settings.tabs.privacy.privateProfile")}</span>
                   </div>
-                  <p className="text-[10px] text-slate-400">Faqat siz tasdiqlagan obunachilar ko'ra oladi</p>
+                  <p className="text-[10px] text-slate-400">{t("settings.tabs.privacy.privateDesc")}</p>
                 </button>
               </div>
             </div>
@@ -1127,17 +1124,17 @@ export default function SettingsPage() {
             <div className="p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                  Xabar yuborish huquqi (Direct Message - DM)
+                  {t("settings.tabs.privacy.dmHeading")}
                 </label>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-medium">
-                  Sozlama saqlanadi
+                  {t("settings.savedNotice")}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {[
-                  { id: "everyone", label: "Hamma", hint: "Barcha foydalanuvchilar" },
-                  { id: "followed", label: "Faqat kuzatilganlar", hint: "Siz kuzatayotganlar" },
-                  { id: "nobody", label: "Hech kim", hint: "Xabarlar yopilgan" },
+                  { id: "everyone", label: t("settings.tabs.privacy.dmEveryone"), hint: t("settings.tabs.privacy.dmEveryoneDesc") },
+                  { id: "followed", label: t("settings.tabs.privacy.dmFollowed"), hint: t("settings.tabs.privacy.dmFollowedDesc") },
+                  { id: "nobody", label: t("settings.tabs.privacy.dmNobody"), hint: t("settings.tabs.privacy.dmNobodyDesc") },
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -1160,10 +1157,10 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
               <div>
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                  Faollik holati (Online Indicator)
+                  {t("settings.tabs.privacy.onlineHeading")}
                 </span>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Platformada onlayn ekanligingizni ko'rsatuvchi yashil indikatorni yoqish
+                  {t("settings.tabs.privacy.onlineDesc")}
                 </p>
               </div>
               <input
@@ -1178,13 +1175,13 @@ export default function SettingsPage() {
             <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block flex items-center gap-1.5">
                 <UserX size={15} />
-                <span>Qora ro'yxat (Bloklangan foydalanuvchilar)</span>
+                <span>{t("settings.tabs.privacy.blockListHeading")}</span>
               </span>
 
               {loadingBlocks ? (
-                <div className="text-xs text-slate-400 animate-pulse">Yuklanmoqda...</div>
+                <div className="text-xs text-slate-400 animate-pulse">{t("settings.tabs.privacy.loadingBlocks")}</div>
               ) : blockedUsers.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">Bloklangan foydalanuvchilar yo'q.</p>
+                <p className="text-xs text-slate-400 italic">{t("settings.tabs.privacy.noBlockedUsers")}</p>
               ) : (
                 <div className="space-y-2">
                   {blockedUsers.map((u) => (
@@ -1206,9 +1203,9 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => handleUnblockUser(u.id)}
-                        className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium text-[11px]"
+                        className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium text-[11px] cursor-pointer"
                       >
-                        Blokdan chiqarish
+                        {t("settings.tabs.privacy.unblock")}
                       </button>
                     </div>
                   ))}
@@ -1225,10 +1222,10 @@ export default function SettingsPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 size={13} className="animate-spin" />
-                    <span>Saqlanmoqda...</span>
+                    <span>{t("settings.savingChanges")}</span>
                   </>
                 ) : (
-                  <span>Maxfiylikni saqlash</span>
+                  <span>{t("settings.tabs.privacy.savePrivacy")}</span>
                 )}
               </button>
             </div>
@@ -1241,10 +1238,10 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <Lock size={16} />
-                <span>3. Xavfsizlik sozlamalari (Security)</span>
+                <span>{t("settings.tabs.security.heading")}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Parolni o'zgartirish, 2FA, faol seanslar va hisobni boshqarish
+                {t("settings.tabs.security.subheading")}
               </p>
             </div>
 
@@ -1253,18 +1250,18 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <KeyRound size={15} />
-                  <span>{hasPassword === false ? "Yangi parol o'rnatish" : "Parolni o'zgartirish"}</span>
+                  <span>{hasPassword === false ? t("settings.tabs.security.setPasswordHeading") : t("settings.tabs.security.passwordHeading")}</span>
                 </span>
                 {hasPassword === false && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-800">
-                    Google hisobi
+                    {t("settings.tabs.security.googleAccountBadge")}
                   </span>
                 )}
               </div>
 
               {hasPassword === false && (
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Siz Google orqali ro'yxatdan o'tgansiz. Tizimga login va parol orqali ham to'g'ridan-to'g'ri kirish uchun yangi parol o'rnating.
+                  {t("settings.tabs.security.googleAccountDesc")}
                 </p>
               )}
 
@@ -1272,7 +1269,7 @@ export default function SettingsPage() {
                 {hasPassword !== false && (
                   <div>
                     <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Eski parol
+                      {t("settings.tabs.security.currentPassword")}
                     </label>
                     <input
                       type="password"
@@ -1287,7 +1284,7 @@ export default function SettingsPage() {
 
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    {hasPassword === false ? "Parol" : "Yangi parol"}
+                    {hasPassword === false ? t("settings.tabs.security.passwordLabel") : t("settings.tabs.security.newPassword")}
                   </label>
                   <input
                     type="password"
@@ -1295,14 +1292,14 @@ export default function SettingsPage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     minLength={6}
-                    placeholder="Kamida 6 belgi"
+                    placeholder={t("settings.tabs.security.passwordPlaceholder")}
                     className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    {hasPassword === false ? "Parolni tasdiqlash" : "Yangi parolni tasdiqlash"}
+                    {hasPassword === false ? t("settings.tabs.security.confirmPassword") : t("settings.tabs.security.confirmPassword")}
                   </label>
                   <input
                     type="password"
@@ -1310,7 +1307,7 @@ export default function SettingsPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     minLength={6}
-                    placeholder="Kamida 6 belgi"
+                    placeholder={t("settings.tabs.security.passwordPlaceholder")}
                     className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
                   />
                 </div>
@@ -1323,10 +1320,10 @@ export default function SettingsPage() {
                   className="px-3.5 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer disabled:opacity-50"
                 >
                   {isChangingPassword
-                    ? "Saqlanmoqda..."
+                    ? t("settings.savingChanges")
                     : hasPassword === false
-                    ? "Parol o'rnatish"
-                    : "Parolni yangilash"}
+                    ? t("settings.tabs.security.setPasswordBtn")
+                    : t("settings.tabs.security.savePassword")}
                 </button>
               </div>
             </form>
@@ -1338,14 +1335,14 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                       <ShieldCheck size={15} />
-                      <span>Ikki bosqichli autentifikatsiya (2FA)</span>
+                      <span>{t("settings.tabs.security.twoFactorHeading")}</span>
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-semibold border border-amber-200 dark:border-amber-800">
-                      Rejalashtirilgan
+                      {t("settings.tabs.security.twoFactorPlanned")}
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Google Authenticator yoki SMS orqali qo'shimcha xavfsizlik qatlami
+                    {t("settings.tabs.security.twoFactorDesc")}
                   </p>
                 </div>
                 <input
@@ -1359,7 +1356,7 @@ export default function SettingsPage() {
               {twoFactorEnabled && (
                 <div className="pt-2 flex items-center gap-3 border-t border-slate-200 dark:border-slate-700">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Usul:
+                    {t("settings.tabs.security.twoFactorMethod")}
                   </label>
                   <label className="inline-flex items-center gap-1.5 text-xs cursor-pointer">
                     <input
@@ -1368,7 +1365,7 @@ export default function SettingsPage() {
                       checked={twoFactorType === "authenticator"}
                       onChange={() => handleToggle2FA(true, "authenticator")}
                     />
-                    <span>Google Authenticator</span>
+                    <span>{t("settings.tabs.security.twoFactorApp")}</span>
                   </label>
                   <label className="inline-flex items-center gap-1.5 text-xs cursor-pointer">
                     <input
@@ -1377,7 +1374,7 @@ export default function SettingsPage() {
                       checked={twoFactorType === "sms"}
                       onChange={() => handleToggle2FA(true, "sms")}
                     />
-                    <span>SMS kodi</span>
+                    <span>{t("settings.tabs.security.twoFactorSms")}</span>
                   </label>
                 </div>
               )}
@@ -1388,21 +1385,21 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <Smartphone size={15} />
-                  <span>Faol seanslar (Active Sessions)</span>
+                  <span>{t("settings.tabs.security.sessionsHeading")}</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => handleTerminateSession()}
                   className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
                 >
-                  Barcha boshqa qurilmalardan chiqish
+                  {t("settings.tabs.security.terminateAllOther")}
                 </button>
               </div>
 
               {loadingSessions ? (
-                <div className="text-xs text-slate-400 animate-pulse">Seanslar yuklanmoqda...</div>
+                <div className="text-xs text-slate-400 animate-pulse">{t("settings.tabs.security.loadingSessions")}</div>
               ) : activeSessions.length === 0 ? (
-                <div className="text-xs text-slate-400">Ayni vaqtda 1 ta faol seans mavjud.</div>
+                <div className="text-xs text-slate-400">{t("settings.tabs.security.singleSession")}</div>
               ) : (
                 <div className="space-y-2">
                   {activeSessions.map((s) => (
@@ -1415,7 +1412,7 @@ export default function SettingsPage() {
                           <span>{s.deviceName}</span>
                           {s.isCurrent && (
                             <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
-                              Hozirgi seans
+                              {t("settings.tabs.security.currentSessionBadge")}
                             </span>
                           )}
                         </div>
@@ -1428,9 +1425,9 @@ export default function SettingsPage() {
                         <button
                           type="button"
                           onClick={() => handleTerminateSession(s.id)}
-                          className="px-2 py-1 rounded text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 text-[11px] font-semibold"
+                          className="px-2 py-1 rounded text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 text-[11px] font-semibold cursor-pointer"
                         >
-                          Chiqarish
+                          {t("settings.tabs.security.terminateSessionBtn")}
                         </button>
                       )}
                     </div>
@@ -1442,10 +1439,10 @@ export default function SettingsPage() {
             {/* Account Management: Deactivate & Delete */}
             <div className="p-4 rounded-lg border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 space-y-3">
               <span className="text-xs font-bold text-rose-700 dark:text-rose-400 block">
-                Hisobni boshqarish
+                {t("settings.tabs.security.dangerZoneHeading")}
               </span>
               <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                Hisobingizni vaqtincha muzlatib qo'yishingiz yoki platformadan butunlay o'chirib tashlashingiz mumkin.
+                {t("settings.tabs.security.dangerZoneDesc")}
               </p>
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button
@@ -1453,14 +1450,14 @@ export default function SettingsPage() {
                   onClick={() => setShowDeactivateModal(true)}
                   className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold cursor-pointer"
                 >
-                  Hisobni vaqtincha muzlatish
+                  {t("settings.tabs.security.deactivateBtn")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
                   className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold cursor-pointer"
                 >
-                  Hisobni butunlay o'chirish
+                  {t("settings.tabs.security.deleteBtn")}
                 </button>
               </div>
             </div>
@@ -1473,24 +1470,24 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <Bell size={16} />
-                <span>4. Bildirishnomalar (Notifications)</span>
+                <span>{t("settings.tabs.notifications.heading")}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Push, Veb va Email bildirishnomalarini alohida sozlang
+                {t("settings.tabs.notifications.subheading")}
               </p>
             </div>
 
             {/* Push & Web */}
             <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                Push va Veb xabarnomalar
+                {t("settings.tabs.notifications.pushHeading")}
               </span>
 
               <div className="space-y-2 text-xs">
                 <label className="flex items-center justify-between cursor-pointer p-1">
                   <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                     <Heart size={14} className="text-rose-500" />
-                    <span>Layklar (Likes)</span>
+                    <span>{t("settings.tabs.notifications.likes")}</span>
                   </span>
                   <input
                     type="checkbox"
@@ -1503,7 +1500,7 @@ export default function SettingsPage() {
                 <label className="flex items-center justify-between cursor-pointer p-1">
                   <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                     <MessageSquare size={14} className="text-blue-500" />
-                    <span>Izohlar va Javoblar (Comments)</span>
+                    <span>{t("settings.tabs.notifications.comments")}</span>
                   </span>
                   <input
                     type="checkbox"
@@ -1516,7 +1513,7 @@ export default function SettingsPage() {
                 <label className="flex items-center justify-between cursor-pointer p-1">
                   <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                     <Share2 size={14} className="text-emerald-500" />
-                    <span>Ulashishlar (Shares)</span>
+                    <span>{t("settings.tabs.notifications.shares")}</span>
                   </span>
                   <input
                     type="checkbox"
@@ -1529,7 +1526,7 @@ export default function SettingsPage() {
                 <label className="flex items-center justify-between cursor-pointer p-1">
                   <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                     <UserPlus size={14} className="text-purple-500" />
-                    <span>Yangi obunachilar (Followers)</span>
+                    <span>{t("settings.tabs.notifications.followers")}</span>
                   </span>
                   <input
                     type="checkbox"
@@ -1542,7 +1539,7 @@ export default function SettingsPage() {
                 <label className="flex items-center justify-between cursor-pointer p-1">
                   <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                     <AtSign size={14} className="text-amber-500" />
-                    <span>Eslatib o'tishlar (Mentions)</span>
+                    <span>{t("settings.tabs.notifications.mentions")}</span>
                   </span>
                   <input
                     type="checkbox"
@@ -1558,13 +1555,13 @@ export default function SettingsPage() {
             <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block flex items-center gap-1.5">
                 <Mail size={15} />
-                <span>Email xabarnomalar</span>
+                <span>{t("settings.tabs.notifications.emailHeading")}</span>
               </span>
 
               <div className="space-y-2 text-xs">
                 <label className="flex items-center justify-between cursor-pointer p-1">
                   <span className="text-slate-700 dark:text-slate-300">
-                    Haftalik dayjestlar (Top muammolar va startaplar)
+                    {t("settings.tabs.notifications.emailDigest")}
                   </span>
                   <input
                     type="checkbox"
@@ -1576,7 +1573,7 @@ export default function SettingsPage() {
 
                 <label className="flex items-center justify-between cursor-pointer p-1">
                   <span className="text-slate-700 dark:text-slate-300">
-                    Muhim xavfsizlik ogohlantirishlari va kirishlar
+                    {t("settings.tabs.notifications.emailSecurity")}
                   </span>
                   <input
                     type="checkbox"
@@ -1598,10 +1595,10 @@ export default function SettingsPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 size={13} className="animate-spin" />
-                    <span>Saqlanmoqda...</span>
+                    <span>{t("settings.savingChanges")}</span>
                   </>
                 ) : (
-                  <span>Bildirishnomalarni saqlash</span>
+                  <span>{t("settings.tabs.notifications.saveNotifications")}</span>
                 )}
               </button>
             </div>
@@ -1614,24 +1611,24 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <Monitor size={16} />
-                <span>5. Interfeys va Tizim (Interface & System)</span>
+                <span>{t("settings.tabs.system.heading")}</span>
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Mavzu rejimlari, til/alifbo va GDPR ma'lumotlarni eksport qilish
+                {t("settings.tabs.system.subheading")}
               </p>
             </div>
 
             {/* Theme Selector */}
             <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                Mavzu rejimi (Theme)
+                {t("settings.tabs.system.themeHeading")}
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {[
-                  { id: "light", label: "Kunduzgi (Light)", icon: Sun },
-                  { id: "dark", label: "Tungi (Dark)", icon: Moon },
-                  { id: "system", label: "Tizim sozlamalari (System)", icon: Laptop },
+                  { id: "light", label: t("settings.tabs.system.themeLight"), icon: Sun },
+                  { id: "dark", label: t("settings.tabs.system.themeDark"), icon: Moon },
+                  { id: "system", label: t("settings.tabs.system.themeSystem"), icon: Laptop },
                 ].map((th) => {
                   const IconComp = th.icon;
                   const isSel = theme === th.id;
@@ -1657,7 +1654,7 @@ export default function SettingsPage() {
             {/* Language & Alphabet */}
             <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-4">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-                Platforma Tili va Alifbosi
+                {t("settings.tabs.system.languageHeading")}
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -1699,8 +1696,8 @@ export default function SettingsPage() {
                         setAlphabet(alph);
                         toast.success(
                           alph === "cyrillic"
-                            ? "Кирилл алифбоси танланди"
-                            : "Lotin alifbosi tanlandi"
+                            ? t("settings.tabs.system.cyrillicSelected")
+                            : t("settings.tabs.system.latinSelected")
                         );
                       }}
                       className={`p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-colors ${
@@ -1720,10 +1717,10 @@ export default function SettingsPage() {
             <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block flex items-center gap-1.5">
                 <Download size={15} />
-                <span>Ma'lumotlarni eksport qilish (GDPR Archive)</span>
+                <span>{t("settings.tabs.system.exportHeading")}</span>
               </span>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                Platformadagi barcha postlaringiz, izohlaringiz, muammolaringiz va profillaringizni arxiv JSON fayli ko'rinishida yuklab oling.
+                {t("settings.tabs.system.exportDesc")}
               </p>
 
               <div>
@@ -1736,12 +1733,12 @@ export default function SettingsPage() {
                   {isExporting ? (
                     <>
                       <Loader2 size={13} className="animate-spin" />
-                      <span>Eksport qilinmoqda...</span>
+                      <span>{t("settings.tabs.system.exportingBtn")}</span>
                     </>
                   ) : (
                     <>
                       <Download size={13} />
-                      <span>Arxivni yuklab olish (JSON)</span>
+                      <span>{t("settings.tabs.system.exportBtn")}</span>
                     </>
                   )}
                 </button>

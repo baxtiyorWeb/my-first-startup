@@ -57,7 +57,7 @@ function ProfileContent() {
     if (!currentHandle) {
       if (isLoaded && !session.isAuthenticated && !rawHandle) {
         setIsLoading(false);
-        setError("Profilni ko'rish uchun tizimga kiring");
+        setError(t("profile.loginRequired"));
       }
       return;
     }
@@ -155,7 +155,7 @@ function ProfileContent() {
   const handleFollowToggle = async () => {
     if (!profile) return;
     if (isSelf) {
-      toast.error("O‘zingizni kuzata olmaysiz");
+      toast.error(t("profile.cannotFollowSelf"));
       return;
     }
     try {

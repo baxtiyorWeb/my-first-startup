@@ -57,42 +57,42 @@ export function ProfileMenuModal({ isOpen, onClose }: ProfileMenuModalProps) {
       label: t("nav.bookmarks") || "Saqlanganlar",
       href: "/dashboard/bookmarks",
       icon: Bookmark,
-      desc: "Keyinroq o‘qish uchun saqlangan postlar",
+      desc: t("profile.menu.bookmarksDesc"),
     },
     {
       label: t("nav.settings") || "Sozlamalar",
       href: "/dashboard/settings",
       icon: Settings,
-      desc: "Profil, maxfiylik va bildirishnomalar",
+      desc: t("profile.menu.settingsDesc"),
     },
     ...(isAdminAllowed
       ? [
           {
-            label: "Admin panel",
+            label: t("profile.menu.adminPanel"),
             href: "/dashboard/admin",
             icon: Shield,
-            desc: "Platforma tahlili, foydalanuvchilar va botlar",
+            desc: t("profile.menu.adminDesc"),
             badge: "Admin",
           },
         ]
       : []),
     {
-      label: "Foydalanish qoidalari",
+      label: t("profile.menu.guidelines"),
       href: "/guidelines",
       icon: FileText,
-      desc: "Hamjamiyat me’yorlari va etika",
+      desc: t("profile.menu.guidelinesDesc"),
     },
     {
-      label: "Yordam markazi",
+      label: t("profile.menu.help"),
       href: "/help",
       icon: HelpCircle,
-      desc: "Savol-javoblar va qo‘llab-quvvatlash",
+      desc: t("profile.menu.helpDesc"),
     },
     {
-      label: "Maxfiylik siyosati",
+      label: t("profile.menu.privacy"),
       href: "/privacy",
       icon: Lock,
-      desc: "Ma’lumotlar xavfsizligi",
+      desc: t("profile.menu.privacyDesc"),
     },
   ];
 
@@ -121,14 +121,14 @@ export function ProfileMenuModal({ isOpen, onClose }: ProfileMenuModalProps) {
                 id="profile-menu-title"
                 className="text-sm sm:text-base font-bold text-slate-950 dark:text-white tracking-tight"
               >
-                Menyu va Sozlamalar
+                {t("profile.menu.title")}
               </h2>
             </div>
             <button
               type="button"
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-              aria-label="Yopish"
+              aria-label={t("profile.menu.close")}
             >
               <X size={18} />
             </button>
@@ -166,7 +166,7 @@ export function ProfileMenuModal({ isOpen, onClose }: ProfileMenuModalProps) {
             {/* Navigation Options List */}
             <div className="space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-2 block mb-1">
-                Bo‘limlar
+                {t("settings.selectSection")}
               </span>
 
               {navItems.map((item) => {
@@ -208,28 +208,28 @@ export function ProfileMenuModal({ isOpen, onClose }: ProfileMenuModalProps) {
             {/* Preferences (Theme & Language) */}
             <div className="pt-2 border-t border-slate-100 dark:border-white/[0.06] space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-2 block">
-                Sozlamalar
+                {t("nav.settings")}
               </span>
 
               {/* Theme Switcher Row */}
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.04]">
                 <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-800 dark:text-zinc-200">
                   {theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
-                  <span>Mavzu ko‘rinishi</span>
+                  <span>{t("settings.tabs.system.themeHeading")}</span>
                 </div>
                 <button
                   type="button"
                   onClick={toggleTheme}
                   className="px-3 py-1 rounded-lg bg-slate-200 dark:bg-white/[0.08] hover:bg-slate-300 dark:hover:bg-white/[0.12] text-xs font-bold text-slate-800 dark:text-white transition-colors cursor-pointer"
                 >
-                  {theme === "dark" ? "Qorong‘u (Dark)" : "Yorug‘ (Light)"}
+                  {theme === "dark" ? t("settings.tabs.system.themeDark") : t("settings.tabs.system.themeLight")}
                 </button>
               </div>
 
               {/* Language Switcher Row */}
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.04]">
                 <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
-                  Interfeys tili
+                  {t("settings.languageSelectLabel")}
                 </span>
                 <div className="flex items-center bg-slate-200 dark:bg-white/[0.06] rounded-lg p-0.5 text-xs font-bold">
                   {(["uz", "ru", "en"] as const).map((l) => (

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { HeartIcon } from "@/components/icons";
 import type { DiscussionReply } from "@/types/social";
+import { useI18n } from "@/lib/i18n/context";
 
 interface ProfileDiscussionReplyCardProps {
   reply: DiscussionReply;
@@ -12,6 +13,7 @@ interface ProfileDiscussionReplyCardProps {
 export function ProfileDiscussionReplyCard({
   reply,
 }: ProfileDiscussionReplyCardProps) {
+  const { t, localePath } = useI18n();
   const [isLiked, setIsLiked] = useState(reply.isLiked ?? false);
   const [likesCount, setLikesCount] = useState(reply.likesCount);
 
@@ -28,16 +30,16 @@ export function ProfileDiscussionReplyCard({
       <div className="pb-3 border-b border-slate-100 dark:border-slate-800/80 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className="text-[11px] text-slate-400 dark:text-slate-500 block mb-0.5">
-            Muhokamada bildirilgan javob:
+            {t("profile.replyInDiscussion")}
           </span>
           <Link
-            href={`/dashboard?post=${reply.parentPostId}`}
+            href={localePath(`/dashboard/posts/${reply.parentPostId}`)}
             className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-100 hover:underline line-clamp-1"
           >
             «{reply.parentPostTitle}»
           </Link>
           <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 block">
-            Asoschisi: {reply.parentAuthorName} ({reply.parentAuthorHandle})
+            {t("profile.postAuthor")} {reply.parentAuthorName} ({reply.parentAuthorHandle})
           </span>
         </div>
       </div>
@@ -65,7 +67,7 @@ export function ProfileDiscussionReplyCard({
             size={13}
             className={isLiked ? "fill-current stroke-current" : ""}
           />
-          <span className="tabular-nums">{likesCount} ta qo‘llab-quvvatlash</span>
+          <span className="tabular-nums">{likesCount} {t("profile.supportsCount")}</span>
         </button>
 
         <time className="text-slate-400">{reply.createdAt}</time>
