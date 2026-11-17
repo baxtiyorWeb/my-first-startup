@@ -238,14 +238,31 @@ export default async function LocaleHomePage({
         <main className="flex-1">
           {/* Hero Section */}
           <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-32 border-b border-slate-200/80 dark:border-white/10">
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-b from-blue-500/5 via-transparent to-transparent pointer-events-none" />
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
               <div className="text-center max-w-3xl mx-auto space-y-6">
+                {/* Brand Logo */}
+                <div className="flex justify-center">
+                  <div className="relative p-2 rounded-2xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/90 shadow-md shadow-blue-500/10 backdrop-blur-md transition-transform hover:scale-105">
+                    <Image
+                      src="/logo.png"
+                      alt="Geters Brand Logo"
+                      width={64}
+                      height={64}
+                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover"
+                      priority
+                    />
+                  </div>
+                </div>
 
+                <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-950/40 px-3.5 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-400 shadow-xs">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>{heroTexts.badge}</span>
+                </div>
 
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.18]">
                   {heroTexts.titleStart}{" "}
-                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                  <span className="bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                     {heroTexts.titleHighlight}
                   </span>{" "}
                   {heroTexts.titleEnd}
