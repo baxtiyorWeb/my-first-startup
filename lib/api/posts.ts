@@ -11,6 +11,7 @@ export interface PostResponse {
     avatarUrl?: string | null;
     verified: boolean;
     intent?: UserIntent;
+    isFollowing?: boolean;
   };
   title?: string | null;
   content: string;
@@ -49,6 +50,7 @@ export function mapPostResponseToPost(p: PostResponse): Post {
       avatarUrl: p.author.avatarUrl || undefined,
       verified: p.author.verified,
       intent: p.author.intent || "none",
+      isFollowing: Boolean(p.author.isFollowing),
     },
     title: p.title || undefined,
     content: p.content,

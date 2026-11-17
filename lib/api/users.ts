@@ -102,15 +102,25 @@ export async function updateProfile(payload: {
   return mapBackendProfileToUserProfile(res.data);
 }
 
-export async function toggleFollow(handle: string) {
+export async function toggleFollow(handle: string): Promise<{
+  following: boolean;
+  isFollowing: boolean;
+  followersCount: number;
+}> {
   const cleanHandle = handle.replace(/^@/, "");
-  const res = await apiClient<{ following: boolean; followersCount: number }>(
-    `/api/users/${cleanHandle}/follow`,
-    {
-      method: "POST",
-    }
-  );
-  return res.data;
+  const res = await apiClient<{
+    following?: boolean;
+    isFollowing?: boolean;
+    followersCount: number;
+  }>(`/api/users/${cleanHandle}/follow`, {
+    method: "POST",
+  });
+  const following = Boolean(res.data.isFollowing ?? res.data.following);
+  return {
+    following,
+    isFollowing: following,
+    followersCount: res.data.followersCount,
+  };
 }
 
 export const updateMe = updateProfile;

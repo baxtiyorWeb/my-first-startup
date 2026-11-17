@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   UserPlus,
+  UserCheck,
   Edit2,
 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
@@ -149,6 +150,7 @@ function PostDetailInner({
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
 
   // Load post and record view
   useEffect(() => {
@@ -172,6 +174,7 @@ function PostDetailInner({
         if (!isMounted) return;
 
         setPost(postData);
+        setIsFollowingAuthor(Boolean(postData.author.isFollowing));
         setIsLiked(Boolean(postData.isLiked));
         setLikesCount(postData.likesCount);
         setIsSaved(Boolean(postData.isSaved));
@@ -445,7 +448,6 @@ function PostDetailInner({
                   <button
                     type="button"
                     onClick={async () => {
-                      setIsMenuOpen(false);
                       if (!session.isAuthenticated) {
                         toast.info(t("auth.loginRequired") || "Kuzatish uchun tizimga kiring");
                         return;
@@ -454,22 +456,37 @@ function PostDetailInner({
                         toast.error("O‘zingizni kuzata olmaysiz");
                         return;
                       }
+                      const nextState = !isFollowingAuthor;
+                      setIsFollowingAuthor(nextState);
+                      setIsMenuOpen(false);
                       try {
                         const res = await api.users.toggleFollow(post.author.handle);
-                        if (res.following) {
-                          toast.success(`${post.author.name} obunachilaringiz ro‘yxatiga qo‘shildi`);
+                        const following = res.isFollowing ?? res.following;
+                        setIsFollowingAuthor(following);
+                        if (following) {
+                          toast.success(`${post.author.name} obunalaringiz ro‘yxatiga qo‘shildi`);
                         } else {
                           toast.info(`${post.author.name} obunadan chiqarildi`);
                         }
                       } catch (err: unknown) {
+                        setIsFollowingAuthor(!nextState);
                         const msg = err instanceof Error ? err.message : "Kuzatish amalida xatolik yuz berdi";
                         toast.error(msg);
                       }
                     }}
                     className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
                   >
-                    <UserPlus size={14} />
-                    <span>{t("common.follow")}</span>
+                    {isFollowingAuthor ? (
+                      <>
+                        <UserCheck size={14} className="text-slate-600 dark:text-slate-400" />
+                        <span className="font-medium">{t("common.unfollow") || "Kuzatishni to‘xtatish"}</span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus size={14} className="text-slate-500" />
+                        <span>{t("common.follow") || "Kuzatish"}</span>
+                      </>
+                    )}
                   </button>
                 )}
                 <button

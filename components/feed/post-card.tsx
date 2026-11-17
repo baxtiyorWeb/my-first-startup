@@ -9,7 +9,20 @@ import {
   ShareIcon,
   VerifiedBadgeIcon,
 } from "@/components/icons";
-import { MoreHorizontal, Flag, Trash2, Edit2, UserPlus, UserCheck, Link as LinkIcon, Eye, ExternalLink, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MoreHorizontal,
+  Flag,
+  Trash2,
+  Edit2,
+  UserPlus,
+  UserCheck,
+  Link as LinkIcon,
+  Eye,
+  ExternalLink,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import type { Post } from "@/types/social";
 import { DiscussionDrawer } from "@/components/discussion/discussion-drawer";
@@ -53,16 +66,20 @@ export function PostCard({
   const mediaList: string[] = Array.isArray(post.mediaUrls)
     ? post.mediaUrls
     : typeof (post as any).mediaUrls === "string"
-    ? JSON.parse((post as any).mediaUrls || "[]")
-    : Array.isArray((post as any).media_urls)
-    ? (post as any).media_urls
-    : typeof (post as any).media_urls === "string"
-    ? JSON.parse((post as any).media_urls || "[]")
-    : [];
+      ? JSON.parse((post as any).mediaUrls || "[]")
+      : Array.isArray((post as any).media_urls)
+        ? (post as any).media_urls
+        : typeof (post as any).media_urls === "string"
+          ? JSON.parse((post as any).media_urls || "[]")
+          : [];
 
   // Search highlight & 1.5-second scale pulse state
-  const [prevHighlighted, setPrevHighlighted] = useState(isHighlighted ?? false);
-  const [highlightActive, setHighlightActive] = useState(isHighlighted ?? false);
+  const [prevHighlighted, setPrevHighlighted] = useState(
+    isHighlighted ?? false,
+  );
+  const [highlightActive, setHighlightActive] = useState(
+    isHighlighted ?? false,
+  );
   const [activeSearchQuery, setActiveSearchQuery] = useState(searchQuery || "");
 
   if (prevHighlighted !== (isHighlighted ?? false)) {
@@ -103,7 +120,7 @@ export function PostCard({
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [isFollowingAuthor, setIsFollowingAuthor] = useState(
-    Boolean(post.author.isFollowing)
+    Boolean(post.author.isFollowing),
   );
 
   useEffect(() => {
@@ -172,7 +189,9 @@ export function PostCard({
     setIsMenuOpen(false);
   };
 
-  const authorProfileHref = localePath(`/dashboard/profile?user=${encodeURIComponent(post.author.handle)}`);
+  const authorProfileHref = localePath(
+    `/dashboard/profile?user=${encodeURIComponent(post.author.handle)}`,
+  );
   const isOwnPost = isSameUser(session.user, post.author);
 
   const handleToggleFollow = async (e: React.MouseEvent) => {
@@ -193,15 +212,21 @@ export function PostCard({
 
     try {
       const res = await api.users.toggleFollow(post.author.handle);
-      setIsFollowingAuthor(res.following);
-      if (res.following) {
-        toast.success(`${post.author.name} obunachilaringiz ro‘yxatiga qo‘shildi`);
+      const following = res.isFollowing ?? res.following;
+      setIsFollowingAuthor(following);
+      if (following) {
+        toast.success(
+          `${post.author.name} obunalaringiz ro‘yxatiga qo‘shildi`,
+        );
       } else {
         toast.info(`${post.author.name} obunadan chiqarildi`);
       }
     } catch (err: unknown) {
       setIsFollowingAuthor(!nextState);
-      const msg = err instanceof Error ? err.message : "Kuzatish amalida xatolik yuz berdi";
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Kuzatish amalida xatolik yuz berdi";
       toast.error(msg);
     }
   };
@@ -262,7 +287,10 @@ export function PostCard({
                 </Link>
                 {post.author.verified && (
                   <span title={t("common.verifiedAuthor")}>
-                    <VerifiedBadgeIcon size={14} className="text-slate-900 dark:text-slate-100 shrink-0" />
+                    <VerifiedBadgeIcon
+                      size={14}
+                      className="text-slate-900 dark:text-slate-100 shrink-0"
+                    />
                   </span>
                 )}
                 <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
@@ -275,10 +303,14 @@ export function PostCard({
                 </p>
                 {post.author.intent && post.author.intent !== "none" && (
                   <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
-                    {post.author.intent === "looking_for_cofounder" && t("intents.badge_cofounder")}
-                    {post.author.intent === "open_to_work" && t("intents.badge_open_to_work")}
-                    {post.author.intent === "raising_funds" && t("intents.badge_raising")}
-                    {post.author.intent === "open_to_advisory" && t("intents.badge_advisory")}
+                    {post.author.intent === "looking_for_cofounder" &&
+                      t("intents.badge_cofounder")}
+                    {post.author.intent === "open_to_work" &&
+                      t("intents.badge_open_to_work")}
+                    {post.author.intent === "raising_funds" &&
+                      t("intents.badge_raising")}
+                    {post.author.intent === "open_to_advisory" &&
+                      t("intents.badge_advisory")}
                   </span>
                 )}
               </div>
@@ -400,8 +432,15 @@ export function PostCard({
             </Link>
           )}
           <div className="relative">
-            <div className={!isContentExpanded ? "line-clamp-4 overflow-hidden" : ""}>
-              <Link href={localePath(`/dashboard/posts/${post.id}`)} className="block group">
+            <div
+              className={
+                !isContentExpanded ? "line-clamp-4 overflow-hidden" : ""
+              }
+            >
+              <Link
+                href={localePath(`/dashboard/posts/${post.id}`)}
+                className="block group"
+              >
                 <RichContent
                   content={currentContent}
                   searchQuery={activeSearchQuery}
@@ -411,7 +450,8 @@ export function PostCard({
             </div>
 
             {/* Read more toggle for posts longer than 4 lines or 200 chars */}
-            {(currentContent.length > 200 || (currentContent.match(/\n/g) || []).length >= 3) && (
+            {(currentContent.length > 200 ||
+              (currentContent.match(/\n/g) || []).length >= 3) && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -426,45 +466,128 @@ export function PostCard({
             )}
           </div>
 
-          {/* Post Media Attachments (up to 3 images) */}
+          {/* Post Media Attachments — Instagram-style responsive grid */}
           {mediaList.length > 0 && (
-            <div
-              className={`mt-2.5 w-full sm:max-w-[540px] grid gap-2 overflow-hidden rounded-xl ${
-                mediaList.length === 1
-                  ? "grid-cols-1"
-                  : mediaList.length === 2
-                  ? "grid-cols-2"
-                  : "grid-cols-3"
-              }`}
-            >
-              {mediaList.map((url, idx) => (
+            <div className="mt-2.5 w-full overflow-hidden rounded-xl">
+              {mediaList.length === 1 ? (
+                /* Single image: fills the block width, natural aspect ratio capped */
                 <div
-                  key={idx}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setLightboxIndex(idx);
+                    setLightboxIndex(0);
                   }}
-                  className={`group/media relative w-full overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in ${
-                    mediaList.length === 1
-                      ? "aspect-video sm:aspect-auto sm:h-64 sm:max-h-64"
-                      : mediaList.length === 2
-                      ? "aspect-[4/3] sm:aspect-auto sm:h-48"
-                      : "aspect-square sm:aspect-auto sm:h-40"
-                  }`}
+                  className="group/media relative w-full rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={url}
-                    alt={post.title || `Attachment ${idx + 1}`}
+                    src={mediaList[0]}
+                    alt={post.title || "Attachment 1"}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
+                    className="w-full h-auto max-h-[280px] object-contain block transition-transform duration-300 transform-gpu group-hover/media:scale-[1.02]"
                   />
-
-                  {/* Hover interaction overlay */}
-                  <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
+                  <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none rounded-xl" />
                 </div>
-              ))}
+              ) : mediaList.length === 2 ? (
+                /* Two images: equal-width columns, square-ish cells */
+                <div className="grid grid-cols-2 gap-1.5">
+                  {mediaList.map((url, idx) => (
+                    <div
+                      key={idx}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setLightboxIndex(idx);
+                      }}
+                      className="group/media relative w-full aspect-[4/3] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={post.title || `Attachment ${idx + 1}`}
+                        loading="lazy"
+                        className="w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
+                      />
+                      <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+              ) : mediaList.length === 3 ? (
+                /* Three images: large left + two stacked right (Instagram 3-layout) */
+                <div className="grid grid-cols-2 gap-1.5">
+                  {/* Left — tall primary image */}
+                  <div
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setLightboxIndex(0);
+                    }}
+                    className="group/media relative row-span-2 aspect-[4/5] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={mediaList[0]}
+                      alt={post.title || "Attachment 1"}
+                      loading="lazy"
+                      className="w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
+                    />
+                    <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
+                  </div>
+                  {/* Right column — two square cells */}
+                  {[1, 2].map((idx) => (
+                    <div
+                      key={idx}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setLightboxIndex(idx);
+                      }}
+                      className="group/media relative aspect-[4/3] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={mediaList[idx]}
+                        alt={post.title || `Attachment ${idx + 1}`}
+                        loading="lazy"
+                        className="w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
+                      />
+                      <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* 4+ images: 2×2 grid, last cell shows "+N more" overlay */
+                <div className="grid grid-cols-2 gap-1.5">
+                  {mediaList.slice(0, 4).map((url, idx) => (
+                    <div
+                      key={idx}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setLightboxIndex(idx);
+                      }}
+                      className="group/media relative aspect-[4/3] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={post.title || `Attachment ${idx + 1}`}
+                        loading="lazy"
+                        className="w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
+                      />
+                      {/* "+N more" badge on the 4th cell when there are extras */}
+                      {idx === 3 && mediaList.length > 4 && (
+                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 rounded-xl">
+                          <span className="text-white text-lg font-bold">
+                            +{mediaList.length - 4}
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -479,7 +602,13 @@ export function PostCard({
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors shadow-2xs"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>{post.projectUrl.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]}</span>
+                <span>
+                  {
+                    post.projectUrl
+                      .replace(/^https?:\/\/(www\.)?/, "")
+                      .split("/")[0]
+                  }
+                </span>
               </a>
             </div>
           )}
@@ -520,7 +649,9 @@ export function PostCard({
             >
               <MessageIcon size={15} />
               <span className="tabular-nums">{commentsCount}</span>
-              <span className="hidden sm:inline-block text-[11px] text-slate-400">{t("post.comment")}</span>
+              <span className="hidden sm:inline-block text-[11px] text-slate-400">
+                {t("post.comment")}
+              </span>
             </button>
 
             {/* Views Count */}
@@ -538,11 +669,15 @@ export function PostCard({
               onClick={handleShare}
               aria-label={t("common.share")}
               className={`flex items-center gap-1.5 text-xs font-medium cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1 ${
-                isShareActive ? "scale-95 text-slate-900 dark:text-slate-100" : ""
+                isShareActive
+                  ? "scale-95 text-slate-900 dark:text-slate-100"
+                  : ""
               }`}
             >
               <ShareIcon size={15} />
-              <span className="hidden sm:inline-block text-[11px]">{t("common.share")}</span>
+              <span className="hidden sm:inline-block text-[11px]">
+                {t("common.share")}
+              </span>
             </button>
           </div>
 
@@ -663,7 +798,9 @@ export function PostCard({
                 disabled={lightboxIndex === 0}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setLightboxIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
+                  setLightboxIndex((prev) =>
+                    prev !== null && prev > 0 ? prev - 1 : prev,
+                  );
                 }}
                 className="pointer-events-auto p-2.5 rounded-full bg-black/60 hover:bg-black/80 text-white disabled:opacity-30 disabled:pointer-events-none transition-opacity cursor-pointer"
                 aria-label="Previous image"
@@ -676,7 +813,9 @@ export function PostCard({
                 onClick={(e) => {
                   e.stopPropagation();
                   setLightboxIndex((prev) =>
-                    prev !== null && prev < mediaList.length - 1 ? prev + 1 : prev
+                    prev !== null && prev < mediaList.length - 1
+                      ? prev + 1
+                      : prev,
                   );
                 }}
                 className="pointer-events-auto p-2.5 rounded-full bg-black/60 hover:bg-black/80 text-white disabled:opacity-30 disabled:pointer-events-none transition-opacity cursor-pointer"

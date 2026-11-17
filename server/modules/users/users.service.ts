@@ -318,7 +318,7 @@ export async function getProfileByHandle(
 export async function toggleFollow(
   targetHandle: string,
   currentUserId: string
-): Promise<{ isFollowing: boolean; followersCount: number }> {
+): Promise<{ isFollowing: boolean; following: boolean; followersCount: number }> {
   const cleanHandle = targetHandle.startsWith("@") ? targetHandle : `@${targetHandle.trim()}`;
   const unadornedHandle = targetHandle.replace(/^@/, "").trim();
 
@@ -402,6 +402,7 @@ export async function toggleFollow(
 
     return {
       isFollowing,
+      following: isFollowing,
       followersCount: followersRes?.val ?? 0,
     };
   } catch (err) {
