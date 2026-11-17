@@ -24,9 +24,19 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "https://thegogetters.uz";
+
 export const metadata: Metadata = {
-  title: "The Go-getters — Intiluvchan insonlar, o'ziga xos g'oyalar va yangi startaplar tarmog'i",
-  description: "Maqsadi baland tadbirkorlar, dasturchilar, startapchilar va g‘oya egalari uchun ijtimoiy tarmoq",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "The Go-getters — Dasturchilar va Startapchilar Ekotizimi",
+    template: "%s | The Go-getters",
+  },
+  description:
+    "Dasturlash tillari, zamonaviy texnologiyalar, IT lug'ati, cheat sheetlar va dasturchilar uchun nufuzli bilim markazi.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -37,6 +47,31 @@ export const metadata: Metadata = {
     icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "The Go-getters",
+    title: "The Go-getters — Dasturchilar va Startapchilar Ekotizimi",
+    description:
+      "Dasturlash tillari, zamonaviy texnologiyalar, IT lug'ati, cheat sheetlar va dasturchilar uchun nufuzli bilim markazi.",
+    url: SITE_URL,
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "The Go-getters Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    site: "@thegogetters",
+    creator: "@thegogetters",
+    title: "The Go-getters — Dasturchilar va Startapchilar Ekotizimi",
+    description:
+      "Dasturlash tillari, zamonaviy texnologiyalar, IT lug'ati, cheat sheetlar va dasturchilar uchun nufuzli bilim markazi.",
+    images: ["/logo.png"],
   },
 };
 

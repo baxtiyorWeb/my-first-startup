@@ -46,6 +46,19 @@ export async function generateMetadata({
       title,
       description,
       metadataBase: new URL(baseUrl),
+      robots: {
+        index: false,
+        follow: false,
+        nocache: true,
+        googleBot: {
+          index: false,
+          follow: false,
+          noimageindex: true,
+          "max-video-preview": -1,
+          "max-image-preview": "none",
+          "max-snippet": -1,
+        },
+      },
       alternates: {
         canonical: postUrl,
       },
@@ -74,6 +87,10 @@ export async function generateMetadata({
   } catch {
     return {
       title: "The Go-getters — Post",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 }
