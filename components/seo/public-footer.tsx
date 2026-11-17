@@ -59,7 +59,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
                 <Sparkles className="h-4 w-4" />
               </div>
               <span className="text-lg font-bold tracking-tight text-foreground">
-                The Go-getters
+                Geters
               </span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
@@ -151,7 +151,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
         </div>
 
         <div className="mt-8 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-4">
-          <p>© 2026 The Go-getters. {dictionary.allRights}</p>
+          <p>© 2026 Geters.uz. {dictionary.allRights}</p>
           <p className="flex items-center gap-1.5">
             Crafted for high-performance software engineering & SEO excellence.
           </p>

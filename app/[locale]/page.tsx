@@ -37,10 +37,10 @@ export async function generateMetadata({
 
   const title =
     locale === "uz"
-      ? "The Go-getters — Dasturchilar, Texnologiyalar va Startaplar Ekotizimi"
+      ? "Geters — Dasturchilar, Texnologiyalar va Startaplar Ekotizimi"
       : locale === "ru"
-      ? "The Go-getters — Экосистема знаний для разработчиков и стартапов"
-      : "The Go-getters — Premier Knowledge Ecosystem for Developers & Startups";
+      ? "Geters — Экосистема знаний для разработчиков и стартапов"
+      : "Geters — Premier Knowledge Ecosystem for Developers & Startups";
 
   const description = SITE_CONFIG.description[locale];
   const canonicalUrl = getCanonicalUrl("", locale);

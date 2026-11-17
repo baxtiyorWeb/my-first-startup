@@ -27,7 +27,7 @@ export function PublicNavbar() {
           </div>
           <div className="flex flex-col">
             <span className="text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
-              The Go-getters
+              Geters
             </span>
             <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
               Developer Hub

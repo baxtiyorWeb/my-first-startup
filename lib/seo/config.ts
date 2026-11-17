@@ -1,8 +1,8 @@
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
 
 export const SITE_CONFIG = {
-  name: "The Go-getters",
-  shortName: "Go-getters",
+  name: "Geters",
+  shortName: "Geters",
   slogan: {
     uz: "Intiluvchan insonlar, dasturchilar va yangi startaplar tarmog'i",
     ru: "Сообщество разработчиков, стартапов и амбициозных профессионалов",
@@ -16,11 +16,11 @@ export const SITE_CONFIG = {
   url:
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "https://thegogetters.uz",
+    "https://geters.uz",
   social: {
-    twitter: "@thegogetters",
-    telegram: "https://t.me/gogetters_uz",
-    github: "https://github.com/thegogetters",
+    twitter: "@geters_uz",
+    telegram: "https://t.me/geters_uz",
+    github: "https://github.com/geters-uz",
   },
   keywords: {
     uz: [

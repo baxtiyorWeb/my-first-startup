@@ -16,7 +16,7 @@ export function generateOrganizationSchema() {
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
-      email: "support@thegogetters.uz",
+      email: "support@geters.uz",
       availableLanguage: ["Uzbek", "Russian", "English"],
     },
   };

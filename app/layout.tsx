@@ -27,13 +27,13 @@ export const viewport: Viewport = {
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
-  "https://thegogetters.uz";
+  "https://geters.uz";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "The Go-getters — Dasturchilar va Startapchilar Ekotizimi",
-    template: "%s | The Go-getters",
+    default: "Geters — Dasturchilar va Startapchilar Ekotizimi",
+    template: "%s | Geters",
   },
   description:
     "Dasturlash tillari, zamonaviy texnologiyalar, IT lug'ati, cheat sheetlar va dasturchilar uchun nufuzli bilim markazi.",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Go-getters",
+    title: "Geters",
   },
   icons: {
     icon: "/logo.png",
@@ -50,8 +50,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "The Go-getters",
-    title: "The Go-getters — Dasturchilar va Startapchilar Ekotizimi",
+    siteName: "Geters",
+    title: "Geters — Dasturchilar va Startapchilar Ekotizimi",
     description:
       "Dasturlash tillari, zamonaviy texnologiyalar, IT lug'ati, cheat sheetlar va dasturchilar uchun nufuzli bilim markazi.",
     url: SITE_URL,
@@ -60,15 +60,15 @@ export const metadata: Metadata = {
         url: "/logo.png",
         width: 512,
         height: 512,
-        alt: "The Go-getters Platform",
+        alt: "Geters Platformasi",
       },
     ],
   },
   twitter: {
     card: "summary",
-    site: "@thegogetters",
-    creator: "@thegogetters",
-    title: "The Go-getters — Dasturchilar va Startapchilar Ekotizimi",
+    site: "@geters_uz",
+    creator: "@geters_uz",
+    title: "Geters — Dasturchilar va Startapchilar Ekotizimi",
     description:
       "Dasturlash tillari, zamonaviy texnologiyalar, IT lug'ati, cheat sheetlar va dasturchilar uchun nufuzli bilim markazi.",
     images: ["/logo.png"],
