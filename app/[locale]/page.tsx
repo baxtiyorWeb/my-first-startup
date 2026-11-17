@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { isValidLocale, type Locale } from "@/lib/i18n/config";
 import { SITE_CONFIG, getCanonicalUrl, getLanguageAlternates } from "@/lib/seo/config";
@@ -18,12 +19,9 @@ import {
   ArrowRight,
   BookOpen,
   Code2,
-  Cpu,
   Layers,
   Sparkles,
   Terminal,
-  Zap,
-  CheckCircle2,
   Users,
 } from "lucide-react";
 
@@ -39,8 +37,8 @@ export async function generateMetadata({
     locale === "uz"
       ? "Geters — Dasturchilar, Texnologiyalar va Startaplar Ekotizimi"
       : locale === "ru"
-      ? "Geters — Экосистема знаний для разработчиков и стартапов"
-      : "Geters — Premier Knowledge Ecosystem for Developers & Startups";
+        ? "Geters — Экосистема знаний для разработчиков и стартапов"
+        : "Geters — Premier Knowledge Ecosystem for Developers & Startups";
 
   const description = SITE_CONFIG.description[locale];
   const canonicalUrl = getCanonicalUrl("", locale);
@@ -65,7 +63,7 @@ export async function generateMetadata({
           url: "/logo.png",
           width: 512,
           height: 512,
-          alt: "The Go-getters Platform",
+          alt: "Geters Platformasi",
         },
       ],
     },
@@ -104,44 +102,44 @@ export default async function LocaleHomePage({
     {
       question:
         typedLocale === "uz"
-          ? "The Go-getters platformasi kimlar uchun mo'ljallangan?"
+          ? "Geters platformasi kimlar uchun mo'ljallangan?"
           : typedLocale === "ru"
-          ? "Для кого создана платформа The Go-getters?"
-          : "Who is The Go-getters platform designed for?",
+            ? "Для кого создана платформа Geters?"
+            : "Who is Geters platform designed for?",
       answer:
         typedLocale === "uz"
           ? "Platforma dasturchilar, startap asoschilari, DevOps muhandislari va texnologiya sohasida yuqori natijalarga intiluvchi mutaxassislar uchun bilim almashish va professional o'sish maydonidir."
           : typedLocale === "ru"
-          ? "Платформа объединяет разработчиков программного обеспечения, основателей IT-стартапов, архитекторов и инженеров для обмена практическим опытом и профессионального роста."
-          : "The platform is engineered for software engineers, startup founders, DevOps specialists, and ambitious tech builders seeking authoritative knowledge and collaborative growth.",
+            ? "Платформа объединяет разработчиков программного обеспечения, основателей IT-стартапов, архитекторов и инженеров для обмена практическим опытом и профессионального роста."
+            : "The platform is engineered for software engineers, startup founders, DevOps specialists, and ambitious tech builders seeking authoritative knowledge and collaborative growth.",
     },
     {
       question:
         typedLocale === "uz"
           ? "Bilimlar bazasi (Knowledge Hub) bepulmi?"
           : typedLocale === "ru"
-          ? "База знаний (Knowledge Hub) бесплатна?"
-          : "Is the Developer Knowledge Hub free to access?",
+            ? "База знаний (Knowledge Hub) бесплатна?"
+            : "Is the Developer Knowledge Hub free to access?",
       answer:
         typedLocale === "uz"
           ? "Ha, barcha texnologiya qo'llanmalari, IT-glossary, cheatsheetlar va intervyu tayyorgarlik materiallari mutlaqo bepul va barcha uchun ochiq."
           : typedLocale === "ru"
-          ? "Да, все технические руководства, шпаргалки, статьи и глоссарий терминов полностью открыты для всех специалистов."
-          : "Yes, all technology deep-dives, cheat sheets, developer glossaries, and interview guides are completely free and open to the global developer community.",
+            ? "Да, все технические руководства, шпаргалки, статьи и глоссарий терминов полностью открыты для всех специалистов."
+            : "Yes, all technology deep-dives, cheat sheets, developer glossaries, and interview guides are completely free and open to the global developer community.",
     },
     {
       question:
         typedLocale === "uz"
           ? "Platformada qanday texnologiyalar yoritilgan?"
           : typedLocale === "ru"
-          ? "Какие технологии освещаются на платформе?"
-          : "Which technologies are covered on the platform?",
+            ? "Какие технологии освещаются на платформе?"
+            : "Which technologies are covered on the platform?",
       answer:
         typedLocale === "uz"
           ? "Next.js 16, React, Python, TypeScript, PostgreSQL, Docker, Git, Linux, Sun'iy intellekt (LLM/Gemini) va System Design yo'nalishlari chuqur tahlil qilingan."
           : typedLocale === "ru"
-          ? "Next.js 16, React, TypeScript, Python, PostgreSQL, Docker, Linux, современные LLM/AI модели и системный дизайн распределенных систем."
-          : "Next.js 16, React 19, TypeScript, Python, PostgreSQL, Docker, Linux, modern AI/LLMs, and scalable distributed system design.",
+            ? "Next.js 16, React, TypeScript, Python, PostgreSQL, Docker, Linux, современные LLM/AI модели и системный дизайн распределенных систем."
+            : "Next.js 16, React 19, TypeScript, Python, PostgreSQL, Docker, Linux, modern AI/LLMs, and scalable distributed system design.",
     },
   ];
 
@@ -156,7 +154,7 @@ export default async function LocaleHomePage({
       titleHighlight: "Zamonaviy Texnologiyalar",
       titleEnd: "Ekotizimi",
       description:
-        "O'zbekiston va jahon dasturchilari uchun professional bilim markazi: eng so'nggi texnologiyalar, IT-lug'at, amaliy cheat sheetlar va texnik intervyu qo'llanmalari.",
+        "O'zbekiston va xalqaro dasturchilar uchun professional bilim markazi: eng so'nggi texnologiyalar, IT-lug'at, amaliy cheat sheetlar va texnik intervyu qo'llanmalari.",
       exploreHub: "Bilimlar Hubiga O'tish",
       joinCommunity: "Hamjamiyatga Qo'shilish",
       techHeading: "Zamonaviy Texnologiyalar Katalogi",
@@ -169,7 +167,7 @@ export default async function LocaleHomePage({
       interviewsSub: "Junior'dan Senior'gacha: real intervyu savollari va tahlillari",
       faqHeading: "Ko'p So'raladigan Savollar",
       ctaTitle: "O'z bilimlaringizni yangi bosqichga olib chiqing",
-      ctaSub: "Go-getters platformasiga qo'shiling, tajriba almashing va loyihalaringizni kengaytiring.",
+      ctaSub: "Geters platformasiga qo'shiling, tajriba almashing va loyihalaringizni kengaytiring.",
       ctaBtn: "Bepul Ro'yxatdan O'tish",
     },
     ru: {
@@ -191,7 +189,7 @@ export default async function LocaleHomePage({
       interviewsSub: "От Junior до Senior: реальные технические вопросы с разбором",
       faqHeading: "Часто задаваемые вопросы",
       ctaTitle: "Выведите свои инженерные навыки на новый уровень",
-      ctaSub: "Присоединяйтесь к Go-getters, делитесь идеями и масштабируйте стартапы.",
+      ctaSub: "Присоединяйтесь к Geters, делитесь идеями и масштабируйте стартапы.",
       ctaBtn: "Создать аккаунт бесплатно",
     },
     en: {
@@ -213,7 +211,7 @@ export default async function LocaleHomePage({
       interviewsSub: "From Junior to Staff: rigorous technical questions and architecture trade-offs",
       faqHeading: "Frequently Asked Questions",
       ctaTitle: "Elevate your software engineering craft today",
-      ctaSub: "Join thousands of ambitious developers, showcase ideas, and scale products on Go-getters.",
+      ctaSub: "Join thousands of ambitious developers, showcase ideas, and scale products on Geters.",
       ctaBtn: "Get Started Free",
     },
   }[typedLocale];
@@ -234,36 +232,33 @@ export default async function LocaleHomePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <div className="min-h-screen flex flex-col bg-slate-50/60 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors">
         <PublicNavbar />
 
         <main className="flex-1">
           {/* Hero Section */}
-          <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-32 border-b border-border/50">
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+          <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-32 border-b border-slate-200/80 dark:border-white/10">
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-transparent pointer-events-none" />
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
               <div className="text-center max-w-3xl mx-auto space-y-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>{heroTexts.badge}</span>
-                </div>
 
-                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.15]">
+
+                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.18]">
                   {heroTexts.titleStart}{" "}
-                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                     {heroTexts.titleHighlight}
                   </span>{" "}
                   {heroTexts.titleEnd}
                 </h1>
 
-                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                <p className="text-base sm:text-lg text-slate-600 dark:text-zinc-300 leading-relaxed font-normal max-w-2xl mx-auto">
                   {heroTexts.description}
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                   <Link
                     href={`/${locale}/hub`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-95 transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02]"
                   >
                     <Layers className="h-4 w-4" />
                     <span>{heroTexts.exploreHub}</span>
@@ -272,9 +267,9 @@ export default async function LocaleHomePage({
 
                   <Link
                     href={`/${locale}/dashboard`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-xl border border-border bg-card/60 hover:bg-card text-foreground transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-900/80 hover:bg-slate-50 dark:hover:bg-zinc-850 text-slate-900 dark:text-white shadow-xs transition-all"
                   >
-                    <Users className="h-4 w-4 text-primary" />
+                    <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     <span>{heroTexts.joinCommunity}</span>
                   </Link>
                 </div>
@@ -283,20 +278,20 @@ export default async function LocaleHomePage({
           </section>
 
           {/* Section 1: Technologies & Frameworks */}
-          <section className="py-16 md:py-24 border-b border-border/50">
+          <section className="py-16 md:py-24 border-b border-slate-200/80 dark:border-white/10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     {heroTexts.techHeading}
                   </h2>
-                  <p className="text-sm text-muted-foreground mt-1.5">
+                  <p className="text-sm text-slate-600 dark:text-zinc-400 mt-1.5 font-normal">
                     {heroTexts.techSub}
                   </p>
                 </div>
                 <Link
                   href={`/${locale}/hub`}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   <span>Barchasini ko‘rish</span>
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -308,24 +303,24 @@ export default async function LocaleHomePage({
                   <Link
                     key={topic.slug}
                     href={`/${locale}/hub/${topic.slug}`}
-                    className="group relative flex flex-col justify-between p-6 rounded-2xl border border-border/70 bg-card/50 hover:bg-card hover:border-primary/40 hover:shadow-lg transition-all"
+                    className="group relative flex flex-col justify-between p-6 rounded-2xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 hover:shadow-lg dark:hover:bg-zinc-900/80 transition-all"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-3xl">{topic.icon}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300">
                           {topic.category}
                         </span>
                       </div>
-                      <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {topic.title[typedLocale]}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-2 line-clamp-3 leading-relaxed">
+                      <p className="text-xs text-slate-600 dark:text-zinc-300 mt-2.5 line-clamp-3 leading-relaxed">
                         {topic.shortDescription[typedLocale]}
                       </p>
                     </div>
 
-                    <div className="mt-5 flex items-center gap-1 text-xs font-semibold text-primary">
+                    <div className="mt-5 flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
                       <span>Batafsil o‘qish</span>
                       <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                     </div>
@@ -336,20 +331,20 @@ export default async function LocaleHomePage({
           </section>
 
           {/* Section 2: Developer Glossary */}
-          <section className="py-16 md:py-24 bg-card/20 border-b border-border/50">
+          <section className="py-16 md:py-24 bg-slate-100/50 dark:bg-zinc-950/40 border-b border-slate-200/80 dark:border-white/10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     {heroTexts.glossaryHeading}
                   </h2>
-                  <p className="text-sm text-muted-foreground mt-1.5">
+                  <p className="text-sm text-slate-600 dark:text-zinc-400 mt-1.5 font-normal">
                     {heroTexts.glossarySub}
                   </p>
                 </div>
                 <Link
                   href={`/${locale}/glossary`}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   <span>Lug‘atga o‘tish</span>
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -361,23 +356,23 @@ export default async function LocaleHomePage({
                   <Link
                     key={item.slug}
                     href={`/${locale}/glossary/${item.slug}`}
-                    className="p-5 rounded-2xl border border-border/70 bg-card/60 hover:bg-card hover:border-primary/40 hover:shadow-md transition-all flex flex-col justify-between"
+                    className="p-5 rounded-2xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 hover:shadow-md transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                           {item.category}
                         </span>
-                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        <BookOpen className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
                       </div>
-                      <h3 className="text-sm font-bold text-foreground">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                         {item.term[typedLocale]}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-2 line-clamp-3 leading-relaxed">
+                      <p className="text-xs text-slate-600 dark:text-zinc-300 mt-2 line-clamp-3 leading-relaxed">
                         {item.shortDefinition[typedLocale]}
                       </p>
                     </div>
-                    <div className="mt-4 flex items-center gap-1 text-xs font-medium text-primary">
+                    <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
                       <span>Ta'rif & Misol</span>
                       <ArrowRight className="h-3 w-3" />
                     </div>
@@ -388,23 +383,23 @@ export default async function LocaleHomePage({
           </section>
 
           {/* Section 3: Cheatsheets & Interview */}
-          <section className="py-16 md:py-24 border-b border-border/50">
+          <section className="py-16 md:py-24 border-b border-slate-200/80 dark:border-white/10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 {/* Cheatsheets */}
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+                      <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                         {heroTexts.cheatsheetsHeading}
                       </h2>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1 font-normal">
                         {heroTexts.cheatsheetsSub}
                       </p>
                     </div>
                     <Link
                       href={`/${locale}/cheatsheets`}
-                      className="text-xs font-semibold text-primary hover:underline"
+                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                     >
                       Barchasi
                     </Link>
@@ -415,22 +410,22 @@ export default async function LocaleHomePage({
                       <Link
                         key={sheet.slug}
                         href={`/${locale}/cheatsheets/${sheet.slug}`}
-                        className="flex items-center justify-between p-4 rounded-xl border border-border/70 bg-card/50 hover:bg-card hover:border-primary/40 transition-all"
+                        className="flex items-center justify-between p-4 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 shadow-2xs hover:shadow-sm transition-all"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
                             <Terminal className="h-5 w-5" />
                           </div>
                           <div>
-                            <h3 className="text-xs font-bold text-foreground">
+                            <h3 className="text-xs font-bold text-slate-900 dark:text-white">
                               {sheet.title[typedLocale]}
                             </h3>
-                            <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                            <p className="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-1 mt-0.5">
                               {sheet.shortDescription[typedLocale]}
                             </p>
                           </div>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        <ArrowRight className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
                       </Link>
                     ))}
                   </div>
@@ -440,16 +435,16 @@ export default async function LocaleHomePage({
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+                      <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                         {heroTexts.interviewsHeading}
                       </h2>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1 font-normal">
                         {heroTexts.interviewsSub}
                       </p>
                     </div>
                     <Link
                       href={`/${locale}/interview-prep`}
-                      className="text-xs font-semibold text-primary hover:underline"
+                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                     >
                       Barchasi
                     </Link>
@@ -460,22 +455,22 @@ export default async function LocaleHomePage({
                       <Link
                         key={interview.slug}
                         href={`/${locale}/interview-prep/${interview.slug}`}
-                        className="flex items-center justify-between p-4 rounded-xl border border-border/70 bg-card/50 hover:bg-card hover:border-primary/40 transition-all"
+                        className="flex items-center justify-between p-4 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 shadow-2xs hover:shadow-sm transition-all"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
                             <Code2 className="h-5 w-5" />
                           </div>
                           <div>
-                            <h3 className="text-xs font-bold text-foreground">
+                            <h3 className="text-xs font-bold text-slate-900 dark:text-white">
                               {interview.title[typedLocale]}
                             </h3>
-                            <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                            <p className="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-1 mt-0.5">
                               Daraja: {interview.level} • {interview.questions.length} ta savol
                             </p>
                           </div>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        <ArrowRight className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
                       </Link>
                     ))}
                   </div>
@@ -485,21 +480,21 @@ export default async function LocaleHomePage({
           </section>
 
           {/* Section 4: FAQ */}
-          <section className="py-16 md:py-24 border-b border-border/50 bg-card/10">
+          <section className="py-16 md:py-24 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/40 dark:bg-zinc-950/30">
             <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-center mb-10">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white text-center mb-10">
                 {heroTexts.faqHeading}
               </h2>
               <div className="space-y-4">
                 {faqs.map((faq, idx) => (
                   <div
                     key={idx}
-                    className="p-5 rounded-2xl border border-border/70 bg-card/60"
+                    className="p-5 sm:p-6 rounded-2xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/60 shadow-2xs"
                   >
-                    <h3 className="text-sm sm:text-base font-bold text-foreground">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                       {faq.question}
                     </h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-300 mt-2.5 leading-relaxed font-normal">
                       {faq.answer}
                     </p>
                   </div>
@@ -511,24 +506,24 @@ export default async function LocaleHomePage({
           {/* Section 5: CTA */}
           <section className="py-16 md:py-20 relative overflow-hidden">
             <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-              <div className="relative rounded-3xl border border-primary/30 bg-gradient-to-r from-primary/10 via-card to-accent/10 p-8 sm:p-12 text-center shadow-xl">
-                <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground">
+              <div className="relative rounded-3xl border border-slate-200/90 dark:border-white/10 bg-gradient-to-r from-blue-50/70 via-white to-indigo-50/70 dark:from-zinc-900/90 dark:via-black dark:to-zinc-900/90 p-8 sm:p-12 text-center shadow-lg">
+                <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
                   {heroTexts.ctaTitle}
                 </h2>
-                <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto mt-3">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-300 max-w-xl mx-auto mt-3 font-normal leading-relaxed">
                   {heroTexts.ctaSub}
                 </p>
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                   <Link
                     href={`/${locale}/auth/register`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-bold rounded-xl bg-primary text-primary-foreground shadow-md hover:opacity-90 transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
                   >
                     <span>{heroTexts.ctaBtn}</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
                     href={`/${locale}/dashboard`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-semibold rounded-xl border border-border bg-card hover:bg-muted text-foreground transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all"
                   >
                     <span>Dasturchilar Lentasi</span>
                   </Link>

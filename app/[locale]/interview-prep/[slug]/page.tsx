@@ -117,38 +117,38 @@ export default async function InterviewPrepDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <div className="min-h-screen flex flex-col bg-slate-50/60 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors">
         <PublicNavbar />
 
         <main className="flex-1 py-10 md:py-16">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             {/* Breadcrumb nav */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-6">
-              <Link href={`/${locale}`} className="hover:text-foreground">
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 mb-6 font-medium">
+              <Link href={`/${locale}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Asosiy
               </Link>
               <span>/</span>
-              <Link href={`/${locale}/interview-prep`} className="hover:text-foreground">
+              <Link href={`/${locale}/interview-prep`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Intervyu
               </Link>
               <span>/</span>
-              <span className="text-foreground font-semibold">
+              <span className="text-slate-900 dark:text-white font-semibold">
                 {prep.title[typedLocale]}
               </span>
             </div>
 
             {/* Header */}
-            <div className="space-y-4 mb-10 pb-8 border-b border-border/60">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider">
+            <div className="space-y-4 mb-10 pb-8 border-b border-slate-200/80 dark:border-white/10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider">
                 <Code2 className="h-3.5 w-3.5" />
                 <span>{prep.level}</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 {prep.title[typedLocale]}
               </h1>
 
-              <p className="text-base text-muted-foreground leading-relaxed">
+              <p className="text-base text-slate-600 dark:text-zinc-300 leading-relaxed font-normal">
                 {prep.shortDescription[typedLocale]}
               </p>
             </div>
@@ -158,13 +158,13 @@ export default async function InterviewPrepDetailPage({
               {prep.questions.map((q, idx) => (
                 <section
                   key={idx}
-                  className="p-6 sm:p-8 rounded-2xl border border-border/70 bg-card/60 space-y-4"
+                  className="p-6 sm:p-8 rounded-2xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/60 shadow-2xs space-y-4"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 text-xs font-bold shrink-0">
                       {idx + 1}
                     </span>
-                    <h2 className="flex-1 text-base sm:text-lg font-bold text-foreground leading-snug">
+                    <h2 className="flex-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug">
                       {q.question[typedLocale]}
                     </h2>
                     <span
@@ -176,16 +176,16 @@ export default async function InterviewPrepDetailPage({
                     </span>
                   </div>
 
-                  <div className="pt-3 border-t border-border/50 space-y-3">
-                    <div className="text-xs sm:text-sm text-muted-foreground leading-relaxed bg-background/50 p-4 rounded-xl border border-border/40">
-                      <strong className="text-foreground block mb-1">
+                  <div className="pt-3 border-t border-slate-100 dark:border-white/5 space-y-3">
+                    <div className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 leading-relaxed bg-slate-50/70 dark:bg-zinc-900/40 p-4 rounded-xl border border-slate-200/80 dark:border-white/5 font-normal">
+                      <strong className="text-slate-900 dark:text-white block mb-1 font-semibold">
                         Mukammal Javob:
                       </strong>
                       {q.answer[typedLocale]}
                     </div>
 
                     {q.interviewerTips && (
-                      <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300">
+                      <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
                         <Lightbulb className="h-4 w-4 shrink-0 mt-0.5" />
                         <div>
                           <strong>Intervyuyer siri: </strong>
@@ -199,8 +199,8 @@ export default async function InterviewPrepDetailPage({
 
               {/* Related Preps */}
               {relatedPreps.length > 0 && (
-                <section className="space-y-4 pt-6 border-t border-border/60">
-                  <h2 className="text-lg font-bold tracking-tight text-foreground">
+                <section className="space-y-4 pt-6 border-t border-slate-200/80 dark:border-white/10">
+                  <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                     Boshqa Intervyu Qo'llanmalari
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -209,12 +209,12 @@ export default async function InterviewPrepDetailPage({
                         <Link
                           key={rel.slug}
                           href={`/${locale}/interview-prep/${rel.slug}`}
-                          className="p-4 rounded-xl border border-border/70 bg-card/50 hover:bg-card hover:border-primary/40 transition-all flex items-center justify-between"
+                          className="p-4 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 transition-all flex items-center justify-between"
                         >
-                          <span className="text-xs font-bold text-foreground line-clamp-1">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
                             {rel.title[typedLocale]}
                           </span>
-                          <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+                          <ArrowRight className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         </Link>
                       )
                     ))}

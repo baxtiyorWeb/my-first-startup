@@ -1,6 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
 import { type Locale } from "@/lib/i18n/config";
-import { Sparkles } from "lucide-react";
 
 export function PublicFooter({ locale }: { locale: Locale }) {
   const dictionary = {
@@ -49,34 +49,40 @@ export function PublicFooter({ locale }: { locale: Locale }) {
   }[locale];
 
   return (
-    <footer className="border-t border-border/70 bg-card/40 mt-auto">
+    <footer className="border-t border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-black/90 mt-auto transition-colors">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo & Description */}
           <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-                <Sparkles className="h-4 w-4" />
+            <div className="flex items-center gap-2.5">
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden border border-slate-200/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-xs shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Geters Logo"
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <span className="text-lg font-bold tracking-tight text-foreground">
+              <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                 Geters
               </span>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+            <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed max-w-sm font-normal">
               {dictionary.slogan}
             </p>
           </div>
 
           {/* Developer Resources */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               {dictionary.resources}
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
                 <Link
                   href={`/${locale}/hub`}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {dictionary.technologies}
                 </Link>
@@ -84,7 +90,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/glossary`}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {dictionary.glossary}
                 </Link>
@@ -92,7 +98,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/cheatsheets`}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {dictionary.cheatsheets}
                 </Link>
@@ -100,7 +106,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/interview-prep`}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {dictionary.interviews}
                 </Link>
@@ -110,14 +116,14 @@ export function PublicFooter({ locale }: { locale: Locale }) {
 
           {/* Legal & Support */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               {dictionary.legal}
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
                 <Link
                   href={`/${locale}/privacy`}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {dictionary.privacy}
                 </Link>
@@ -125,7 +131,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/terms`}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {dictionary.terms}
                 </Link>
@@ -133,7 +139,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/guidelines`}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {dictionary.guidelines}
                 </Link>
@@ -141,7 +147,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/help`}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-slate-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {dictionary.help}
                 </Link>
@@ -150,7 +156,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-4">
+        <div className="mt-8 pt-8 border-t border-slate-200/80 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-zinc-400 gap-4">
           <p>© 2026 Geters.uz. {dictionary.allRights}</p>
           <p className="flex items-center gap-1.5">
             Crafted for high-performance software engineering & SEO excellence.
