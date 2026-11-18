@@ -36,10 +36,12 @@ function ShellLayoutInner({
   const { activeConversationId } = useMessages();
 
   const isMessagesPage = pathname.includes("/dashboard/messages");
+  const isAdminPage = pathname.includes("/dashboard/admin");
 
   const isAuthRequired =
     pathname.endsWith("/dashboard/create") ||
-    pathname.endsWith("/dashboard/settings");
+    pathname.endsWith("/dashboard/settings") ||
+    isAdminPage;
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -62,6 +64,11 @@ function ShellLayoutInner({
         <div className="w-6 h-6 border-2 border-slate-900 dark:border-slate-100 border-t-transparent rounded-full animate-spin" />
       </div>
     );
+  }
+
+  // Admin pages have their own dedicated sidebar and layout
+  if (isAdminPage) {
+    return <>{children}</>;
   }
 
   return (

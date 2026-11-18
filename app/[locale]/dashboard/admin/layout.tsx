@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import React from "react";
+import { AdminShell } from "@/components/admin/admin-shell";
 
 /**
  * Server-side guard for Admin Panel.
@@ -18,5 +19,5 @@ export default function AdminLayout({
     notFound();
   }
 
-  return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }
