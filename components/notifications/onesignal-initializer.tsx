@@ -22,12 +22,16 @@ export async function promptPushNotification(): Promise<boolean> {
   try {
     let isGranted = false;
 
-    // 1. If OneSignal is active, request through OneSignal
+    // 1. Try OneSignal Slidedown (polite custom UI)
+    if (window.OneSignal?.Slidedown?.promptPush) {
+      await window.OneSignal.Slidedown.promptPush({ force: true }).catch(() => {});
+    }
+
+    // 2. Request native permission through OneSignal or Native Browser API
     if (window.OneSignal?.Notifications && typeof window.OneSignal.Notifications.requestPermission === "function") {
-      await window.OneSignal.Notifications.requestPermission();
+      await window.OneSignal.Notifications.requestPermission().catch(() => {});
       isGranted = window.OneSignal?.Notifications?.permission === "granted";
     } else if (typeof Notification !== "undefined" && typeof Notification.requestPermission === "function") {
-      // 2. Fallback to Native Browser Notification API
       const res = await Notification.requestPermission();
       isGranted = res === "granted";
     }
@@ -123,18 +127,18 @@ export function OneSignalInitializer() {
   const { session } = useAuth();
   const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
 
-  // Politely ask for notification permission on desktop/mobile when authenticated
+  // Politely ask for notification permission on desktop/mobile
   useEffect(() => {
-    if (typeof window === "undefined" || !session.isAuthenticated) return;
+    if (typeof window === "undefined") return;
 
     const timer = setTimeout(() => {
       if (typeof Notification !== "undefined" && Notification.permission === "default") {
         promptPushNotification().catch(() => {});
       }
-    }, 4000);
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [session.isAuthenticated]);
+  }, []);
 
   // 1. One-time SDK initialization (Guarded against Fast Refresh / React StrictMode)
   useEffect(() => {

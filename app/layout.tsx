@@ -95,10 +95,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 await OneSignal.init({
                   appId: "b0efd544-a3b8-4042-af7a-8174027858c8",
                   safari_web_id: "web.onesignal.auto.48cecb45-b9e1-42c4-afaa-e45f7f034833",
+                  allowLocalhostAsSecureOrigin: true,
                   notifyButton: {
                     enable: true,
                   },
                 });
+
+                // Auto-prompt permission if not already decided
+                setTimeout(async function() {
+                  try {
+                    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+                      if (OneSignal.Slidedown && OneSignal.Slidedown.promptPush) {
+                        await OneSignal.Slidedown.promptPush({ force: true });
+                      } else if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
+                        await OneSignal.Notifications.requestPermission();
+                      }
+                    }
+                  } catch (e) {
+                    console.warn("[OneSignal Prompt error]:", e);
+                  }
+                }, 1500);
               });
             `,
           }}
