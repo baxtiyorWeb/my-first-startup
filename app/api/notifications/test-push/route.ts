@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
 
     const result = await sendOneSignalPush(
       [authUser.userId],
-      "The Go-getters 🚀",
-      `Salom, ${authUser.name}! Bu OneSignal orqali yuborilgan sinov xabarnomasi. Tizim to‘liq sozlandi!`,
+      "Geters 🚀",
+      `Salom, ${authUser.name}! Bildirishnoma tizimi muvaffaqiyatli sozlandi.`,
       "/dashboard/notifications"
     );
 

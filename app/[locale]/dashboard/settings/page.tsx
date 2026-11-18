@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/components/theme/theme-context";
 import { generateRandomAvatar } from "@/lib/avatar";
-import { promptPushNotification, getPushPermissionStatus, getPushSubscriptionDetails } from "@/components/notifications/onesignal-initializer";
+import { promptPushNotification, getPushPermissionStatus } from "@/components/notifications/onesignal-initializer";
 import { usePwaInstall } from "@/components/pwa";
 
 function GithubIcon({ size = 14 }: { size?: number }) {
@@ -484,50 +484,32 @@ export default function SettingsPage() {
   };
 
   const { promptInstall, isInstalled } = usePwaInstall();
-  const [isSendingTestPush, setIsSendingTestPush] = useState(false);
   const [pushStatus, setPushStatus] = useState<"default" | "granted" | "denied">("default");
-  const [subDetails, setSubDetails] = useState<{
-    permission: "default" | "granted" | "denied";
-    subscriptionId?: string | null;
-    optedIn: boolean;
-  }>({ permission: "default", optedIn: false });
 
   useEffect(() => {
     setPushStatus(getPushPermissionStatus());
-    setSubDetails(getPushSubscriptionDetails());
     const interval = setInterval(() => {
-      setSubDetails(getPushSubscriptionDetails());
       setPushStatus(getPushPermissionStatus());
-    }, 2000);
+    }, 2500);
     return () => clearInterval(interval);
   }, []);
 
   const handleEnablePush = async () => {
     const granted = await promptPushNotification();
     setPushStatus(granted ? "granted" : "denied");
-    setSubDetails(getPushSubscriptionDetails());
     if (granted) {
-      toast.success("Push bildirishnomalar muvaffaqiyatli yoqildi!");
+      toast.success(
+        locale === "uz"
+          ? "Push bildirishnomalar muvaffaqiyatli yoqildi!"
+          : "Push-уведомления успешно включены!"
+      );
       setPushEnabled(true);
     } else {
-      toast.error("Brauzer bildirishnomalari rad etildi yoki sozlamalarda bloklangan.");
-    }
-  };
-
-  const handleTestPush = async () => {
-    setIsSendingTestPush(true);
-    try {
-      const res = await fetch("/api/notifications/test-push", { method: "POST" });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        toast.success(data.message || "Sinov bildirishnomasi muvaffaqiyatli yuborildi!");
-      } else {
-        toast.error(data.error || "OneSignal xabarni yetkaza olmadi.");
-      }
-    } catch (err: any) {
-      toast.error(err?.message || "Sinov push yuborishda xatolik");
-    } finally {
-      setIsSendingTestPush(false);
+      toast.error(
+        locale === "uz"
+          ? "Brauzer bildirishnomalari rad etildi yoki sozlamalarda bloklangan."
+          : "Уведомления отклонены или заблокированы в браузере."
+      );
     }
   };
 
@@ -1527,101 +1509,118 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            {/* OneSignal Web Push Device Status & Test Card */}
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                  <Bell size={15} className="text-blue-500" />
-                  <span>Qurilma / Brauzer Push bildirishnomalari (OneSignal)</span>
-                </span>
+            {/* Qurilma va Brauzer Push bildirishnomalari */}
+            <div className="p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/60 dark:bg-zinc-900/60 space-y-3.5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                    <Bell size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                      {locale === "uz"
+                        ? "Qurilma va Brauzer Push bildirishnomalari"
+                        : locale === "ru"
+                        ? "Push-уведомления браузера и устройства"
+                        : "Device & Browser Push Notifications"}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                      {locale === "uz"
+                        ? "Muhim yangiliklar, izohlar va munosabatlar haqida lahzalik bildirishnomalar olish"
+                        : locale === "ru"
+                        ? "Мгновенные уведомления о комментариях, реакциях и новостях"
+                        : "Get instant alerts for new comments, likes, and updates"}
+                    </p>
+                  </div>
+                </div>
                 <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                  className={`text-[10px] px-2.5 py-1 rounded-full font-bold shrink-0 ${
                     pushStatus === "granted"
-                      ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                      ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400"
                       : pushStatus === "denied"
-                      ? "bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300"
-                      : "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
+                      ? "bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400"
+                      : "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400"
                   }`}
                 >
                   {pushStatus === "granted"
-                    ? "Ruxsat berilgan (Faol)"
+                    ? locale === "uz"
+                      ? "Faol (Yoqilgan)"
+                      : locale === "ru"
+                      ? "Включено"
+                      : "Active"
                     : pushStatus === "denied"
-                    ? "Rad etilgan (Bloklangan)"
-                    : "Ruxsat kutilmoqda"}
+                    ? locale === "uz"
+                      ? "Bloklangan"
+                      : locale === "ru"
+                      ? "Заблокировано"
+                      : "Blocked"
+                    : locale === "uz"
+                    ? "Ruxsat kutilmoqda"
+                    : locale === "ru"
+                    ? "Ожидание разрешения"
+                    : "Pending"}
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/50 space-y-1.5 text-[11px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">OneSignal obunasi:</span>
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {subDetails.optedIn && subDetails.subscriptionId ? "✅ Faol ulangan" : "⚠️ Obuna kutilmoqda"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2 overflow-hidden">
-                  <span className="text-slate-500 dark:text-slate-400 shrink-0">Qurilma ID:</span>
-                  <code className="text-[10px] font-mono text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
-                    {subDetails.subscriptionId || "Ro‘yxatdan o‘tilmagan"}
-                  </code>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                {pushStatus !== "granted" ? (
+              {pushStatus !== "granted" ? (
+                <div className="pt-1">
                   <button
                     type="button"
                     onClick={handleEnablePush}
-                    className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-2"
                   >
-                    <Bell size={13} />
-                    <span>Bildirishnomalarga ruxsat berish</span>
+                    <Bell size={14} />
+                    <span>
+                      {locale === "uz"
+                        ? "Bildirishnomalarni yoqish"
+                        : locale === "ru"
+                        ? "Включить уведомления"
+                        : "Enable Notifications"}
+                    </span>
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleTestPush}
-                    disabled={isSendingTestPush}
-                    className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
-                  >
-                    {isSendingTestPush ? (
-                      <>
-                        <Loader2 size={13} className="animate-spin" />
-                        <span>Yuborilmoqda...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Check size={13} />
-                        <span>Sinov push xabari yuborish (Test Push)</span>
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+                  {pushStatus === "denied" && (
+                    <p className="mt-2 text-[11px] text-rose-600 dark:text-rose-400">
+                      {locale === "uz"
+                        ? "Brauzeringizda bildirishnomalar bloklangan. Manzil satridagi qulf belgisidan ruxsat bering."
+                        : "Уведомления заблокированы в браузере. Разрешите их в настройках сайта."}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-zinc-400 pt-1">
+                  <Check size={14} className="text-emerald-500 shrink-0" />
+                  <span>
+                    {locale === "uz"
+                      ? "Ushbu qurilmada tezkor push bildirishnomalari muvaffaqiyatli ulangan."
+                      : "Push-уведомления успешно подключены на этом устройстве."}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* PWA / Install to Phone Card */}
-            <div className="p-4 rounded-xl border border-blue-200/70 dark:border-blue-900/50 bg-blue-50/40 dark:bg-blue-950/20 space-y-3">
+            <div className="p-4 sm:p-5 rounded-2xl border border-blue-200/70 dark:border-blue-900/40 bg-blue-50/30 dark:bg-blue-950/20 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-blue-900 dark:text-blue-300 flex items-center gap-2">
-                  <Smartphone size={15} />
-                  <span>The Go-getters mobil ilovasi (PWA)</span>
+                <span className="text-xs sm:text-sm font-bold text-blue-950 dark:text-blue-300 flex items-center gap-2">
+                  <Smartphone size={16} />
+                  <span>Geters mobil ilovasi (PWA)</span>
                 </span>
                 {isInstalled && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
                     O‘rnatilgan
                   </span>
                 )}
               </div>
 
               <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                Ilovani iPhone, Android yoki kompyuteringiz bosh ekraniga o‘rnating. Hech qanday og‘ir fayl yuklanmaydi, bir zumda ochiladi va push bildirishnomalarni mukammal qabul qiladi.
+                Ilovani iPhone, Android yoki kompyuteringiz bosh ekraniga o‘rnating. Hech qanday og‘ir fayl yuklanmaydi, bir zumda ochiladi va push bildirishnomalarni qabul qiladi.
               </p>
 
               <div>
                 <button
                   type="button"
                   onClick={promptInstall}
-                  className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Download size={13} />
                   <span>{isInstalled ? "Ilova ma’lumotlari" : "Telefonga o‘rnatish"}</span>
