@@ -9,6 +9,7 @@ import type { NotificationItem } from "@/lib/api/notifications";
 import { useAuth } from "@/components/auth/auth-context";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { showSystemNotification } from "./onesignal-initializer";
 
 export function NotificationBell() {
   const { session } = useAuth();
@@ -18,11 +19,25 @@ export function NotificationBell() {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const prevUnreadRef = useRef<number | null>(null);
 
   const fetchUnreadCount = useCallback(async () => {
     if (!session.isAuthenticated) return;
     try {
       const count = await api.notifications.getUnreadCount();
+      if (prevUnreadRef.current !== null && count > prevUnreadRef.current) {
+        // A new notification arrived! Fetch the latest one to show OS desktop/mobile push banner
+        api.notifications.getNotifications({ limit: 1 }).then((res) => {
+          if (res.items && res.items.length > 0) {
+            const latest = res.items[0];
+            showSystemNotification(latest.title, {
+              body: latest.message,
+              link: latest.link,
+            });
+          }
+        }).catch(() => {});
+      }
+      prevUnreadRef.current = count;
       setUnreadCount(count);
     } catch (err) {
       console.error("[NOTIFICATIONS] Error fetching unread count:", err);

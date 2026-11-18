@@ -204,7 +204,7 @@ export async function triggerNotification(input: {
 }
 
 /**
- * Trigger new post notifications to all followers of an author
+ * Trigger new post notifications to all followers and community members
  */
 export async function notifyFollowersNewPost(
   authorId: string,
@@ -215,20 +215,40 @@ export async function notifyFollowersNewPost(
     const [author] = await db.select().from(users).where(eq(users.id, authorId)).limit(1);
     if (!author) return;
 
+    // 1. Get explicit followers
     const followerRows = await db
       .select({ followerId: follows.followerId })
       .from(follows)
       .where(eq(follows.followingId, authorId));
 
-    if (followerRows.length === 0) return;
+    // 2. Also get all registered real users in the community (excluding author and bots)
+    const communityRows = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.isBot, false), sql`${users.id} != ${authorId}`));
+
+    const recipientSet = new Set<string>();
+    for (const f of followerRows) {
+      if (f.followerId && f.followerId !== authorId) {
+        recipientSet.add(f.followerId);
+      }
+    }
+    for (const c of communityRows) {
+      recipientSet.add(c.id);
+    }
+
+    if (recipientSet.size === 0) return;
 
     const title = `${author.name} yangi post ulashdi`;
-    const message = postTitleOrSnippet.slice(0, 100);
+    const message = postTitleOrSnippet.replace(/<[^>]*>/g, "").trim().slice(0, 100);
     const link = `/dashboard/posts/${postId}`;
 
-    for (const f of followerRows) {
+    const recipientUserIds = Array.from(recipientSet);
+
+    // Trigger in-app notification for each user
+    for (const recipientId of recipientUserIds) {
       triggerNotification({
-        recipientId: f.followerId,
+        recipientId,
         actorId: authorId,
         type: "new_post",
         targetId: postId,
@@ -238,8 +258,11 @@ export async function notifyFollowersNewPost(
         link,
       }).catch(() => null);
     }
+
+    // Trigger batch Web Push via OneSignal to all recipients at once
+    sendOneSignalPush(recipientUserIds, title, message, link).catch(() => null);
   } catch (err) {
-    console.error("[NOTIFICATIONS] Error notifying followers:", err);
+    console.error("[NOTIFICATIONS] Error notifying followers and community:", err);
   }
 }
 

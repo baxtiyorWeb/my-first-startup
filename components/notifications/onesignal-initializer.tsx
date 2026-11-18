@@ -14,33 +14,34 @@ declare global {
 }
 
 /**
- * Prompt user for Push Notifications via OneSignal Web SDK v16
+ * Prompt user for Push Notifications via OneSignal Web SDK v16 or Native Browser Notification
  */
 export async function promptPushNotification(): Promise<boolean> {
-  if (typeof window === "undefined" || !window.OneSignal) return false;
+  if (typeof window === "undefined") return false;
 
   try {
-    // 1. Request native permission
-    if (window.OneSignal.Notifications && typeof window.OneSignal.Notifications.requestPermission === "function") {
+    let isGranted = false;
+
+    // 1. If OneSignal is active, request through OneSignal
+    if (window.OneSignal?.Notifications && typeof window.OneSignal.Notifications.requestPermission === "function") {
       await window.OneSignal.Notifications.requestPermission();
-    } else if (typeof Notification !== "undefined") {
-      await Notification.requestPermission();
+      isGranted = window.OneSignal?.Notifications?.permission === "granted";
+    } else if (typeof Notification !== "undefined" && typeof Notification.requestPermission === "function") {
+      // 2. Fallback to Native Browser Notification API
+      const res = await Notification.requestPermission();
+      isGranted = res === "granted";
     }
 
-    const isGranted =
-      window.OneSignal?.Notifications?.permission === "granted" ||
-      (typeof Notification !== "undefined" && Notification.permission === "granted");
-
-    // 2. Explicitly Opt In to Push Subscription in OneSignal v16
+    // 3. Explicitly Opt In to Push Subscription in OneSignal v16 if available
     if (isGranted && window.OneSignal?.User?.PushSubscription?.optIn) {
-      await window.OneSignal.User.PushSubscription.optIn();
+      await window.OneSignal.User.PushSubscription.optIn().catch(() => {});
     }
 
     return Boolean(isGranted);
   } catch (err) {
-    console.warn("[ONESIGNAL PROMPT WARN]:", err);
+    console.warn("[PUSH NOTIFICATION PROMPT WARN]:", err);
+    return false;
   }
-  return false;
 }
 
 /**
@@ -68,13 +69,72 @@ export function getPushSubscriptionDetails(): {
   if (typeof window === "undefined") return { permission: "default", optedIn: false };
   const permission = getPushPermissionStatus();
   const subscriptionId = window.OneSignal?.User?.PushSubscription?.id || null;
-  const optedIn = Boolean(window.OneSignal?.User?.PushSubscription?.optedIn);
+  const optedIn = Boolean(window.OneSignal?.User?.PushSubscription?.optedIn || permission === "granted");
   return { permission, subscriptionId, optedIn };
+}
+
+/**
+ * Show OS-level System Notification Banner on Desktop / Mobile / PWA
+ */
+export function showSystemNotification(
+  title: string,
+  options: { body: string; icon?: string; link?: string }
+) {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  const iconUrl = options.icon || "/logo.png";
+  const linkUrl = options.link || "/dashboard/notifications";
+
+  // Use Service Worker showNotification if active (best for Android, PWA, background tabs)
+  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready
+      .then((reg) => {
+        reg.showNotification(title, {
+          body: options.body,
+          icon: iconUrl,
+          badge: iconUrl,
+          data: { url: linkUrl },
+        });
+      })
+      .catch(() => {
+        // Fallback to Window Notification API
+        try {
+          const notif = new Notification(title, { body: options.body, icon: iconUrl });
+          notif.onclick = () => {
+            window.focus();
+            window.location.href = linkUrl;
+          };
+        } catch {}
+      });
+  } else {
+    // Standard Desktop Notification API
+    try {
+      const notif = new Notification(title, { body: options.body, icon: iconUrl });
+      notif.onclick = () => {
+        window.focus();
+        window.location.href = linkUrl;
+      };
+    } catch {}
+  }
 }
 
 export function OneSignalInitializer() {
   const { session } = useAuth();
   const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
+
+  // Politely ask for notification permission on desktop/mobile when authenticated
+  useEffect(() => {
+    if (typeof window === "undefined" || !session.isAuthenticated) return;
+
+    const timer = setTimeout(() => {
+      if (typeof Notification !== "undefined" && Notification.permission === "default") {
+        promptPushNotification().catch(() => {});
+      }
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [session.isAuthenticated]);
 
   // 1. One-time SDK initialization (Guarded against Fast Refresh / React StrictMode)
   useEffect(() => {

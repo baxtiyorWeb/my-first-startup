@@ -59,6 +59,20 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
 
+    // 4. Register PWA Service Worker for background caching and push notifications
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => {
+          if (process.env.NODE_ENV !== "production") {
+            console.log("[PWA] Service Worker registered successfully:", reg.scope);
+          }
+        })
+        .catch((err) => {
+          console.warn("[PWA] Service Worker registration failed:", err);
+        });
+    }
+
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("appinstalled", handleAppInstalled);
