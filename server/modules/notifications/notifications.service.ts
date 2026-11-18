@@ -63,6 +63,8 @@ export async function sendOneSignalPush(
       headings: { en: title, uz: title, ru: title },
       contents: { en: message, uz: message, ru: message },
       url: fullLink,
+      web_url: fullLink,
+      app_url: fullLink,
       chrome_web_icon: iconUrl,
       firefox_icon: iconUrl,
       large_icon: iconUrl,
@@ -204,7 +206,8 @@ export async function triggerNotification(input: {
 }
 
 /**
- * Trigger new post notifications to all followers and community members
+ * Trigger new post notifications to all followers and community members.
+ * Smart batching: if same author posted recently, groups notifications to avoid spam.
  */
 export async function notifyFollowersNewPost(
   authorId: string,
@@ -215,52 +218,132 @@ export async function notifyFollowersNewPost(
     const [author] = await db.select().from(users).where(eq(users.id, authorId)).limit(1);
     if (!author) return;
 
-    // 1. Get explicit followers
-    const followerRows = await db
-      .select({ followerId: follows.followerId })
-      .from(follows)
-      .where(eq(follows.followingId, authorId));
-
-    // 2. Also get all registered real users in the community (excluding author and bots)
+    // 1. Get all real registered users (excluding author and bots)
     const communityRows = await db
       .select({ id: users.id })
       .from(users)
       .where(and(eq(users.isBot, false), sql`${users.id} != ${authorId}`));
 
-    const recipientSet = new Set<string>();
-    for (const f of followerRows) {
-      if (f.followerId && f.followerId !== authorId) {
-        recipientSet.add(f.followerId);
+    if (communityRows.length === 0) return;
+
+    const recipientUserIds = communityRows.map((r) => r.id);
+
+    // 2. Check if this author posted recently (within 10 minutes) — batch if so
+    const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const recentPostNotifs = await db
+      .select({ id: notifications.id })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.type, "new_post"),
+          eq(notifications.actorId, authorId),
+          sql`${notifications.createdAt} >= ${tenMinsAgo}`
+        )
+      )
+      .limit(1);
+
+    const isBurst = recentPostNotifs.length > 0;
+
+    // 3. Count how many posts this author made in the last 10 minutes (for batch label)
+    const recentPostCount = await db
+      .select({ cnt: sql<number>`count(*)::int` })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.type, "new_post"),
+          eq(notifications.actorId, authorId),
+          sql`${notifications.createdAt} >= ${tenMinsAgo}`
+        )
+      );
+    const burstCount = (recentPostCount[0]?.cnt ?? 0) + 1; // +1 for the current post
+
+    const plainSnippet = postTitleOrSnippet.replace(/<[^>]*>/g, "").trim().slice(0, 80);
+
+    // 4. Determine title/message based on burst
+    let pushTitle: string;
+    let pushMessage: string;
+    let pushLink: string;
+
+    if (!isBurst) {
+      // Single post — specific deep link to the post
+      pushTitle = `${author.name} yangi post ulashdi`;
+      pushMessage = plainSnippet || "Yangi post bilan tanishing";
+      pushLink = `/dashboard/posts/${postId}`;
+    } else if (burstCount <= 5) {
+      // Small burst (2-5 posts) — link to author profile
+      pushTitle = `${author.name} — ${burstCount} ta yangi post`;
+      pushMessage = `So'nggi ${burstCount} ta post bilan tanishing`;
+      pushLink = `/dashboard/u/${author.handle?.replace(/^@/, "")}`;
+    } else if (burstCount <= 15) {
+      // Medium burst (6-15)
+      pushTitle = `${author.name} — 5+ yangi post`;
+      pushMessage = `Ko'p yangiliklar bor, ko'ring!`;
+      pushLink = `/dashboard/u/${author.handle?.replace(/^@/, "")}`;
+    } else {
+      // Large burst (16+) — link to home feed
+      pushTitle = `Geters — Ko'plab yangi postlar`;
+      pushMessage = `${author.name} va boshqalar faol. Lentaga qarang!`;
+      pushLink = `/dashboard`;
+    }
+
+    if (isBurst) {
+      // For burst: update existing notifications instead of flooding DB
+      // Only insert ONE in-app notification per recipient (upsert-like)
+      for (const recipientId of recipientUserIds) {
+        // Update the most recent new_post notification from this actor to this recipient
+        const [existing] = await db
+          .select()
+          .from(notifications)
+          .where(
+            and(
+              eq(notifications.recipientId, recipientId),
+              eq(notifications.type, "new_post"),
+              eq(notifications.actorId, authorId),
+              sql`${notifications.createdAt} >= ${tenMinsAgo}`
+            )
+          )
+          .orderBy(desc(notifications.createdAt))
+          .limit(1);
+
+        if (existing) {
+          await db
+            .update(notifications)
+            .set({
+              title: pushTitle,
+              message: pushMessage,
+              link: pushLink,
+              isRead: false,
+              createdAt: new Date(),
+            })
+            .where(eq(notifications.id, existing.id));
+        }
+      }
+    } else {
+      // First post: insert in-app notification for each user (non-blocking)
+      for (const recipientId of recipientUserIds) {
+        triggerNotification({
+          recipientId,
+          actorId: authorId,
+          type: "new_post",
+          targetId: postId,
+          targetType: "post",
+          title: pushTitle,
+          message: pushMessage,
+          link: pushLink,
+        }).catch(() => null);
       }
     }
-    for (const c of communityRows) {
-      recipientSet.add(c.id);
-    }
 
-    if (recipientSet.size === 0) return;
-
-    const title = `${author.name} yangi post ulashdi`;
-    const message = postTitleOrSnippet.replace(/<[^>]*>/g, "").trim().slice(0, 100);
-    const link = `/dashboard/posts/${postId}`;
-
-    const recipientUserIds = Array.from(recipientSet);
-
-    // Trigger in-app notification for each user
-    for (const recipientId of recipientUserIds) {
-      triggerNotification({
-        recipientId,
-        actorId: authorId,
-        type: "new_post",
-        targetId: postId,
-        targetType: "post",
-        title,
-        message,
-        link,
-      }).catch(() => null);
-    }
-
-    // Trigger batch Web Push via OneSignal to all recipients at once
-    sendOneSignalPush(recipientUserIds, title, message, link).catch(() => null);
+    // 5. Send batch Web Push to all recipients via OneSignal (non-blocking)
+    sendOneSignalPush(recipientUserIds, pushTitle, pushMessage, pushLink)
+      .then((res) => {
+        if (!res.success) {
+          console.warn("[ONESIGNAL new_post push failed]:", res.error);
+        } else {
+          console.log(`[ONESIGNAL] new_post push sent to ${recipientUserIds.length} users`);
+        }
+      })
+      .catch(() => null);
   } catch (err) {
     console.error("[NOTIFICATIONS] Error notifying followers and community:", err);
   }

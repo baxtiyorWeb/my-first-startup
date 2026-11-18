@@ -5,6 +5,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/components/auth/auth-context";
 import { ThemeProvider } from "@/components/theme/theme-context";
 import { OneSignalInitializer } from "@/components/notifications/onesignal-initializer";
+import { AuthedPushModal } from "@/components/notifications/authed-push-modal";
 import {
   PwaInstallProvider,
   InstallModal,
@@ -133,6 +134,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <PwaInstallProvider>
               <OneSignalInitializer />
               <ToastProvider>{children}</ToastProvider>
+              <AuthedPushModal />
               <InstallModal />
               <MobileInstallBanner />
             </PwaInstallProvider>
