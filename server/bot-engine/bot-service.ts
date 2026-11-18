@@ -808,7 +808,7 @@ export class BotService {
               await this.simulateBotPostView(viewer.id, post.id);
             }
           } catch {}
-          description = `Yangi fikr chop etildi: "${post.title?.slice(0, 45)}..."`;
+          description = `Yangi fikr chop etildi: "${post.title}"`;
           data = post;
           break;
         }
@@ -825,7 +825,7 @@ export class BotService {
               await this.simulateBotPostView(viewer.id, post.id);
             }
           } catch {}
-          description = `Google tahlili bilan post chiqdi: "${post.title?.slice(0, 45)}..."`;
+          description = `Google tahlili bilan post chiqdi: "${post.title}"`;
           data = post;
           break;
         }
