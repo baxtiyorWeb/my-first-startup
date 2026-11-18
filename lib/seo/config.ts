@@ -16,7 +16,7 @@ export const SITE_CONFIG = {
   url:
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "https://geters.uz",
+    "https://www.geters.uz",
   social: {
     twitter: "@geters_uz",
     telegram: "https://t.me/geters_uz",

@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.NEXT_PUBLIC_APP_URL ||
-  "https://geters.uz";
+  "https://www.geters.uz";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
