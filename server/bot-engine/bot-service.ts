@@ -686,7 +686,7 @@ export class BotService {
       activityType: "view",
       botId: bot.id,
       targetId: targetPost.id,
-      details: `${bot.name} postni ko'rdi va o'qib chiqdi${interestTag}: "${targetPost.title?.slice(0, 40) || targetPost.content.slice(0, 40)}..."`,
+      details: `${bot.name} postni ko'rdi va o'qib chiqdi${interestTag}: "${targetPost.title || targetPost.content}"`,
     });
 
     return {

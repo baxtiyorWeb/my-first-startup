@@ -100,7 +100,7 @@ function ToastCard({
             <CheckIcon size={12} className="text-emerald-400" />
           </span>
         )}
-        <span className="wrap-break-word leading-relaxed whitespace-normal flex-1">
+        <span className="break-words whitespace-normal leading-relaxed flex-1">
           {item.message}
         </span>
       </div>

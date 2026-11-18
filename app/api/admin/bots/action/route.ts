@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         });
         return NextResponse.json({
           success: true,
-          message: `Yangi post yaratildi: "${newPost.title?.slice(0, 40)}..."`,
+          message: `Yangi post yaratildi: "${newPost.title}"`,
           data: newPost,
         });
       }
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         });
         return NextResponse.json({
           success: true,
-          message: `Internet ma'lumotlari asosida tahliliy post yaratildi: "${newPost.title?.slice(0, 40)}..."`,
+          message: `Internet ma'lumotlari asosida tahliliy post yaratildi: "${newPost.title}"`,
           data: newPost,
         });
       }

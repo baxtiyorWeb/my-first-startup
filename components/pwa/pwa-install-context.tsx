@@ -59,18 +59,19 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
 
-    // 4. Register PWA Service Worker for background caching and push notifications
+    // 4. Ensure no conflicting legacy service workers block OneSignal
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((reg) => {
-          if (process.env.NODE_ENV !== "production") {
-            console.log("[PWA] Service Worker registered successfully:", reg.scope);
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const reg of registrations) {
+          if (reg.active?.scriptURL?.endsWith("/sw.js")) {
+            reg.unregister().then(() => {
+              if (process.env.NODE_ENV !== "production") {
+                console.log("[PWA] Unregistered conflicting sw.js to prioritize OneSignal worker");
+              }
+            });
           }
-        })
-        .catch((err) => {
-          console.warn("[PWA] Service Worker registration failed:", err);
-        });
+        }
+      }).catch(() => {});
     }
 
     return () => {

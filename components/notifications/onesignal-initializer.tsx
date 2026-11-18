@@ -1,6 +1,5 @@
 "use client";
 
-import Script from "next/script";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth/auth-context";
 
@@ -8,7 +7,6 @@ declare global {
   interface Window {
     OneSignalDeferred?: any[];
     OneSignal?: any;
-    __onesignal_initialized?: boolean;
     __onesignal_logged_user_id?: string | null;
   }
 }
@@ -19,33 +17,31 @@ declare global {
 export async function promptPushNotification(): Promise<boolean> {
   if (typeof window === "undefined") return false;
 
-  try {
-    let isGranted = false;
-
-    // 1. Try OneSignal Slidedown (polite custom UI)
-    if (window.OneSignal?.Slidedown?.promptPush) {
-      await window.OneSignal.Slidedown.promptPush({ force: true }).catch(() => {});
+  return new Promise((resolve) => {
+    try {
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(async (OneSignal: any) => {
+        try {
+          if (OneSignal?.Slidedown?.promptPush) {
+            await OneSignal.Slidedown.promptPush({ force: true });
+          } else if (OneSignal?.Notifications?.requestPermission) {
+            await OneSignal.Notifications.requestPermission();
+          } else if (typeof Notification !== "undefined" && typeof Notification.requestPermission === "function") {
+            await Notification.requestPermission();
+          }
+          const isGranted =
+            (typeof Notification !== "undefined" && Notification.permission === "granted") ||
+            OneSignal?.Notifications?.permission === "granted";
+          resolve(Boolean(isGranted));
+        } catch (err) {
+          console.warn("[OneSignal prompt error]:", err);
+          resolve(false);
+        }
+      });
+    } catch {
+      resolve(false);
     }
-
-    // 2. Request native permission through OneSignal or Native Browser API
-    if (window.OneSignal?.Notifications && typeof window.OneSignal.Notifications.requestPermission === "function") {
-      await window.OneSignal.Notifications.requestPermission().catch(() => {});
-      isGranted = window.OneSignal?.Notifications?.permission === "granted";
-    } else if (typeof Notification !== "undefined" && typeof Notification.requestPermission === "function") {
-      const res = await Notification.requestPermission();
-      isGranted = res === "granted";
-    }
-
-    // 3. Explicitly Opt In to Push Subscription in OneSignal v16 if available
-    if (isGranted && window.OneSignal?.User?.PushSubscription?.optIn) {
-      await window.OneSignal.User.PushSubscription.optIn().catch(() => {});
-    }
-
-    return Boolean(isGranted);
-  } catch (err) {
-    console.warn("[PUSH NOTIFICATION PROMPT WARN]:", err);
-    return false;
-  }
+  });
 }
 
 /**
@@ -102,7 +98,6 @@ export function showSystemNotification(
         });
       })
       .catch(() => {
-        // Fallback to Window Notification API
         try {
           const notif = new Notification(title, { body: options.body, icon: iconUrl });
           notif.onclick = () => {
@@ -112,7 +107,6 @@ export function showSystemNotification(
         } catch {}
       });
   } else {
-    // Standard Desktop Notification API
     try {
       const notif = new Notification(title, { body: options.body, icon: iconUrl });
       notif.onclick = () => {
@@ -125,101 +119,35 @@ export function showSystemNotification(
 
 export function OneSignalInitializer() {
   const { session } = useAuth();
-  const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
 
-  // Politely ask for notification permission on desktop/mobile
+  // Safe User Login / Logout mapping with OneSignal External ID
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const timer = setTimeout(() => {
-      if (typeof Notification !== "undefined" && Notification.permission === "default") {
-        promptPushNotification().catch(() => {});
-      }
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // 1. One-time SDK initialization (Guarded against Fast Refresh / React StrictMode)
-  useEffect(() => {
-    if (!appId || typeof window === "undefined") return;
-
-    if (window.__onesignal_initialized) return;
-
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async (OneSignal: any) => {
       try {
-        if (window.__onesignal_initialized || OneSignal?.initialized) {
-          window.__onesignal_initialized = true;
-          return;
-        }
+        if (!OneSignal || typeof OneSignal.login !== "function") return;
 
-        await OneSignal.init({
-          appId,
-          safari_web_id: "web.onesignal.auto.48cecb45-b9e1-42c4-afaa-e45f7f034833",
-          allowLocalhostAsSecureOrigin: true,
-          notifyButton: {
-            enable: true,
-          },
-        });
-
-        window.__onesignal_initialized = true;
-
-        if (process.env.NODE_ENV !== "production") {
-          console.log("[ONESIGNAL] SDK initialized successfully.");
-        }
-
-        // Listen for subscription changes (e.g., when user clicks Allow)
-        if (OneSignal.User?.PushSubscription?.addEventListener) {
-          OneSignal.User.PushSubscription.addEventListener("change", (change: any) => {
-            if (process.env.NODE_ENV !== "production") {
-              console.log("[ONESIGNAL] PushSubscription changed:", change?.current);
-            }
-          });
-        }
-
-        // Prompt politely if user hasn't chosen yet
-        setTimeout(() => {
-          if (typeof Notification !== "undefined" && Notification.permission === "default") {
-            if (OneSignal.Slidedown?.promptPush) {
-              OneSignal.Slidedown.promptPush({ force: true }).catch(() => {});
-            }
-          }
-        }, 2500);
-      } catch (err: any) {
-        if (err?.message?.includes("already initialized")) {
-          window.__onesignal_initialized = true;
-          return;
-        }
-        console.warn("[ONESIGNAL CLIENT INIT WARN]:", err);
-      }
-    });
-  }, [appId]);
-
-  // 2. Safe User Login / Logout mapping (Separated to prevent re-calling init)
-  useEffect(() => {
-    if (!appId || typeof window === "undefined") return;
-
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async (OneSignal: any) => {
-      try {
         if (session.isAuthenticated && session.user?.id) {
           if (window.__onesignal_logged_user_id !== session.user.id) {
             await OneSignal.login(session.user.id);
             window.__onesignal_logged_user_id = session.user.id;
             if (process.env.NODE_ENV !== "production") {
-              console.log("[ONESIGNAL] Logged in external_id:", session.user.id);
+              console.log("[ONESIGNAL] Synced user login external_id:", session.user.id);
             }
           }
         } else if (!session.isAuthenticated && window.__onesignal_logged_user_id) {
-          await OneSignal.logout();
+          if (typeof OneSignal.logout === "function") {
+            await OneSignal.logout();
+          }
           window.__onesignal_logged_user_id = null;
         }
       } catch (err: any) {
         console.warn("[ONESIGNAL AUTH SYNC WARN]:", err?.message || err);
       }
     });
-  }, [appId, session.isAuthenticated, session.user?.id]);
+  }, [session.isAuthenticated, session.user?.id]);
 
   return null;
 }

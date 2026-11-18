@@ -98,23 +98,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   allowLocalhostAsSecureOrigin: true,
                   notifyButton: {
                     enable: true,
+                    position: 'bottom-right',
+                    size: 'medium',
                   },
-                });
-
-                // Auto-prompt permission if not already decided
-                setTimeout(async function() {
-                  try {
-                    if (typeof Notification !== "undefined" && Notification.permission === "default") {
-                      if (OneSignal.Slidedown && OneSignal.Slidedown.promptPush) {
-                        await OneSignal.Slidedown.promptPush({ force: true });
-                      } else if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
-                        await OneSignal.Notifications.requestPermission();
-                      }
+                  promptOptions: {
+                    slidedown: {
+                      prompts: [
+                        {
+                          type: "push",
+                          autoPrompt: true,
+                          text: {
+                            actionMessage: "Yangi postlar va muhim yangiliklardan xabardor bo'lishni xohlaysizmi?",
+                            acceptButton: "Ruxsat berish",
+                            cancelButton: "Keyinroq"
+                          }
+                        }
+                      ]
                     }
-                  } catch (e) {
-                    console.warn("[OneSignal Prompt error]:", e);
                   }
-                }, 1500);
+                });
               });
             `,
           }}
