@@ -61,7 +61,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast, dismissToast }}>
       {children}
-      {/* Toast viewport: expanded max width and allow full multiline display */}
+      {/* Toast viewport */}
       <div
         aria-live="polite"
         aria-atomic="true"
@@ -100,7 +100,7 @@ function ToastCard({
             <CheckIcon size={12} className="text-emerald-400" />
           </span>
         )}
-        <span className="break-words leading-relaxed whitespace-normal flex-1">
+        <span className="wrap-break-word leading-relaxed whitespace-normal flex-1">
           {item.message}
         </span>
       </div>
