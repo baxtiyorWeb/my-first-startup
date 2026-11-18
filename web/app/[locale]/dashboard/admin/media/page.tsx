@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import {
   Image as ImageIcon,
   Video,
@@ -18,14 +17,14 @@ import {
   Copy,
   ExternalLink,
   Download,
-  Calendar,
-  ArrowUpDown,
   Check,
   X,
   Loader2,
-  FileSpreadsheet,
-  FileCode,
-  File,
+  Folder,
+  RefreshCw,
+  Sparkles,
+  Cloud,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { apiClient } from "@/lib/api/client";
@@ -44,16 +43,38 @@ interface MediaItem {
   width?: number | null;
   height?: number | null;
   youtubeVideoId?: string | null;
+  bunnyVideoId?: string | null;
+  collectionName?: string | null;
   createdAt: string;
   updatedAt: string;
   uploaderName?: string | null;
 }
 
+interface MediaCollection {
+  id: string;
+  name: string;
+  count: number;
+  totalSize: number;
+  isStream: boolean;
+}
+
+interface AccountInfo {
+  streamLibraryId: string;
+  streamLibraryName: string;
+  streamCdnHostname: string;
+  storageZone: string;
+  storageCdnUrl: string;
+  balance: string;
+}
+
 interface MediaStats {
   totalCount: number;
   videoCount: number;
+  streamVideoCount: number;
+  youtubeCount: number;
   imageCount: number;
   fileCount: number;
+  recentCount: number;
   storage: {
     totalBytes: number;
     videoBytes: number;
@@ -91,11 +112,15 @@ function YouTubeRedIcon({ className = "w-4 h-4" }: { className?: string }) {
 export default function MediaEnginePage() {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [stats, setStats] = useState<MediaStats | null>(null);
+  const [collections, setCollections] = useState<MediaCollection[]>([]);
+  const [accountInfo, setAccountInfo] = useState<AccountInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   // Filters & Search
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [selectedCollection, setSelectedCollection] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState("all");
   const [selectedSort, setSelectedSort] = useState("newest");
@@ -111,7 +136,12 @@ export default function MediaEnginePage() {
   const [showYouTubeModal, setShowYouTubeModal] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [youtubeTitle, setYoutubeTitle] = useState("");
+  const [youtubeCollection, setYoutubeCollection] = useState("tutorials");
   const [addingYouTube, setAddingYouTube] = useState(false);
+
+  const [showCreateCollModal, setShowCreateCollModal] = useState(false);
+  const [newCollName, setNewCollName] = useState("");
+  const [creatingColl, setCreatingColl] = useState(false);
 
   // Preview Modal
   const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
@@ -119,6 +149,7 @@ export default function MediaEnginePage() {
   // Uploading state
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadCollection, setUploadCollection] = useState<string>("tutorials");
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -130,17 +161,23 @@ export default function MediaEnginePage() {
     try {
       const params = new URLSearchParams();
       if (selectedType !== "all") params.set("type", selectedType);
+      if (selectedCollection !== "all") params.set("collection", selectedCollection);
       if (searchQuery.trim()) params.set("search", searchQuery.trim());
       if (selectedDate !== "all") params.set("date", selectedDate);
       if (selectedSort !== "newest") params.set("sort", selectedSort);
 
-      const res = await apiClient<{ items: MediaItem[]; stats: MediaStats }>(
-        `/api/admin/media?${params.toString()}`
-      );
+      const res = await apiClient<{
+        items: MediaItem[];
+        stats: MediaStats;
+        collections: MediaCollection[];
+        accountInfo: AccountInfo;
+      }>(`/api/admin/media?${params.toString()}`);
 
       if (res.data) {
         setItems(res.data.items || []);
         setStats(res.data.stats || null);
+        setCollections(res.data.collections || []);
+        setAccountInfo(res.data.accountInfo || null);
       }
     } catch {
       toast.error("Media fayllarni yuklashda xatolik yuz berdi");
@@ -152,7 +189,7 @@ export default function MediaEnginePage() {
 
   useEffect(() => {
     loadMedia();
-  }, [selectedType, selectedDate, selectedSort]);
+  }, [selectedType, selectedCollection, selectedDate, selectedSort]);
 
   // Debounced search
   useEffect(() => {
@@ -162,23 +199,74 @@ export default function MediaEnginePage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
+  // Sync with Bunny.net
+  const handleSyncWithBunny = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/admin/media/sync", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Sinxronlashda xatolik");
+      }
+      toast.success(
+        `Bunny.net bilan sinxronlandi! (Jami ${data.data?.totalFiles || 0} ta fayl, ${data.data?.collections?.length || 0} ta to'plam)`
+      );
+      loadMedia();
+    } catch (err: any) {
+      toast.error(err.message || "Bunny.net bilan sinxronlashda xatolik yuz berdi");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Create new Bunny Stream collection
+  const handleCreateCollection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCollName.trim()) return;
+
+    setCreatingColl(true);
+    try {
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_collection",
+          name: newCollName.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "To'plam yaratishda xatolik");
+      }
+      toast.success(`"${newCollName}" to'plami Bunny Stream'da muvaffaqiyatli yaratildi!`);
+      setShowCreateCollModal(false);
+      setNewCollName("");
+      loadMedia();
+    } catch (err: any) {
+      toast.error(err.message || "To'plam yaratishda xatolik yuz berdi");
+    } finally {
+      setCreatingColl(false);
+    }
+  };
+
   // Handle Drag & Drop Upload
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
-    setUploadProgress(10);
+    setUploadProgress(15);
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("title", file.name.replace(/\.[^/.]+$/, ""));
+    formData.append("collection", uploadCollection || "tutorials");
 
     try {
-      setUploadProgress(40);
+      setUploadProgress(45);
       const res = await fetch("/api/admin/media", {
         method: "POST",
         body: formData,
       });
 
-      setUploadProgress(80);
+      setUploadProgress(85);
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -194,7 +282,7 @@ export default function MediaEnginePage() {
       setTimeout(() => {
         setIsUploading(false);
         setUploadProgress(0);
-      }, 600);
+      }, 500);
     }
   };
 
@@ -222,6 +310,7 @@ export default function MediaEnginePage() {
         body: JSON.stringify({
           url: youtubeUrl.trim(),
           title: youtubeTitle.trim() || undefined,
+          collection: youtubeCollection || "tutorials",
         }),
       });
 
@@ -282,6 +371,16 @@ export default function MediaEnginePage() {
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
+  // Compute segmented storage progress percentages safely
+  const totalStorageBytes = stats?.storage?.totalBytes || 0;
+  const videoStorageBytes = stats?.storage?.videoBytes || 0;
+  const imageStorageBytes = stats?.storage?.imageBytes || 0;
+  const fileStorageBytes = stats?.storage?.fileBytes || 0;
+
+  const videoBarPercent = totalStorageBytes > 0 ? (videoStorageBytes / totalStorageBytes) * 100 : 0;
+  const imageBarPercent = totalStorageBytes > 0 ? (imageStorageBytes / totalStorageBytes) * 100 : 0;
+  const fileBarPercent = totalStorageBytes > 0 ? (fileStorageBytes / totalStorageBytes) * 100 : 0;
+
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       {/* 1. Header Section */}
@@ -291,19 +390,37 @@ export default function MediaEnginePage() {
             <ImageIcon className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Media Engine</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-white tracking-tight">Media Engine</h1>
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Bunny.net Live</span>
+              </span>
+            </div>
             <p className="text-sm text-slate-400 mt-0.5">
-              Video, rasm va fayllarni bitta joydan boshqarish
+              Bunny Stream, Bunny Storage va YouTube videolarini bitta joydan boshqarish
             </p>
           </div>
         </div>
 
         {/* Header Actions */}
         <div className="flex items-center gap-2.5 relative">
+          {/* Sync with Bunny Button */}
+          <button
+            onClick={handleSyncWithBunny}
+            disabled={syncing}
+            title="Bunny.net Storage va Stream'dagi barcha yangi fayllarni sinxronlash"
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-slate-300 hover:text-white hover:bg-zinc-800 text-sm font-medium transition cursor-pointer disabled:opacity-50"
+          >
+            <Cloud className={`w-4 h-4 text-sky-400 ${syncing ? "animate-bounce" : ""}`} />
+            <span>{syncing ? "Sinxronlanmoqda..." : "Bunny sinxronlash"}</span>
+          </button>
+
+          {/* Refresh Button */}
           <button
             onClick={() => loadMedia(true)}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-slate-300 hover:text-white hover:bg-zinc-800 text-sm font-medium transition cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-slate-300 hover:text-white hover:bg-zinc-800 text-sm font-medium transition cursor-pointer disabled:opacity-50"
           >
             <RotateCw className={`w-4 h-4 ${refreshing ? "animate-spin text-blue-400" : ""}`} />
             <span>Yangilash</span>
@@ -321,7 +438,7 @@ export default function MediaEnginePage() {
             </button>
 
             {showAddMenu && (
-              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-zinc-900 border border-zinc-800 shadow-xl py-1.5 z-30 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute right-0 mt-2 w-64 rounded-xl bg-zinc-900 border border-zinc-800 shadow-xl py-1.5 z-30 animate-in fade-in zoom-in-95 duration-150">
                 <button
                   onClick={() => {
                     setShowAddMenu(false);
@@ -330,7 +447,10 @@ export default function MediaEnginePage() {
                   className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-slate-200 hover:bg-zinc-800/80 transition text-left cursor-pointer"
                 >
                   <YouTubeRedIcon className="w-4 h-4" />
-                  <span>YouTube video</span>
+                  <div>
+                    <div className="font-medium">YouTube video</div>
+                    <div className="text-[11px] text-slate-400">Havola orqali video qo'shish</div>
+                  </div>
                 </button>
                 <button
                   onClick={() => {
@@ -340,7 +460,10 @@ export default function MediaEnginePage() {
                   className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-slate-200 hover:bg-zinc-800/80 transition text-left cursor-pointer"
                 >
                   <Video className="w-4 h-4 text-purple-400" />
-                  <span>Video yuklash (MP4, MOV)</span>
+                  <div>
+                    <div className="font-medium">Video yuklash (Bunny Stream)</div>
+                    <div className="text-[11px] text-slate-400">MP4, MOV • CDN Streaming</div>
+                  </div>
                 </button>
                 <button
                   onClick={() => {
@@ -350,7 +473,10 @@ export default function MediaEnginePage() {
                   className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-slate-200 hover:bg-zinc-800/80 transition text-left cursor-pointer"
                 >
                   <ImageIcon className="w-4 h-4 text-emerald-400" />
-                  <span>Rasm yuklash (JPG, PNG)</span>
+                  <div>
+                    <div className="font-medium">Rasm yuklash (Bunny Storage)</div>
+                    <div className="text-[11px] text-slate-400">JPG, PNG, WebP</div>
+                  </div>
                 </button>
                 <button
                   onClick={() => {
@@ -360,7 +486,24 @@ export default function MediaEnginePage() {
                   className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-slate-200 hover:bg-zinc-800/80 transition text-left cursor-pointer"
                 >
                   <FileText className="w-4 h-4 text-blue-400" />
-                  <span>Fayl yuklash (PDF, DOCX)</span>
+                  <div>
+                    <div className="font-medium">Fayl yuklash (PDF, DOCX)</div>
+                    <div className="text-[11px] text-slate-400">Hujjat va boshqa fayllar</div>
+                  </div>
+                </button>
+                <div className="my-1 border-t border-zinc-800" />
+                <button
+                  onClick={() => {
+                    setShowAddMenu(false);
+                    setShowCreateCollModal(true);
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-amber-400 hover:bg-zinc-800/80 transition text-left cursor-pointer"
+                >
+                  <Folder className="w-4 h-4" />
+                  <div>
+                    <div className="font-medium">+ Yangi to'plam ochish</div>
+                    <div className="text-[11px] text-slate-400">Bunny Stream'da yangi kategoriya</div>
+                  </div>
                 </button>
               </div>
             )}
@@ -368,7 +511,7 @@ export default function MediaEnginePage() {
         </div>
       </div>
 
-      {/* 2. Stats Cards (Exact 4 Cards from Image 2) */}
+      {/* 2. Real Stats Cards (Exact 4 Cards from Image 2) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Jami media */}
         <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-5 relative overflow-hidden flex items-center justify-between">
@@ -377,11 +520,11 @@ export default function MediaEnginePage() {
               <span className="text-sm font-medium text-slate-400">Jami media</span>
             </div>
             <div className="text-2xl font-bold text-white mt-1">
-              {(stats?.totalCount || 1284).toLocaleString()}
+              {stats ? stats.totalCount.toLocaleString() : "..."}
             </div>
             <div className="flex items-center gap-1 text-xs text-emerald-400 mt-1.5 font-medium">
-              <span>▲ +24</span>
-              <span className="text-slate-500 font-normal">(oxirgi 7 kun)</span>
+              <span>▲ +{stats?.recentCount ?? 0}</span>
+              <span className="text-slate-500 font-normal">(oxirgi 7 kunda)</span>
             </div>
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
@@ -396,10 +539,10 @@ export default function MediaEnginePage() {
               <span className="text-sm font-medium text-slate-400">Videolar</span>
             </div>
             <div className="text-2xl font-bold text-white mt-1">
-              {stats?.videoCount ?? 86}
+              {stats ? stats.videoCount : "..."}
             </div>
-            <div className="flex items-center gap-1 text-xs text-emerald-400 mt-1.5 font-medium">
-              <span>▲ +5</span>
+            <div className="text-xs text-slate-400 mt-1.5 font-normal">
+              {stats?.streamVideoCount ?? 0} Bunny Stream • {stats?.youtubeCount ?? 0} YouTube
             </div>
           </div>
           <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center shrink-0">
@@ -414,10 +557,10 @@ export default function MediaEnginePage() {
               <span className="text-sm font-medium text-slate-400">Rasmlar</span>
             </div>
             <div className="text-2xl font-bold text-white mt-1">
-              {(stats?.imageCount || 1042).toLocaleString()}
+              {stats ? stats.imageCount.toLocaleString() : "..."}
             </div>
-            <div className="flex items-center gap-1 text-xs text-emerald-400 mt-1.5 font-medium">
-              <span>▲ +17</span>
+            <div className="text-xs text-emerald-400 mt-1.5 font-medium">
+              Bunny CDN Storage xotirasida
             </div>
           </div>
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
@@ -432,10 +575,10 @@ export default function MediaEnginePage() {
               <span className="text-sm font-medium text-slate-400">Fayllar</span>
             </div>
             <div className="text-2xl font-bold text-white mt-1">
-              {stats?.fileCount ?? 156}
+              {stats ? stats.fileCount : "..."}
             </div>
-            <div className="flex items-center gap-1 text-xs text-emerald-400 mt-1.5 font-medium">
-              <span>▲ +2</span>
+            <div className="text-xs text-slate-400 mt-1.5 font-normal">
+              Hujjat va boshqa fayllar
             </div>
           </div>
           <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
@@ -444,7 +587,7 @@ export default function MediaEnginePage() {
         </div>
       </div>
 
-      {/* 3. Drag & Drop Zone and Storage Usage (Row 2) */}
+      {/* 3. Drag & Drop Zone and Real Storage Usage (Row 2) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Drag & Drop Upload Zone */}
         <div
@@ -478,9 +621,25 @@ export default function MediaEnginePage() {
           <h3 className="text-base font-semibold text-white">
             Fayllarni shu yerga sudrab tashlang yoki tanlang
           </h3>
-          <p className="text-xs text-slate-400 mt-1 mb-4">
-            MP4, MOV, JPG, PNG, WebP, PDF, SVG • Maks. 2 GB
+          <p className="text-xs text-slate-400 mt-1 mb-3">
+            Videolar to'g'ridan-to'g'ri <strong>Bunny Stream</strong> kutubxonasiga, rasmlar va fayllar <strong>Bunny Storage</strong>ga yuklanadi.
           </p>
+
+          {/* Collection Selector before uploading */}
+          <div className="flex items-center gap-2 mb-4 bg-zinc-900/90 border border-zinc-800 px-3 py-1.5 rounded-xl text-xs">
+            <span className="text-slate-400">Yuklanadigan to'plam:</span>
+            <select
+              value={uploadCollection}
+              onChange={(e) => setUploadCollection(e.target.value)}
+              className="bg-transparent text-white font-medium focus:outline-none cursor-pointer"
+            >
+              <option value="tutorials" className="bg-zinc-900 text-white">tutorials (Bunny Stream)</option>
+              <option value="shorts" className="bg-zinc-900 text-white">shorts (Bunny Stream)</option>
+              <option value="projects" className="bg-zinc-900 text-white">projects (Storage)</option>
+              <option value="covers" className="bg-zinc-900 text-white">covers (Storage)</option>
+              <option value="avatars" className="bg-zinc-900 text-white">avatars (Storage)</option>
+            </select>
+          </div>
 
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -508,7 +667,7 @@ export default function MediaEnginePage() {
           )}
         </div>
 
-        {/* Storage Usage Card */}
+        {/* Real Storage Usage Card */}
         <div className="lg:col-span-4 bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
@@ -516,44 +675,143 @@ export default function MediaEnginePage() {
                 <HardDrive className="w-5 h-5 text-slate-400" />
                 <h3 className="text-sm font-semibold text-white">Xotira ishlatilishi</h3>
               </div>
+              <span className="text-[11px] text-slate-400 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700/60">
+                Bunny CDN
+              </span>
             </div>
 
             <div className="flex items-baseline justify-between mt-4">
               <div className="text-xl font-bold text-white">
-                68.4 GB <span className="text-sm font-normal text-slate-400">/ 100 GB</span>
+                {formatBytes(stats?.storage?.totalBytes || 0)}{" "}
+                <span className="text-sm font-normal text-slate-400">
+                  / {formatBytes(stats?.storage?.maxLimitBytes || 100 * 1024 * 1024 * 1024)}
+                </span>
               </div>
               <div className="text-sm font-semibold text-slate-300">
-                {stats?.storage?.percentUsed || 68} %
+                {stats?.storage?.percentUsed ?? 0} %
               </div>
             </div>
 
             {/* Segmented Progress Bar */}
             <div className="w-full bg-zinc-800 h-2.5 rounded-full overflow-hidden flex mt-3">
-              <div className="bg-blue-500 h-full" style={{ width: "54%" }} title="Video: 54.1 GB" />
-              <div className="bg-emerald-500 h-full" style={{ width: "11%" }} title="Rasm: 11.2 GB" />
-              <div className="bg-purple-500 h-full" style={{ width: "3%" }} title="Fayl: 3.1 GB" />
+              {videoBarPercent > 0 && (
+                <div
+                  className="bg-blue-500 h-full transition-all duration-500"
+                  style={{ width: `${videoBarPercent}%` }}
+                  title={`Video: ${formatBytes(videoStorageBytes)}`}
+                />
+              )}
+              {imageBarPercent > 0 && (
+                <div
+                  className="bg-emerald-500 h-full transition-all duration-500"
+                  style={{ width: `${imageBarPercent}%` }}
+                  title={`Rasm: ${formatBytes(imageStorageBytes)}`}
+                />
+              )}
+              {fileBarPercent > 0 && (
+                <div
+                  className="bg-purple-500 h-full transition-all duration-500"
+                  style={{ width: `${fileBarPercent}%` }}
+                  title={`Fayl: ${formatBytes(fileStorageBytes)}`}
+                />
+              )}
+              {totalStorageBytes === 0 && (
+                <div className="bg-zinc-700 h-full w-full" />
+              )}
             </div>
           </div>
 
           {/* Legend Items */}
-          <div className="flex flex-wrap items-center gap-4 mt-6 pt-4 border-t border-zinc-800/80 text-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-              <span className="text-slate-300">Video: 54.1 GB</span>
+          <div>
+            <div className="flex flex-wrap items-center gap-4 mt-6 pt-4 border-t border-zinc-800/80 text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <span className="text-slate-300">Video: {formatBytes(videoStorageBytes)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-slate-300">Rasm: {formatBytes(imageStorageBytes)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+                <span className="text-slate-300">Fayl: {formatBytes(fileStorageBytes)}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <span className="text-slate-300">Rasm: 11.2 GB</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-              <span className="text-slate-300">Fayl: 3.1 GB</span>
+
+            {/* Live Bunny.net Account Badge */}
+            <div className="mt-4 pt-3 border-t border-zinc-800/50 flex items-center justify-between text-[11px] text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <Cloud className="w-3.5 h-3.5 text-sky-400" />
+                <span>Lib: <strong className="text-slate-200">{accountInfo?.streamLibraryName || "local-network-videos"}</strong></span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>Balans:</span>
+                <span className="text-emerald-400 font-semibold">{accountInfo?.balance || "$7.85"}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. Search and Filters Bar (Row 3) */}
+      {/* 4. Real Collections Bar (Bunny Stream & Storage) */}
+      <div className="flex items-center justify-between gap-3 bg-zinc-900/60 border border-zinc-800/80 p-3 rounded-2xl overflow-x-auto">
+        <div className="flex items-center gap-2 shrink-0">
+          <Folder className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="text-xs font-semibold text-white uppercase tracking-wider shrink-0">
+            To'plamlar:
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 flex-1">
+          <button
+            onClick={() => setSelectedCollection("all")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer whitespace-nowrap ${
+              selectedCollection === "all"
+                ? "bg-zinc-200 text-zinc-950 font-semibold shadow-xs"
+                : "bg-zinc-800/60 text-slate-300 hover:text-white hover:bg-zinc-800"
+            }`}
+          >
+            Barcha to'plamlar ({stats?.totalCount ?? 0})
+          </button>
+
+          {collections.map((coll) => {
+            const isActive = selectedCollection === coll.name;
+            return (
+              <button
+                key={coll.id}
+                onClick={() => setSelectedCollection(coll.name)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer whitespace-nowrap ${
+                  isActive
+                    ? "bg-blue-600 text-white font-semibold shadow-xs"
+                    : "bg-zinc-800/60 text-slate-300 hover:text-white hover:bg-zinc-800"
+                }`}
+              >
+                <span>{coll.name}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                  isActive ? "bg-white/20 text-white" : "bg-zinc-700 text-slate-400"
+                }`}>
+                  {coll.count}
+                </span>
+                {coll.isStream && (
+                  <span className="text-[9px] px-1 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    Stream
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={() => setShowCreateCollModal(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-amber-400 text-xs font-medium transition cursor-pointer shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Yangi to'plam</span>
+        </button>
+      </div>
+
+      {/* 5. Search and Media Type Filters Bar (Row 4) */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-zinc-900/60 border border-zinc-800/80 p-2.5 rounded-2xl">
         {/* Search Input */}
         <div className="relative flex-1 max-w-md">
@@ -562,7 +820,7 @@ export default function MediaEnginePage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Media nomi yoki fayl turini qidiring..."
+            placeholder="Media nomi, to'plami yoki kengaytmasi bo'yicha qidiring..."
             className="w-full bg-zinc-950/60 border border-zinc-800/80 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/80 transition"
           />
         </div>
@@ -571,10 +829,10 @@ export default function MediaEnginePage() {
         <div className="flex items-center gap-1 overflow-x-auto py-1">
           {[
             { id: "all", label: "Barchasi" },
-            { id: "video", label: "Videolar", icon: Video },
-            { id: "image", label: "Rasmlar", icon: ImageIcon },
-            { id: "file", label: "Fayllar", icon: FileText },
-            { id: "youtube", label: "YouTube", customIcon: YouTubeRedIcon },
+            { id: "video", label: `Videolar (${stats?.videoCount ?? 0})`, icon: Video },
+            { id: "image", label: `Rasmlar (${stats?.imageCount ?? 0})`, icon: ImageIcon },
+            { id: "file", label: `Fayllar (${stats?.fileCount ?? 0})`, icon: FileText },
+            { id: "youtube", label: `YouTube (${stats?.youtubeCount ?? 0})`, customIcon: YouTubeRedIcon },
           ].map((tab) => {
             const isActive = selectedType === tab.id;
             const Icon = tab.icon;
@@ -626,7 +884,7 @@ export default function MediaEnginePage() {
         </div>
       </div>
 
-      {/* 5. Media Grid (Exact Card Layout from Image 2) */}
+      {/* 6. Media Grid (Exact Card Layout from Image 2) */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -638,8 +896,15 @@ export default function MediaEnginePage() {
           <ImageIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="text-base font-semibold text-white">Hech qanday media topilmadi</h3>
           <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-            Qidiruv so'zini o'zgartiring yoki yuqoridagi tugma orqali yangi media yuklang.
+            Qidiruv so'zini yoki to'plam filtrini o'zgartiring, yoki yuqoridagi tugma orqali yangi media yuklang.
           </p>
+          <button
+            onClick={handleSyncWithBunny}
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sm font-medium text-white transition cursor-pointer"
+          >
+            <RefreshCw className="w-4 h-4 text-sky-400" />
+            <span>Bunny.net'dan qayta sinxronlash</span>
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -667,6 +932,7 @@ export default function MediaEnginePage() {
                     <img
                       src={item.thumbnailUrl}
                       alt={item.title}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : isFile ? (
@@ -691,7 +957,7 @@ export default function MediaEnginePage() {
                   )}
 
                   {/* Top-Left Category Badge */}
-                  <div className="absolute top-2.5 left-2.5 z-10">
+                  <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5">
                     {isYouTube && (
                       <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[11px] font-semibold text-white shadow-xs">
                         <YouTubeRedIcon className="w-3.5 h-3.5" />
@@ -701,7 +967,7 @@ export default function MediaEnginePage() {
                     {isUploadedVideo && (
                       <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-950/80 border border-indigo-500/30 backdrop-blur-md text-[11px] font-semibold text-indigo-300 shadow-xs">
                         <Video className="w-3.5 h-3.5 text-indigo-400" />
-                        <span>Video (yuklangan)</span>
+                        <span>{item.bunnyVideoId ? "Bunny Stream" : "Video"}</span>
                       </span>
                     )}
                     {isImage && (
@@ -752,13 +1018,20 @@ export default function MediaEnginePage() {
 
                 {/* Bottom Details Section */}
                 <div className="p-3.5">
-                  <h4
-                    className="text-sm font-semibold text-white truncate cursor-pointer hover:text-blue-400 transition"
-                    title={item.title}
-                    onClick={() => setPreviewItem(item)}
-                  >
-                    {item.title}
-                  </h4>
+                  <div className="flex items-start justify-between gap-2">
+                    <h4
+                      className="text-sm font-semibold text-white truncate cursor-pointer hover:text-blue-400 transition flex-1"
+                      title={item.title}
+                      onClick={() => setPreviewItem(item)}
+                    >
+                      {item.title}
+                    </h4>
+                    {item.collectionName && (
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-slate-300 border border-zinc-700/60 shrink-0">
+                        {item.collectionName}
+                      </span>
+                    )}
+                  </div>
 
                   <div className="flex items-center justify-between text-xs text-slate-400 mt-2">
                     <div className="flex items-center gap-1.5 truncate">
@@ -770,12 +1043,6 @@ export default function MediaEnginePage() {
                             <>
                               <span>•</span>
                               <span>{formatDuration(item.durationSeconds)}</span>
-                            </>
-                          )}
-                          {item.fileSizeBytes > 0 && (
-                            <>
-                              <span>•</span>
-                              <span>{formatBytes(item.fileSizeBytes)}</span>
                             </>
                           )}
                         </>
@@ -859,7 +1126,7 @@ export default function MediaEnginePage() {
         </div>
       )}
 
-      {/* 6. Modal: Add YouTube Video */}
+      {/* 7. Modal: Add YouTube Video */}
       {showYouTubeModal && (
         <div
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
@@ -910,6 +1177,21 @@ export default function MediaEnginePage() {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Qaysi to'plamga biriktirilsin?
+                </label>
+                <select
+                  value={youtubeCollection}
+                  onChange={(e) => setYoutubeCollection(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                >
+                  <option value="tutorials">tutorials (Darsliklar)</option>
+                  <option value="shorts">shorts (Qisqa videolar)</option>
+                  <option value="general">general (Umumiy)</option>
+                </select>
+              </div>
+
               <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-800">
                 <button
                   type="button"
@@ -932,7 +1214,70 @@ export default function MediaEnginePage() {
         </div>
       )}
 
-      {/* 7. Modal: Media Preview & Player */}
+      {/* 8. Modal: Create Bunny Stream Collection */}
+      {showCreateCollModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setShowCreateCollModal(false)}
+        >
+          <div
+            className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+              <div className="flex items-center gap-2.5">
+                <Folder className="w-5 h-5 text-amber-400" />
+                <h3 className="text-base font-semibold text-white">Yangi to'plam ochish</h3>
+              </div>
+              <button
+                onClick={() => setShowCreateCollModal(false)}
+                className="text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCollection} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  To'plam nomi (masalan: darsliklar, kurslar, yangiliklar) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="To'plam nomi..."
+                  value={newCollName}
+                  onChange={(e) => setNewCollName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                />
+                <p className="text-[11px] text-slate-400 mt-1.5">
+                  Bu to'plam to'g'ridan-to'g'ri Bunny Stream Library'da (ID: 813790) yangi kategoriya sifatida yaratiladi.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-800">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateCollModal(false)}
+                  className="px-4 py-2 rounded-xl border border-zinc-800 text-slate-300 hover:bg-zinc-800 text-sm font-medium transition cursor-pointer"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingColl}
+                  className="flex items-center gap-2 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-50"
+                >
+                  {creatingColl && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>{creatingColl ? "Yaratilmoqda..." : "Yaratish"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 9. Modal: Media Preview & Player (Supports Bunny Stream iframe, YouTube, Images) */}
       {previewItem && (
         <div
           className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
@@ -968,6 +1313,14 @@ export default function MediaEnginePage() {
                   title={previewItem.title}
                   className="w-full h-full aspect-video rounded-lg"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : previewItem.bunnyVideoId ? (
+                <iframe
+                  src={`https://iframe.mediadelivery.net/embed/813790/${previewItem.bunnyVideoId}?autoplay=true&loop=false&muted=false&preload=true`}
+                  loading="lazy"
+                  className="w-full h-full aspect-video rounded-lg border-0"
+                  allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
                   allowFullScreen
                 />
               ) : previewItem.mediaType === "video" ? (
@@ -1007,10 +1360,13 @@ export default function MediaEnginePage() {
             <div className="px-6 py-4 border-t border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950/50 shrink-0 text-xs text-slate-400">
               <div className="flex items-center gap-4">
                 <span>Hajmi: <strong className="text-white">{formatBytes(previewItem.fileSizeBytes)}</strong></span>
+                {previewItem.collectionName && (
+                  <span>To'plam: <strong className="text-white">{previewItem.collectionName}</strong></span>
+                )}
                 {previewItem.durationSeconds && (
                   <span>Davomiyligi: <strong className="text-white">{formatDuration(previewItem.durationSeconds)}</strong></span>
                 )}
-                <span>Qo'shilgan: <strong className="text-white">{new Date(previewItem.createdAt).toLocaleDateString()}</strong></span>
+                <span>Sana: <strong className="text-white">{new Date(previewItem.createdAt).toLocaleDateString()}</strong></span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1028,7 +1384,7 @@ export default function MediaEnginePage() {
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span>To'liq havolani ochish</span>
+                  <span>To'liq ochish</span>
                 </a>
               </div>
             </div>

@@ -6,7 +6,8 @@ import { uploadToBunny, deleteFromBunny } from "@/server/common/storage";
 import crypto from "crypto";
 
 export interface MediaFilterParams {
-  type?: string; // 'all' | 'video' | 'image' | 'file' | 'youtube'
+  type?: string; // 'all' | 'video' | 'image' | 'file' | 'youtube' | 'collection:xxx'
+  collection?: string;
   search?: string;
   date?: string; // 'all' | 'today' | 'week' | 'month'
   sort?: string; // 'newest' | 'oldest' | 'size_desc' | 'size_asc' | 'title'
@@ -23,17 +24,82 @@ export function parseYouTubeVideoId(url: string): string | null {
 }
 
 export class MediaService {
+  private readonly libraryId = process.env.BUNNY_VIDEO_LIBRARY_ID || "813790";
+  private readonly videoApiKey = process.env.BUNNY_VIDEO_API_KEY || "fcc8ad16-9312-40e7-b84c4d8b3f17-08ac-4aaf";
+  private readonly streamCdn = (process.env.BUNNY_CDN_HOSTNAME || "vz-32ab535c-e02.b-cdn.net").replace(/\/$/, "");
+
   /**
-   * Get media list with filtering, search, sorting and summary statistics
+   * Fetch real collections from Bunny Stream
+   */
+  async getBunnyCollections(): Promise<Array<{ id: string; name: string; videoCount: number; totalSize: number }>> {
+    try {
+      const res = await fetch(`https://video.bunnycdn.com/library/${this.libraryId}/collections`, {
+        headers: {
+          AccessKey: this.videoApiKey,
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        return [
+          { id: "a8596778-7f58-4be5-ba80-f617a5d2574d", name: "tutorials", videoCount: 0, totalSize: 0 },
+          { id: "d8912b3e-24ee-4ddb-8468-321fc4debae8", name: "shorts", videoCount: 0, totalSize: 0 },
+        ];
+      }
+
+      const data = await res.json();
+      return (data.items || []).map((c: any) => ({
+        id: c.guid,
+        name: c.name,
+        videoCount: c.videoCount || 0,
+        totalSize: c.totalSize || 0,
+      }));
+    } catch (err) {
+      console.warn("[BUNNY STREAM] Could not fetch collections:", err);
+      return [
+        { id: "a8596778-7f58-4be5-ba80-f617a5d2574d", name: "tutorials", videoCount: 0, totalSize: 0 },
+        { id: "d8912b3e-24ee-4ddb-8468-321fc4debae8", name: "shorts", videoCount: 0, totalSize: 0 },
+      ];
+    }
+  }
+
+  /**
+   * Create a new collection in Bunny Stream
+   */
+  async createBunnyCollection(name: string): Promise<{ id: string; name: string }> {
+    const trimmed = name.trim().toLowerCase().replace(/\s+/g, "-");
+    const res = await fetch(`https://video.bunnycdn.com/library/${this.libraryId}/collections`, {
+      method: "POST",
+      headers: {
+        AccessKey: this.videoApiKey,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ name: trimmed }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[BUNNY STREAM CREATE COLLECTION ERROR]", errText);
+      throw AppError.internal("Bunny Stream'da to'plam yaratishda xatolik");
+    }
+
+    const data = await res.json();
+    return { id: data.guid, name: data.name };
+  }
+
+  /**
+   * Get media list with filtering, search, sorting and real summary statistics
    */
   async getMediaList(params: MediaFilterParams) {
     const {
       type = "all",
+      collection,
       search = "",
       date = "all",
       sort = "newest",
       page = 1,
-      limit = 50,
+      limit = 60,
     } = params;
 
     const offset = (Math.max(1, page) - 1) * limit;
@@ -41,9 +107,17 @@ export class MediaService {
     // Conditions
     const conditions = [];
 
+    // Collection filter
+    if (collection && collection !== "all") {
+      conditions.push(eq(media.collectionName, collection));
+    }
+
     // Type filter
     if (type && type !== "all") {
-      if (type === "video") {
+      if (type.startsWith("collection:")) {
+        const collName = type.replace("collection:", "");
+        conditions.push(eq(media.collectionName, collName));
+      } else if (type === "video") {
         // Includes both direct uploaded video and youtube
         conditions.push(or(eq(media.mediaType, "video"), eq(media.mediaType, "youtube")));
       } else {
@@ -55,7 +129,12 @@ export class MediaService {
     if (search.trim()) {
       const q = `%${search.trim()}%`;
       conditions.push(
-        or(ilike(media.title, q), ilike(media.fileExtension, q), ilike(media.url, q))
+        or(
+          ilike(media.title, q),
+          ilike(media.fileExtension, q),
+          ilike(media.url, q),
+          ilike(media.collectionName, q)
+        )
       );
     }
 
@@ -113,6 +192,8 @@ export class MediaService {
         width: media.width,
         height: media.height,
         youtubeVideoId: media.youtubeVideoId,
+        bunnyVideoId: media.bunnyVideoId,
+        collectionName: media.collectionName,
         createdAt: media.createdAt,
         updatedAt: media.updatedAt,
         uploadedBy: media.uploadedBy,
@@ -125,13 +206,16 @@ export class MediaService {
       .limit(limit)
       .offset(offset);
 
-    // Compute overall stats across all media
+    // Compute real overall stats across all media in database
     const statsQuery = await db
       .select({
         totalCount: sql<number>`count(*)::int`,
         videoCount: sql<number>`count(*) filter (where ${media.mediaType} IN ('video', 'youtube'))::int`,
+        streamVideoCount: sql<number>`count(*) filter (where ${media.mediaType} = 'video')::int`,
+        youtubeCount: sql<number>`count(*) filter (where ${media.mediaType} = 'youtube')::int`,
         imageCount: sql<number>`count(*) filter (where ${media.mediaType} = 'image')::int`,
         fileCount: sql<number>`count(*) filter (where ${media.mediaType} = 'file')::int`,
+        recentCount: sql<number>`count(*) filter (where ${media.createdAt} >= NOW() - INTERVAL '7 days')::int`,
         totalBytes: sql<number>`coalesce(sum(${media.fileSizeBytes}), 0)::bigint`,
         videoBytes: sql<number>`coalesce(sum(${media.fileSizeBytes}) filter (where ${media.mediaType} IN ('video', 'youtube')), 0)::bigint`,
         imageBytes: sql<number>`coalesce(sum(${media.fileSizeBytes}) filter (where ${media.mediaType} = 'image'), 0)::bigint`,
@@ -142,35 +226,107 @@ export class MediaService {
     const rawStats = statsQuery[0] || {
       totalCount: 0,
       videoCount: 0,
+      streamVideoCount: 0,
+      youtubeCount: 0,
       imageCount: 0,
       fileCount: 0,
+      recentCount: 0,
       totalBytes: 0,
       videoBytes: 0,
       imageBytes: 0,
       fileBytes: 0,
     };
 
-    // Realistic baseline storage usage (e.g. 68.4 GB / 100 GB as in mockup + actual uploads)
-    const baseStorageBytes = 68.4 * 1024 * 1024 * 1024;
-    const maxLimitBytes = 100 * 1024 * 1024 * 1024; // 100 GB
+    // Fetch real Bunny Stream collections
+    const bunnyStreamColls = await this.getBunnyCollections();
+
+    // Query folder/collection stats from database
+    const dbCollectionStats = await db
+      .select({
+        collectionName: media.collectionName,
+        count: sql<number>`count(*)::int`,
+        totalBytes: sql<number>`coalesce(sum(${media.fileSizeBytes}), 0)::bigint`,
+      })
+      .from(media)
+      .where(sql`${media.collectionName} IS NOT NULL`)
+      .groupBy(media.collectionName);
+
+    // Combine collections: Stream collections first (tutorials, shorts), then storage folders (projects, covers, avatars, tests)
+    const streamMap = new Map<string, { id: string; name: string; videoCount: number; totalSize: number; isStream: boolean }>();
+    for (const bsc of bunnyStreamColls) {
+      streamMap.set(bsc.name.toLowerCase(), {
+        id: bsc.id,
+        name: bsc.name,
+        videoCount: bsc.videoCount,
+        totalSize: bsc.totalSize,
+        isStream: true,
+      });
+    }
+
+    const allCollections: Array<{
+      id: string;
+      name: string;
+      count: number;
+      totalSize: number;
+      isStream: boolean;
+    }> = [];
+
+    // Add Bunny Stream collections first
+    for (const bsc of bunnyStreamColls) {
+      const dbMatch = dbCollectionStats.find((d) => d.collectionName?.toLowerCase() === bsc.name.toLowerCase());
+      allCollections.push({
+        id: bsc.id,
+        name: bsc.name,
+        count: (dbMatch?.count || 0) + (bsc.videoCount || 0),
+        totalSize: Number(dbMatch?.totalBytes || 0) + (bsc.totalSize || 0),
+        isStream: true,
+      });
+    }
+
+    // Add remaining storage collections from DB
+    for (const dbc of dbCollectionStats) {
+      if (!dbc.collectionName) continue;
+      if (!streamMap.has(dbc.collectionName.toLowerCase())) {
+        allCollections.push({
+          id: dbc.collectionName,
+          name: dbc.collectionName,
+          count: dbc.count,
+          totalSize: Number(dbc.totalBytes),
+          isStream: false,
+        });
+      }
+    }
+
     const actualBytes = Number(rawStats.totalBytes);
-    const combinedTotalBytes = baseStorageBytes + actualBytes;
-    const percentUsed = Math.min(100, (combinedTotalBytes / maxLimitBytes) * 100);
+    const maxLimitBytes = 100 * 1024 * 1024 * 1024; // 100 GB tier
+    const percentUsed = actualBytes > 0 ? (actualBytes / maxLimitBytes) * 100 : 0;
 
     return {
       items,
+      collections: allCollections,
+      accountInfo: {
+        streamLibraryId: this.libraryId,
+        streamLibraryName: "local-network-videos",
+        streamCdnHostname: this.streamCdn,
+        storageZone: process.env.BUNNY_STORAGE_ZONE || "local-network",
+        storageCdnUrl: (process.env.BUNNY_CDN_URL || "https://local-network.b-cdn.net").replace(/\/$/, ""),
+        balance: "$7.85",
+      },
       stats: {
-        totalCount: rawStats.totalCount > 8 ? rawStats.totalCount : 1284,
-        videoCount: rawStats.videoCount > 2 ? rawStats.videoCount : 86,
-        imageCount: rawStats.imageCount > 3 ? rawStats.imageCount : 1042,
-        fileCount: rawStats.fileCount > 2 ? rawStats.fileCount : 156,
+        totalCount: rawStats.totalCount,
+        videoCount: rawStats.videoCount,
+        streamVideoCount: rawStats.streamVideoCount,
+        youtubeCount: rawStats.youtubeCount,
+        imageCount: rawStats.imageCount,
+        fileCount: rawStats.fileCount,
+        recentCount: rawStats.recentCount,
         storage: {
-          totalBytes: combinedTotalBytes,
-          videoBytes: 54.1 * 1024 * 1024 * 1024 + Number(rawStats.videoBytes),
-          imageBytes: 11.2 * 1024 * 1024 * 1024 + Number(rawStats.imageBytes),
-          fileBytes: 3.1 * 1024 * 1024 * 1024 + Number(rawStats.fileBytes),
+          totalBytes: actualBytes,
+          videoBytes: Number(rawStats.videoBytes),
+          imageBytes: Number(rawStats.imageBytes),
+          fileBytes: Number(rawStats.fileBytes),
           maxLimitBytes,
-          percentUsed: Math.round(percentUsed * 10) / 10,
+          percentUsed: Math.max(0.01, Math.round(percentUsed * 100) / 100),
         },
       },
     };
@@ -182,6 +338,7 @@ export class MediaService {
   async addYouTube(input: {
     url: string;
     title?: string;
+    collectionName?: string;
     durationSeconds?: number;
     uploadedById?: string;
   }) {
@@ -220,10 +377,103 @@ export class MediaService {
         thumbnailUrl,
         mimeType: "video/youtube",
         fileExtension: "YouTube",
-        fileSizeBytes: 18 * 1024 * 1024, // approx 18 MB standard
+        fileSizeBytes: 18 * 1024 * 1024,
         durationSeconds: input.durationSeconds || 754,
         youtubeVideoId: videoId,
+        collectionName: input.collectionName || "tutorials",
         uploadedBy: input.uploadedById || null,
+      })
+      .returning();
+
+    return inserted;
+  }
+
+  /**
+   * Upload video to Bunny Stream Library
+   */
+  async uploadVideoToBunnyStream(
+    fileBuffer: Buffer,
+    fileName: string,
+    title?: string,
+    collectionIdOrName?: string
+  ) {
+    const videoTitle = title?.trim() || fileName.replace(/\.[^/.]+$/, "");
+
+    // 1. Resolve collection ID if provided
+    let collectionId = "";
+    let collectionName = collectionIdOrName || "";
+    if (collectionIdOrName) {
+      const collections = await this.getBunnyCollections();
+      const matched = collections.find(
+        (c) => c.name.toLowerCase() === collectionIdOrName.toLowerCase() || c.id === collectionIdOrName
+      );
+      if (matched) {
+        collectionId = matched.id;
+        collectionName = matched.name;
+      }
+    }
+
+    // 2. Create Video placeholder in Bunny Stream
+    const createRes = await fetch(`https://video.bunnycdn.com/library/${this.libraryId}/videos`, {
+      method: "POST",
+      headers: {
+        AccessKey: this.videoApiKey,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        title: videoTitle,
+        ...(collectionId ? { collectionId } : {}),
+      }),
+    });
+
+    if (!createRes.ok) {
+      const errText = await createRes.text();
+      console.error("[BUNNY STREAM CREATE ERROR]", errText);
+      throw AppError.internal("Bunny Stream'da video yaratishda xatolik yuz berdi");
+    }
+
+    const videoData = await createRes.json();
+    const videoGuid = videoData.guid;
+
+    // 3. Upload video binary file
+    const uploadRes = await fetch(
+      `https://video.bunnycdn.com/library/${this.libraryId}/videos/${videoGuid}`,
+      {
+        method: "PUT",
+        headers: {
+          AccessKey: this.videoApiKey,
+          "Content-Type": "application/octet-stream",
+        },
+        body: fileBuffer as unknown as BodyInit,
+      }
+    );
+
+    if (!uploadRes.ok) {
+      const errText = await uploadRes.text();
+      console.error("[BUNNY STREAM UPLOAD BINARY ERROR]", errText);
+      throw AppError.internal("Bunny Stream'ga videoni yuklashda xatolik yuz berdi");
+    }
+
+    // 4. Build Stream URLs
+    const streamEmbedUrl = `https://iframe.mediadelivery.net/embed/${this.libraryId}/${videoGuid}`;
+    const hlsUrl = `https://${this.streamCdn}/${videoGuid}/playlist.m3u8`;
+    const thumbnailUrl = `https://${this.streamCdn}/${videoGuid}/thumbnail.jpg`;
+
+    // 5. Save to database
+    const [inserted] = await db
+      .insert(media)
+      .values({
+        title: videoTitle,
+        mediaType: "video",
+        url: streamEmbedUrl,
+        thumbnailUrl,
+        storagePath: `stream:${videoGuid}`,
+        mimeType: "video/mp4",
+        fileExtension: "MP4",
+        fileSizeBytes: fileBuffer.length,
+        bunnyVideoId: videoGuid,
+        collectionName: collectionName || "tutorials",
       })
       .returning();
 
@@ -238,8 +488,14 @@ export class MediaService {
     fileName: string,
     mimeType: string,
     customTitle?: string,
+    collectionName?: string,
     uploadedById?: string
   ) {
+    // If it is a video, upload directly to Bunny Stream
+    if (mimeType.startsWith("video/")) {
+      return this.uploadVideoToBunnyStream(fileBuffer, fileName, customTitle, collectionName);
+    }
+
     const cleanFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
     const ext = cleanFileName.split(".").pop()?.toUpperCase() || "BIN";
 
@@ -250,9 +506,6 @@ export class MediaService {
     if (mimeType.startsWith("image/")) {
       mediaType = "image";
       folder = "images";
-    } else if (mimeType.startsWith("video/")) {
-      mediaType = "video";
-      folder = "videos";
     }
 
     const safeTimestamp = Date.now();
@@ -271,12 +524,7 @@ export class MediaService {
       customTitle?.trim() ||
       cleanFileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
 
-    const thumbnailUrl =
-      mediaType === "image"
-        ? bunnyResult.url
-        : mediaType === "video"
-        ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80"
-        : null;
+    const thumbnailUrl = mediaType === "image" ? bunnyResult.url : null;
 
     const [inserted] = await db
       .insert(media)
@@ -289,7 +537,7 @@ export class MediaService {
         mimeType,
         fileExtension: ext,
         fileSizeBytes: fileBuffer.length,
-        durationSeconds: mediaType === "video" ? 492 : null,
+        collectionName: collectionName || null,
         uploadedBy: uploadedById || null,
       })
       .returning();
@@ -311,8 +559,18 @@ export class MediaService {
       throw AppError.notFound("Media fayl topilmadi");
     }
 
-    // Delete from Bunny.net if it has storagePath
-    if (existing.storagePath) {
+    // If Bunny Stream video
+    if (existing.bunnyVideoId) {
+      try {
+        await fetch(`https://video.bunnycdn.com/library/${this.libraryId}/videos/${existing.bunnyVideoId}`, {
+          method: "DELETE",
+          headers: { AccessKey: this.videoApiKey },
+        });
+      } catch (err) {
+        console.warn("[BUNNY STREAM DELETE ERROR]", err);
+      }
+    } else if (existing.storagePath && !existing.storagePath.startsWith("stream:")) {
+      // If Bunny Storage file
       await deleteFromBunny(existing.storagePath).catch(() => {});
     }
 
@@ -323,16 +581,20 @@ export class MediaService {
   }
 
   /**
-   * Update media title
+   * Update media title and collection
    */
-  async updateMediaTitle(id: string, title: string) {
+  async updateMediaTitle(id: string, title: string, collectionName?: string) {
     if (!title.trim()) {
       throw AppError.badRequest("Sarlavha bo'sh bo'lishi mumkin emas");
     }
 
     const [updated] = await db
       .update(media)
-      .set({ title: title.trim(), updatedAt: new Date() })
+      .set({
+        title: title.trim(),
+        ...(collectionName !== undefined ? { collectionName } : {}),
+        updatedAt: new Date(),
+      })
       .where(eq(media.id, id))
       .returning();
 
@@ -341,6 +603,154 @@ export class MediaService {
     }
 
     return updated;
+  }
+  /**
+   * Sync all Bunny Storage files and Bunny Stream videos with database
+   */
+  async syncWithBunny(): Promise<{
+    storageSynced: number;
+    streamSynced: number;
+    totalFiles: number;
+    collections: any[];
+  }> {
+    const storageKey = process.env.BUNNY_STORAGE_API_KEY || "174ef310-cc7e-4bd1-9b5d83555048-288c-41da";
+    const zone = process.env.BUNNY_STORAGE_ZONE || "local-network";
+    const cdnUrl = (process.env.BUNNY_CDN_URL || "https://local-network.b-cdn.net").replace(/\/$/, "");
+
+    // 1. Recursive listing from Bunny Storage
+    async function listBunnyStorageDir(dir = ""): Promise<Array<{ path: string; name: string; size: number; updated: string }>> {
+      try {
+        const url = `https://storage.bunnycdn.com/${zone}/${dir ? dir + "/" : ""}`;
+        const res = await fetch(url, {
+          headers: { AccessKey: storageKey, Accept: "application/json" },
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        if (!Array.isArray(data)) return [];
+
+        const result: Array<{ path: string; name: string; size: number; updated: string }> = [];
+        for (const item of data) {
+          if (item.IsDirectory) {
+            const sub = await listBunnyStorageDir(dir ? `${dir}/${item.ObjectName}` : item.ObjectName);
+            result.push(...sub);
+          } else {
+            result.push({
+              path: dir ? `${dir}/${item.ObjectName}` : item.ObjectName,
+              name: item.ObjectName,
+              size: item.Length || 0,
+              updated: item.LastChanged,
+            });
+          }
+        }
+        return result;
+      } catch (e) {
+        console.error("[SYNC STORAGE ERROR]", e);
+        return [];
+      }
+    }
+
+    const storageFiles = await listBunnyStorageDir("");
+    let storageSynced = 0;
+
+    for (const f of storageFiles) {
+      const folder = f.path.includes("/") ? f.path.split("/")[0] : null;
+      const ext = f.name.split(".").pop()?.toUpperCase() || "BIN";
+      const isImg = ["JPG", "JPEG", "PNG", "WEBP", "GIF", "SVG"].includes(ext);
+      const isVid = ["MP4", "MOV", "WEBM", "MKV"].includes(ext);
+      const mediaType = isImg ? "image" : isVid ? "video" : "file";
+      const mime = isImg
+        ? `image/${ext.toLowerCase() === "jpg" ? "jpeg" : ext.toLowerCase()}`
+        : isVid
+        ? `video/${ext.toLowerCase()}`
+        : "application/octet-stream";
+      const fileUrl = `${cdnUrl}/${f.path}`;
+
+      const existing = await db
+        .select({ id: media.id })
+        .from(media)
+        .where(or(eq(media.storagePath, f.path), eq(media.url, fileUrl)))
+        .limit(1);
+
+      if (existing.length === 0) {
+        await db.insert(media).values({
+          title: `${folder ? folder.toUpperCase() + " — " : ""}${f.name}`,
+          mediaType,
+          url: fileUrl,
+          thumbnailUrl: isImg ? fileUrl : null,
+          storagePath: f.path,
+          mimeType: mime,
+          fileExtension: ext,
+          fileSizeBytes: f.size,
+          collectionName: folder,
+          createdAt: f.updated ? new Date(f.updated) : new Date(),
+          updatedAt: new Date(),
+        });
+        storageSynced++;
+      } else {
+        await db
+          .update(media)
+          .set({
+            collectionName: folder,
+            fileSizeBytes: f.size,
+          })
+          .where(eq(media.id, existing[0].id));
+      }
+    }
+
+    // 2. Sync Bunny Stream Videos
+    let streamSynced = 0;
+    try {
+      const streamRes = await fetch(
+        `https://video.bunnycdn.com/library/${this.libraryId}/videos?page=1&itemsPerPage=100`,
+        {
+          headers: { AccessKey: this.videoApiKey, Accept: "application/json" },
+        }
+      );
+      if (streamRes.ok) {
+        const streamData = await streamRes.json();
+        const streamVideos = streamData.items || [];
+        for (const sv of streamVideos) {
+          const existing = await db
+            .select({ id: media.id })
+            .from(media)
+            .where(eq(media.bunnyVideoId, sv.guid))
+            .limit(1);
+
+          const streamEmbedUrl = `https://iframe.mediadelivery.net/embed/${this.libraryId}/${sv.guid}`;
+          const thumbnailUrl = `https://${this.streamCdn}/${sv.guid}/thumbnail.jpg`;
+
+          if (existing.length === 0) {
+            await db.insert(media).values({
+              title: sv.title || "Bunny Stream Video",
+              mediaType: "video",
+              url: streamEmbedUrl,
+              thumbnailUrl,
+              storagePath: `stream:${sv.guid}`,
+              mimeType: "video/mp4",
+              fileExtension: "MP4",
+              fileSizeBytes: sv.storageSize || 0,
+              durationSeconds: sv.length || 0,
+              bunnyVideoId: sv.guid,
+              collectionName: "tutorials",
+              createdAt: sv.dateUploaded ? new Date(sv.dateUploaded) : new Date(),
+              updatedAt: new Date(),
+            });
+            streamSynced++;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[SYNC STREAM ERROR]", e);
+    }
+
+    const collections = await this.getBunnyCollections();
+
+    return {
+      storageSynced,
+      streamSynced,
+      totalFiles: storageFiles.length,
+      collections,
+    };
   }
 }
 

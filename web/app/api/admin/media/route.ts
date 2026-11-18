@@ -11,14 +11,16 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type") || "all";
+    const collection = searchParams.get("collection") || "";
     const search = searchParams.get("search") || "";
     const date = searchParams.get("date") || "all";
     const sort = searchParams.get("sort") || "newest";
     const page = Number(searchParams.get("page")) || 1;
-    const limit = Number(searchParams.get("limit")) || 50;
+    const limit = Number(searchParams.get("limit")) || 60;
 
     const result = await mediaService.getMediaList({
       type,
+      collection,
       search,
       date,
       sort,
@@ -39,10 +41,25 @@ export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get("content-type") || "";
 
-    // Case 1: JSON payload (e.g. YouTube video addition)
+    // Case 1: JSON payload (Sync, Collection creation, or YouTube addition)
     if (contentType.includes("application/json")) {
       const body = await req.json().catch(() => ({}));
-      const { url, title, durationSeconds } = body;
+
+      // Sub-case A: Manual Sync with Bunny
+      if (body.action === "sync") {
+        const syncRes = await mediaService.syncWithBunny();
+        return successResponse(syncRes);
+      }
+
+      // Sub-case B: Create Collection
+      if (body.action === "create_collection") {
+        if (!body.name) throw AppError.badRequest("To'plam nomi kiritilmadi");
+        const createdColl = await mediaService.createBunnyCollection(body.name);
+        return successResponse(createdColl, undefined, 201);
+      }
+
+      // Sub-case C: YouTube video addition
+      const { url, title, durationSeconds, collectionName, collection } = body;
 
       if (!url) {
         throw AppError.badRequest("YouTube video havolasi talab qilinadi");
@@ -51,6 +68,7 @@ export async function POST(req: NextRequest) {
       const created = await mediaService.addYouTube({
         url,
         title,
+        collectionName: collectionName || collection || undefined,
         durationSeconds: durationSeconds ? Number(durationSeconds) : undefined,
       });
 
@@ -62,19 +80,20 @@ export async function POST(req: NextRequest) {
       const formData = await req.formData();
       const file = formData.get("file") as File | null;
       const customTitle = (formData.get("title") as string) || "";
+      const collectionName = (formData.get("collection") as string) || (formData.get("collectionName") as string) || "";
 
       if (!file || !(file instanceof File)) {
         throw AppError.badRequest("Yuklash uchun fayl tanlanmagan");
       }
 
-      // Max size: 2GB (in practice, ensure file buffer is extracted)
       const buffer = Buffer.from(await file.arrayBuffer());
 
       const created = await mediaService.uploadFile(
         buffer,
         file.name,
         file.type,
-        customTitle
+        customTitle,
+        collectionName || undefined
       );
 
       return successResponse(created, undefined, 201);

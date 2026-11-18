@@ -505,6 +505,8 @@ export const media = pgTable(
     width: integer("width"),
     height: integer("height"),
     youtubeVideoId: varchar("youtube_video_id", { length: 64 }),
+    bunnyVideoId: varchar("bunny_video_id", { length: 128 }),
+    collectionName: varchar("collection_name", { length: 128 }),
     uploadedBy: uuid("uploaded_by").references(() => users.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -513,6 +515,7 @@ export const media = pgTable(
     index("idx_media_type").on(table.mediaType),
     index("idx_media_created_at").on(table.createdAt),
     index("idx_media_uploaded_by").on(table.uploadedBy),
+    index("idx_media_collection").on(table.collectionName),
   ]
 );
 
