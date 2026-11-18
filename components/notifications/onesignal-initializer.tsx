@@ -12,31 +12,46 @@ declare global {
 }
 
 /**
- * Prompt user for Push Notifications via OneSignal Web SDK v16 or Native Browser Notification
+ * Prompt user for Push Notifications via OneSignal Web SDK v16 or Native Browser Notification.
+ * Works whether SDK is already initialized or not yet loaded.
  */
 export async function promptPushNotification(): Promise<boolean> {
   if (typeof window === "undefined") return false;
 
+  const callOneSignal = async (OS: any): Promise<boolean> => {
+    try {
+      if (OS?.Slidedown?.promptPush) {
+        await OS.Slidedown.promptPush({ force: true });
+      } else if (OS?.Notifications?.requestPermission) {
+        await OS.Notifications.requestPermission();
+      } else if (typeof Notification !== "undefined" && typeof Notification.requestPermission === "function") {
+        await Notification.requestPermission();
+      }
+      // Opt-in to push subscription if not already
+      if (OS?.User?.PushSubscription?.optIn) {
+        await OS.User.PushSubscription.optIn().catch(() => {});
+      }
+      const isGranted =
+        (typeof Notification !== "undefined" && Notification.permission === "granted") ||
+        OS?.Notifications?.permission === "granted";
+      return Boolean(isGranted);
+    } catch (err) {
+      console.warn("[OneSignal prompt error]:", err);
+      return false;
+    }
+  };
+
+  // If SDK already loaded and initialized — call directly
+  if (window.OneSignal && typeof window.OneSignal.init === "function") {
+    return callOneSignal(window.OneSignal);
+  }
+
+  // SDK not yet loaded — push into the deferred queue
   return new Promise((resolve) => {
     try {
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       window.OneSignalDeferred.push(async (OneSignal: any) => {
-        try {
-          if (OneSignal?.Slidedown?.promptPush) {
-            await OneSignal.Slidedown.promptPush({ force: true });
-          } else if (OneSignal?.Notifications?.requestPermission) {
-            await OneSignal.Notifications.requestPermission();
-          } else if (typeof Notification !== "undefined" && typeof Notification.requestPermission === "function") {
-            await Notification.requestPermission();
-          }
-          const isGranted =
-            (typeof Notification !== "undefined" && Notification.permission === "granted") ||
-            OneSignal?.Notifications?.permission === "granted";
-          resolve(Boolean(isGranted));
-        } catch (err) {
-          console.warn("[OneSignal prompt error]:", err);
-          resolve(false);
-        }
+        resolve(await callOneSignal(OneSignal));
       });
     } catch {
       resolve(false);
@@ -124,8 +139,7 @@ export function OneSignalInitializer() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async (OneSignal: any) => {
+    const syncUser = async (OneSignal: any) => {
       try {
         if (!OneSignal || typeof OneSignal.login !== "function") return;
 
@@ -146,7 +160,15 @@ export function OneSignalInitializer() {
       } catch (err: any) {
         console.warn("[ONESIGNAL AUTH SYNC WARN]:", err?.message || err);
       }
-    });
+    };
+
+    // If SDK already initialized, call directly; otherwise queue it
+    if (window.OneSignal && typeof window.OneSignal.init === "function") {
+      syncUser(window.OneSignal);
+    } else {
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(syncUser);
+    }
   }, [session.isAuthenticated, session.user?.id]);
 
   return null;

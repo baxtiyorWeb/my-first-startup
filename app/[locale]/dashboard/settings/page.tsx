@@ -496,19 +496,29 @@ export default function SettingsPage() {
 
   const handleEnablePush = async () => {
     const granted = await promptPushNotification();
-    setPushStatus(granted ? "granted" : "denied");
-    if (granted) {
+    // Some browsers update Notification.permission asynchronously — wait a tick
+    await new Promise((r) => setTimeout(r, 600));
+    const finalStatus = getPushPermissionStatus();
+    setPushStatus(finalStatus);
+    if (finalStatus === "granted" || granted) {
+      setPushStatus("granted");
       toast.success(
         locale === "uz"
           ? "Push bildirishnomalar muvaffaqiyatli yoqildi!"
           : "Push-уведомления успешно включены!"
       );
       setPushEnabled(true);
+    } else if (finalStatus === "denied") {
+      toast.error(
+        locale === "uz"
+          ? "Brauzer bildirishnomalari bloklangan. URL manzilidagi qulf belgisidan qayta ruxsat bering."
+          : "Уведомления заблокированы в браузере. Разрешите их через значок замка в адресной строке."
+      );
     } else {
       toast.error(
         locale === "uz"
-          ? "Brauzer bildirishnomalari rad etildi yoki sozlamalarda bloklangan."
-          : "Уведомления отклонены или заблокированы в браузере."
+          ? "Bildirishnomaga ruxsat berilmadi."
+          : "Разрешение на уведомления не предоставлено."
       );
     }
   };
