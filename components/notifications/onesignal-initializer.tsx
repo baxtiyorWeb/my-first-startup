@@ -152,9 +152,10 @@ export function OneSignalInitializer() {
 
         await OneSignal.init({
           appId,
+          safari_web_id: "web.onesignal.auto.48cecb45-b9e1-42c4-afaa-e45f7f034833",
           allowLocalhostAsSecureOrigin: true,
           notifyButton: {
-            enable: false,
+            enable: true,
           },
         });
 
@@ -216,13 +217,5 @@ export function OneSignalInitializer() {
     });
   }, [appId, session.isAuthenticated, session.user?.id]);
 
-  if (!appId) return null;
-
-  return (
-    <Script
-      src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
-      strategy="afterInteractive"
-      defer
-    />
-  );
+  return null;
 }
