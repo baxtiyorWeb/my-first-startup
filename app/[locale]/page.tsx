@@ -149,7 +149,6 @@ export default async function LocaleHomePage({
 
   const heroTexts = {
     uz: {
-      badge: "Dasturchilar va Texnologiya Yetakchilari Markazi",
       titleStart: "Dasturlash, Startaplar va",
       titleHighlight: "Zamonaviy Texnologiyalar",
       titleEnd: "Ekotizimi",
@@ -171,7 +170,6 @@ export default async function LocaleHomePage({
       ctaBtn: "Bepul Ro'yxatdan O'tish",
     },
     ru: {
-      badge: "Центр знаний для разработчиков и основателей IT",
       titleStart: "Экосистема разработки,",
       titleHighlight: "современных технологий",
       titleEnd: "и стартапов",
@@ -193,7 +191,6 @@ export default async function LocaleHomePage({
       ctaBtn: "Создать аккаунт бесплатно",
     },
     en: {
-      badge: "Premier Developer Knowledge & Startup Hub",
       titleStart: "Architecting the Future of",
       titleHighlight: "Modern Software",
       titleEnd: "& Startups",
@@ -241,24 +238,7 @@ export default async function LocaleHomePage({
             <div className="absolute inset-0 bg-linear-to-b from-blue-500/5 via-transparent to-transparent pointer-events-none" />
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
               <div className="text-center max-w-3xl mx-auto space-y-6">
-                {/* Brand Logo */}
-                <div className="flex justify-center">
-                  <div className="relative p-2 rounded-2xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/90 shadow-md shadow-blue-500/10 backdrop-blur-md transition-transform hover:scale-105">
-                    <Image
-                      src="/logo.png"
-                      alt="Geters Brand Logo"
-                      width={64}
-                      height={64}
-                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover"
-                      priority
-                    />
-                  </div>
-                </div>
 
-                <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-950/40 px-3.5 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-400 shadow-xs">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>{heroTexts.badge}</span>
-                </div>
 
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.18]">
                   {heroTexts.titleStart}{" "}
