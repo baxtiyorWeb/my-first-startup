@@ -15,6 +15,7 @@ import {
   X,
   LogOut,
   ExternalLink,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
 import { useI18n } from "@/lib/i18n/context";
@@ -38,6 +39,11 @@ export function AdminSidebar({
       href: "/dashboard/admin",
       icon: LayoutDashboard,
       exact: true,
+    },
+    {
+      title: "Media Engine",
+      href: "/dashboard/admin/media",
+      icon: ImageIcon,
     },
     {
       title: locale === "uz" ? "Foydalanuvchilar" : locale === "ru" ? "Пользователи" : "Users & Bots",

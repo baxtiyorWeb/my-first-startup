@@ -5,6 +5,7 @@ import {
   text,
   boolean,
   integer,
+  bigint,
   timestamp,
   jsonb,
   primaryKey,
@@ -486,4 +487,40 @@ export const messagesRelations = relations(messages, ({ one }) => ({
     references: [messages.id],
   }),
 }));
+
+// 20. Media Engine Table (YouTube, Videos, Images, Files)
+export const media = pgTable(
+  "media",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: varchar("title", { length: 255 }).notNull(),
+    mediaType: varchar("media_type", { length: 32 }).notNull(), // 'youtube' | 'video' | 'image' | 'file'
+    url: text("url").notNull(),
+    thumbnailUrl: text("thumbnail_url"),
+    storagePath: text("storage_path"),
+    mimeType: varchar("mime_type", { length: 128 }),
+    fileExtension: varchar("file_extension", { length: 32 }).default("").notNull(),
+    fileSizeBytes: bigint("file_size_bytes", { mode: "number" }).default(0).notNull(),
+    durationSeconds: integer("duration_seconds"),
+    width: integer("width"),
+    height: integer("height"),
+    youtubeVideoId: varchar("youtube_video_id", { length: 64 }),
+    uploadedBy: uuid("uploaded_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_media_type").on(table.mediaType),
+    index("idx_media_created_at").on(table.createdAt),
+    index("idx_media_uploaded_by").on(table.uploadedBy),
+  ]
+);
+
+export const mediaRelations = relations(media, ({ one }) => ({
+  uploader: one(users, {
+    fields: [media.uploadedBy],
+    references: [users.id],
+  }),
+}));
+
 
