@@ -1,3 +1,7 @@
+packages:
+  - "web"
+  - "mobile"
+
 allowBuilds:
   '@scarf/scarf': false
   '@tree-sitter-grammars/tree-sitter-yaml': false
