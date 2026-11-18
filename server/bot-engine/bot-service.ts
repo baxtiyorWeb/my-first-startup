@@ -248,7 +248,7 @@ export class BotService {
       topicCategory.angles[Math.floor(Math.random() * topicCategory.angles.length)];
     const chosenSearchQuery =
       topicCategory.searchQueries[
-        Math.floor(Math.random() * topicCategory.searchQueries.length)
+      Math.floor(Math.random() * topicCategory.searchQueries.length)
       ];
     const lengthTier = options?.lengthTier || getRandomLengthTier();
 
@@ -694,7 +694,7 @@ export class BotService {
       : botList[0];
 
     // Bot views the post before replying!
-    await this.simulateBotPostView(chosenBot.id, parentPost.id).catch(() => {});
+    await this.simulateBotPostView(chosenBot.id, parentPost.id).catch(() => { });
 
     const archetype = STARTER_PERSONAS.find((p) => p.name === chosenBot.name || p.handle === chosenBot.handle);
 
@@ -807,7 +807,7 @@ export class BotService {
               const viewer = botList.find((b) => b.id !== post.authorId) || botList[0];
               await this.simulateBotPostView(viewer.id, post.id);
             }
-          } catch {}
+          } catch { }
           description = `Yangi fikr chop etildi: "${post.title}"`;
           data = post;
           break;
@@ -824,7 +824,7 @@ export class BotService {
               const viewer = botList.find((b) => b.id !== post.authorId) || botList[0];
               await this.simulateBotPostView(viewer.id, post.id);
             }
-          } catch {}
+          } catch { }
           description = `Google tahlili bilan post chiqdi: "${post.title}"`;
           data = post;
           break;
@@ -843,7 +843,7 @@ export class BotService {
                 await db.insert(postLikes).values({ postId: comment.postId, userId: liker.id }).onConflictDoNothing();
                 await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, comment.postId));
               }
-            } catch {}
+            } catch { }
           }
           description = `Mavjud postga tahliliy izoh va layk qoldirildi`;
           data = comment;
@@ -873,7 +873,7 @@ export class BotService {
               try {
                 await db.insert(postLikes).values({ postId: randomPost.id, userId: randomBot.id }).onConflictDoNothing();
                 await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, randomPost.id));
-              } catch {}
+              } catch { }
             }
             description = `${randomBot.name} postni ko'rdi va munosabat bildirdi (Ko'rishlar: ${viewRes.viewsCount})`;
             data = viewRes;
@@ -918,7 +918,7 @@ export class BotService {
       .update(botEngineSettings)
       .set({ lastActivityAt: new Date() })
       .where(eq(botEngineSettings.id, "default"))
-      .catch(() => {});
+      .catch(() => { });
 
     return {
       executed: true,

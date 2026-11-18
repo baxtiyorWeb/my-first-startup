@@ -63,11 +63,24 @@ export async function GET(req: NextRequest) {
       .from(users)
       .where(whereClause);
 
+    const [countsRes] = await db
+      .select({
+        total: sql<number>`count(*)::int`,
+        real: sql<number>`count(*) filter (where is_bot = false)::int`,
+        bots: sql<number>`count(*) filter (where is_bot = true)::int`,
+      })
+      .from(users);
+
     return NextResponse.json({
       success: true,
       data: {
         users: userList,
         total: totalRes?.count || 0,
+        counts: {
+          total: countsRes?.total || 0,
+          real: countsRes?.real || 0,
+          bots: countsRes?.bots || 0,
+        },
       },
     });
   } catch (error) {

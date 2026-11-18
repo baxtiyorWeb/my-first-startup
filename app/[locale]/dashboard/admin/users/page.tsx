@@ -44,6 +44,11 @@ export default function AdminUsersPage() {
   const { localePath, locale } = useI18n();
 
   const [usersList, setUsersList] = useState<AdminUser[]>([]);
+  const [counts, setCounts] = useState<{ total: number; real: number; bots: number }>({
+    total: 0,
+    real: 0,
+    bots: 0,
+  });
   const [userFilter, setUserFilter] = useState<UserFilter>("all");
   const [userSearch, setUserSearch] = useState("");
   const [isUsersLoading, setIsUsersLoading] = useState(true);
@@ -70,6 +75,9 @@ export default function AdminUsersPage() {
       const json = await res.json();
       if (json.success) {
         setUsersList(json.data.users);
+        if (json.data.counts) {
+          setCounts(json.data.counts);
+        }
       }
     } catch {
       toast.error(
@@ -213,15 +221,21 @@ export default function AdminUsersPage() {
           {/* Filter Pills */}
           <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200/60 dark:border-white/5">
             {[
-              { id: "all", label: locale === "uz" ? "Barchasi" : "Все" },
+              {
+                id: "all",
+                label: locale === "uz" ? "Barchasi" : "Все",
+                count: counts.total,
+              },
               {
                 id: "real",
                 label: locale === "uz" ? "Haqiqiy" : "Реальные",
+                count: counts.real,
                 icon: UserCheck,
               },
               {
                 id: "bots",
                 label: locale === "uz" ? "AI Botlar" : "AI Боты",
+                count: counts.bots,
                 icon: Bot,
               },
             ].map((f) => {
@@ -239,6 +253,17 @@ export default function AdminUsersPage() {
                 >
                   {f.icon && <f.icon className="h-3.5 w-3.5" />}
                   <span>{f.label}</span>
+                  {f.count > 0 && (
+                    <span
+                      className={`ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                        active
+                          ? "bg-blue-600/10 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400 font-bold"
+                          : "bg-slate-200/80 dark:bg-zinc-700 text-slate-600 dark:text-zinc-400"
+                      }`}
+                    >
+                      {f.count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -322,7 +347,7 @@ export default function AdminUsersPage() {
                               {u.name}
                             </p>
                             <p className="text-[11px] text-slate-400 font-mono truncate">
-                              @{u.handle}
+                              @{u.handle?.replace(/^@+/, "")}
                             </p>
                           </div>
                         </div>
@@ -378,7 +403,7 @@ export default function AdminUsersPage() {
                           )}
 
                           <Link
-                            href={localePath(`/dashboard/profile?handle=${u.handle}`)}
+                            href={localePath(`/dashboard/profile?handle=${encodeURIComponent(u.handle?.replace(/^@+/, ""))}`)}
                             target="_blank"
                             className="p-1.5 rounded-lg border border-slate-200/80 dark:border-white/10 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors"
                             title="Profilni saytda ochish"

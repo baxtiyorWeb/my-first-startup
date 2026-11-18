@@ -343,7 +343,7 @@ export default function MessagesPage() {
                     <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                       {u.name}
                     </div>
-                    <div className="text-[10px] text-slate-400 truncate">@{u.handle}</div>
+                    <div className="text-[10px] text-slate-400 truncate">@{u.handle?.replace(/^@+/, "")}</div>
                   </div>
                 </button>
               ))}
@@ -494,7 +494,7 @@ export default function MessagesPage() {
                       {activeConversation.peerUser.name}
                     </span>
                     <span className="text-[10px] text-slate-400 truncate">
-                      @{activeConversation.peerUser.handle}
+                      @{activeConversation.peerUser.handle?.replace(/^@+/, "")}
                     </span>
                   </div>
                   <div className="text-[10px] text-slate-400 flex items-center gap-1">

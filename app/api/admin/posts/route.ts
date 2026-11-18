@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq, desc, ilike, or, and, isNull } from "drizzle-orm";
+import { eq, desc, ilike, or, and, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import { posts, users } from "@/server/db/schema";
 import { enforceAdminGuard } from "@/server/common/admin-guard";
@@ -61,10 +61,25 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .offset(offset);
 
+    const [countsRes] = await db
+      .select({
+        total: sql<number>`count(*)::int`,
+        real: sql<number>`count(*) filter (where ${users.isBot} = false)::int`,
+        bots: sql<number>`count(*) filter (where ${users.isBot} = true)::int`,
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .where(isNull(posts.deletedAt));
+
     return NextResponse.json({
       success: true,
       data: {
         posts: postList,
+        counts: {
+          total: countsRes?.total || 0,
+          real: countsRes?.real || 0,
+          bots: countsRes?.bots || 0,
+        },
       },
     });
   } catch (error) {

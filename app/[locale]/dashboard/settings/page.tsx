@@ -1247,7 +1247,7 @@ export default function SettingsPage() {
                         />
                         <div>
                           <div className="font-semibold text-slate-900 dark:text-slate-100">{u.name}</div>
-                          <div className="text-[10px] text-slate-400">@{u.handle}</div>
+                          <div className="text-[10px] text-slate-400">@{u.handle?.replace(/^@+/, "")}</div>
                         </div>
                       </div>
                       <button

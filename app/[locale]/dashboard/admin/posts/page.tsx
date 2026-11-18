@@ -48,6 +48,11 @@ export default function AdminPostsPage() {
   const { localePath, locale } = useI18n();
 
   const [postsList, setPostsList] = useState<AdminPost[]>([]);
+  const [counts, setCounts] = useState<{ total: number; real: number; bots: number }>({
+    total: 0,
+    real: 0,
+    bots: 0,
+  });
   const [postFilter, setPostFilter] = useState<PostFilter>("all");
   const [postSearch, setPostSearch] = useState("");
   const [isPostsLoading, setIsPostsLoading] = useState(true);
@@ -67,6 +72,9 @@ export default function AdminPostsPage() {
       const json = await res.json();
       if (json.success) {
         setPostsList(json.data.posts);
+        if (json.data.counts) {
+          setCounts(json.data.counts);
+        }
       }
     } catch {
       toast.error(
@@ -154,9 +162,9 @@ export default function AdminPostsPage() {
           {/* Filters */}
           <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200/60 dark:border-white/5">
             {[
-              { id: "all", label: locale === "uz" ? "Barchasi" : "Все" },
-              { id: "real", label: locale === "uz" ? "Haqiqiy" : "Реальные" },
-              { id: "bots", label: locale === "uz" ? "AI Botlar" : "AI Боты" },
+              { id: "all", label: locale === "uz" ? "Barchasi" : "Все", count: counts.total },
+              { id: "real", label: locale === "uz" ? "Haqiqiy" : "Реальные", count: counts.real },
+              { id: "bots", label: locale === "uz" ? "AI Botlar" : "AI Боты", count: counts.bots },
             ].map((f) => {
               const active = postFilter === f.id;
               return (
@@ -164,13 +172,24 @@ export default function AdminPostsPage() {
                   key={f.id}
                   type="button"
                   onClick={() => setPostFilter(f.id as PostFilter)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     active
                       ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-bold"
                       : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
-                  {f.label}
+                  <span>{f.label}</span>
+                  {f.count > 0 && (
+                    <span
+                      className={`ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                        active
+                          ? "bg-blue-600/10 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400 font-bold"
+                          : "bg-slate-200/80 dark:bg-zinc-700 text-slate-600 dark:text-zinc-400"
+                      }`}
+                    >
+                      {f.count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -256,7 +275,7 @@ export default function AdminPostsPage() {
                           {p.author.name}
                         </span>
                         <span className="text-slate-400 font-mono text-[11px]">
-                          @{p.author.handle}
+                          @{p.author.handle?.replace(/^@+/, "")}
                         </span>
                         <span className="text-slate-300 dark:text-zinc-700">•</span>
                         <div className="inline-flex items-center gap-1 font-medium text-[11px]">
