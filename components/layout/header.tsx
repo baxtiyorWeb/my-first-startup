@@ -21,6 +21,7 @@ import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { useMessages } from "@/components/messages/messages-context";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 interface HeaderProps {
   title?: string;
@@ -92,6 +93,12 @@ export function Header({ title, subtitle }: HeaderProps) {
     }
     if (normalizedPath.startsWith("/dashboard/settings")) {
       return { title: t("nav.settings"), subtitle: t("nav.settingsSubtitle") };
+    }
+    if (normalizedPath.startsWith("/dashboard/notifications")) {
+      return { title: t("nav.notifications") || "Bildirishnomalar", subtitle: "Barcha bildirishnomalar" };
+    }
+    if (normalizedPath.startsWith("/dashboard/messages")) {
+      return { title: t("nav.messages") || "Xabarlar", subtitle: "Shaxsiy suhbatlar va xabarlar" };
     }
     return { title: t("common.brandName"), subtitle: t("common.brandTagline") };
   };
@@ -220,6 +227,9 @@ export function Header({ title, subtitle }: HeaderProps) {
                 </span>
               )}
             </Link>
+
+            {/* Notification Bell Dropdown */}
+            <NotificationBell />
 
             {/* Primary Create Thought Action - HIDDEN ON MOBILE/PHONES */}
             {!normalizedPath.startsWith("/dashboard/create") && (

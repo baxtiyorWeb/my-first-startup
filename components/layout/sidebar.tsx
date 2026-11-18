@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import {
   UserIcon,
   SettingsIcon,
 } from "@/components/icons";
-import { LogOut, Shield, MessageSquare, Download } from "lucide-react";
+import { LogOut, Shield, MessageSquare, Download, Bell } from "lucide-react";
 import {
   useShell,
   SIDEBAR_EXPANDED_WIDTH,
@@ -23,6 +23,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { useMessages } from "@/components/messages/messages-context";
 import { usePwaInstall } from "@/components/pwa";
+import { api } from "@/lib/api";
 
 export function Sidebar() {
   const router = useRouter();
@@ -34,6 +35,20 @@ export function Sidebar() {
   const { promptInstall, isInstalled } = usePwaInstall();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!session.isAuthenticated) return;
+    const fetchCount = async () => {
+      try {
+        const count = await api.notifications.getUnreadCount();
+        setUnreadNotificationsCount(count);
+      } catch {}
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [session.isAuthenticated]);
 
   // Strip locale for active route check
   const normalizedPath =
@@ -47,6 +62,12 @@ export function Sidebar() {
       rawHref: "/dashboard/messages",
       icon: MessageSquare,
       badge: totalUnreadCount,
+    },
+    {
+      label: t("nav.notifications") || "Xabarnomalar",
+      rawHref: "/dashboard/notifications",
+      icon: Bell,
+      badge: unreadNotificationsCount,
     },
     {
       label: t("nav.bookmarks"),

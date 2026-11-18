@@ -17,6 +17,7 @@ import {
   PostLengthTier,
 } from "./personas";
 import { recordPostView } from "@/server/modules/posts/posts.service";
+import { triggerNotification, notifyFollowersNewPost } from "@/server/modules/notifications/notifications.service";
 
 export interface BotActionLog {
   id: string;
@@ -315,6 +316,9 @@ export class BotService {
       details: `Post e'lon qilindi${lengthLabel}${searchTag} (${topicCategory.label}): "${generated.title.slice(0, 45)}" (${bot.name})`,
     });
 
+    // Notify followers about the bot's new post
+    notifyFollowersNewPost(bot.id, newPost.id, newPost.title || newPost.content).catch(() => null);
+
     return newPost;
   }
 
@@ -454,6 +458,20 @@ export class BotService {
       details: `Izoh qoldirildi${extraTag}: "${commentText.slice(0, 45)}..." (${chosenBot.name})`,
     });
 
+    // Notify post author if not the same bot
+    if (targetPost.authorId && targetPost.authorId !== chosenBot.id) {
+      triggerNotification({
+        recipientId: targetPost.authorId,
+        actorId: chosenBot.id,
+        type: "comment",
+        targetId: newComment.id,
+        targetType: "comment",
+        title: "Yangi izoh",
+        message: `${chosenBot.name} postingizga izoh qoldirdi: "${commentText.slice(0, 50)}"`,
+        link: `/dashboard/posts/${targetPost.id}`,
+      }).catch(() => null);
+    }
+
     return newComment;
   }
 
@@ -473,7 +491,13 @@ export class BotService {
     const maxRealisticViews = Math.max(2, Math.min(userCountRow?.count || 8, 8));
 
     const recentPosts = await db
-      .select({ id: posts.id, viewsCount: posts.viewsCount })
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        title: posts.title,
+        content: posts.content,
+        viewsCount: posts.viewsCount,
+      })
       .from(posts)
       .where(isNull(posts.deletedAt))
       .orderBy(desc(posts.createdAt))
@@ -521,13 +545,31 @@ export class BotService {
           targetId: randomPost.id,
           details: `${randomBot.name} postga like bosdi`,
         });
+
+        // Trigger notification for post author if not the same bot
+        if (randomPost.authorId && randomPost.authorId !== randomBot.id) {
+          const postSnippet = randomPost.title || randomPost.content.slice(0, 40);
+          triggerNotification({
+            recipientId: randomPost.authorId,
+            actorId: randomBot.id,
+            type: "like",
+            targetId: randomPost.id,
+            targetType: "post",
+            title: "Yangi like",
+            message: `${randomBot.name} sizning "${postSnippet}" postingizga like bosdi`,
+            link: `/dashboard/posts/${randomPost.id}`,
+          }).catch(() => null);
+        }
       } catch {
         // already liked or conflict, safely ignore
       }
     }
 
     // 3. Simulate Follows: bot follows another bot or a real user
-    const allUsers = await db.select({ id: users.id, name: users.name, isBot: users.isBot }).from(users).limit(20);
+    const allUsers = await db
+      .select({ id: users.id, name: users.name, handle: users.handle, isBot: users.isBot })
+      .from(users)
+      .limit(20);
     if (allUsers.length > 1) {
       const follower = botList[Math.floor(Math.random() * botList.length)];
       const targetUser = allUsers.filter((u) => u.id !== follower.id)[Math.floor(Math.random() * (allUsers.length - 1))];
@@ -550,6 +592,20 @@ export class BotService {
             targetId: targetUser.id,
             details: `${follower.name} ${targetUser.isBot ? "botga" : "foydalanuvchiga"} (${targetUser.name}) obuna bo'ldi`,
           });
+
+          // Trigger follow notification for followed user
+          if (targetUser.id !== follower.id) {
+            triggerNotification({
+              recipientId: targetUser.id,
+              actorId: follower.id,
+              type: "follow",
+              targetId: follower.id,
+              targetType: "user",
+              title: "Yangi obunachi",
+              message: `${follower.name} sizga obuna bo‘ldi`,
+              link: `/dashboard/profile?user=${encodeURIComponent(follower.handle || follower.id)}`,
+            }).catch(() => null);
+          }
         } catch {
           // already followed, safely ignore
         }
@@ -743,6 +799,20 @@ export class BotService {
       details: `${chosenBot.name} ${targetComment.authorName} ning izohiga javob yozdi: "${replyText.slice(0, 45)}..."`,
     });
 
+    // Notify parent comment author if not the same bot
+    if (targetComment.authorId && targetComment.authorId !== chosenBot.id) {
+      triggerNotification({
+        recipientId: targetComment.authorId,
+        actorId: chosenBot.id,
+        type: "reply",
+        targetId: newReply.id,
+        targetType: "comment",
+        title: "Yangi javob",
+        message: `${chosenBot.name} izohingizga javob qaytardi: "${replyText.slice(0, 50)}"`,
+        link: `/dashboard/posts/${parentPost.id}`,
+      }).catch(() => null);
+    }
+
     return newReply;
   }
 
@@ -842,6 +912,26 @@ export class BotService {
                 const liker = botList[Math.floor(Math.random() * botList.length)];
                 await db.insert(postLikes).values({ postId: comment.postId, userId: liker.id }).onConflictDoNothing();
                 await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, comment.postId));
+
+                const [p] = await db
+                  .select({ authorId: posts.authorId, title: posts.title, content: posts.content })
+                  .from(posts)
+                  .where(eq(posts.id, comment.postId))
+                  .limit(1);
+
+                if (p && p.authorId && p.authorId !== liker.id) {
+                  const postSnippet = p.title || p.content.slice(0, 40);
+                  triggerNotification({
+                    recipientId: p.authorId,
+                    actorId: liker.id,
+                    type: "like",
+                    targetId: comment.postId,
+                    targetType: "post",
+                    title: "Yangi like",
+                    message: `${liker.name} sizning "${postSnippet}" postingizga like bosdi`,
+                    link: `/dashboard/posts/${comment.postId}`,
+                  }).catch(() => null);
+                }
               }
             } catch { }
           }
@@ -860,7 +950,7 @@ export class BotService {
         case "views": {
           const botList = await this.getBotUsers();
           const recentPosts = await db
-            .select({ id: posts.id })
+            .select({ id: posts.id, authorId: posts.authorId, title: posts.title, content: posts.content })
             .from(posts)
             .where(isNull(posts.deletedAt))
             .orderBy(desc(posts.createdAt))
@@ -873,6 +963,20 @@ export class BotService {
               try {
                 await db.insert(postLikes).values({ postId: randomPost.id, userId: randomBot.id }).onConflictDoNothing();
                 await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, randomPost.id));
+
+                if (randomPost.authorId && randomPost.authorId !== randomBot.id) {
+                  const postSnippet = randomPost.title || randomPost.content.slice(0, 40);
+                  triggerNotification({
+                    recipientId: randomPost.authorId,
+                    actorId: randomBot.id,
+                    type: "like",
+                    targetId: randomPost.id,
+                    targetType: "post",
+                    title: "Yangi like",
+                    message: `${randomBot.name} sizning "${postSnippet}" postingizga like bosdi`,
+                    link: `/dashboard/posts/${randomPost.id}`,
+                  }).catch(() => null);
+                }
               } catch { }
             }
             description = `${randomBot.name} postni ko'rdi va munosabat bildirdi (Ko'rishlar: ${viewRes.viewsCount})`;

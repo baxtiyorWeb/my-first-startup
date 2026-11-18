@@ -120,13 +120,13 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative p-1.5 sm:p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:scale-95 cursor-pointer focus-visible:outline-none transition-all shrink-0"
+        className="relative p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95 flex items-center justify-center cursor-pointer"
         aria-label="Bildirishnomalar"
         aria-expanded={isOpen}
       >
-        <BellIcon size={20} className="text-slate-800 dark:text-slate-100 stroke-slate-800 dark:stroke-slate-100" />
+        <BellIcon size={18} className="text-current stroke-current" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-extrabold text-white shadow-xs">
+          <span className="absolute -top-0.5 -right-0.5 z-10 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-slate-900 shadow-2xs animate-in zoom-in-75">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -217,6 +217,17 @@ export function NotificationBell() {
                 </Link>
               ))
             )}
+          </div>
+
+          {/* Footer: View All Notifications */}
+          <div className="p-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 rounded-b-2xl text-center">
+            <Link
+              href={localePath("/dashboard/notifications")}
+              onClick={() => setIsOpen(false)}
+              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors block py-1"
+            >
+              Barcha bildirishnomalarni ko'rish
+            </Link>
           </div>
         </div>
       )}
