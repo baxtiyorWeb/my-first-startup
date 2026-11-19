@@ -289,7 +289,7 @@ export default function MediaEnginePage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const droppedFiles = e.dataTransfer.files;
+    const droppedFiles = e.dataTransfer?.files;
     if (droppedFiles && droppedFiles[0]) {
       handleFileUpload(droppedFiles[0]);
     }
@@ -996,7 +996,7 @@ export default function MediaEnginePage() {
                         : "bg-black/50 border-white/20 text-transparent hover:border-white/50"
                     }`}
                   >
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    <Check className="w-3.5 h-3.5 stroke-3" />
                   </button>
 
                   {/* Center Play Button for Videos */}
@@ -1306,7 +1306,7 @@ export default function MediaEnginePage() {
             </div>
 
             {/* Modal Media Content */}
-            <div className="flex-1 bg-black flex items-center justify-center overflow-hidden min-h-[360px] p-2">
+            <div className="flex-1 bg-black flex items-center justify-center overflow-hidden min-h-90 p-2">
               {previewItem.mediaType === "youtube" && previewItem.youtubeVideoId ? (
                 <iframe
                   src={`https://www.youtube.com/embed/${previewItem.youtubeVideoId}?autoplay=1`}
