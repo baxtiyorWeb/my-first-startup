@@ -131,18 +131,10 @@ export function FeedContainer() {
     }
   };
 
-  const handleDelete = async (postId: string) => {
-    const prevPosts = [...posts];
+  // PostCard deletes the post itself and calls this only after the API
+  // succeeded, so here we just drop it from the local list.
+  const handleDelete = (postId: string) => {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
-
-    try {
-      await api.posts.deletePost(postId);
-      toast.success(t("feed.deleteSuccess"));
-    } catch (err) {
-      setPosts(prevPosts);
-      const msg = err instanceof ApiError ? err.message : t("feed.deleteError");
-      toast.error(msg);
-    }
   };
 
   const handlePostCreated = (newPost: Post) => {

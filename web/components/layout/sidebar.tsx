@@ -88,7 +88,7 @@ export function Sidebar() {
     pathname.replace(/^\/(uz|ru|en)(\/|$)/, "/$2").replace(/\/+/g, "/") ||
     "/dashboard";
 
-  // Primary Navigation items — Media, Tutorials, News & Knowledge
+  // Primary Navigation items — Discussions, Media, Tutorials, News & Knowledge
   const primaryNavItems: Array<{
     label: string;
     rawHref: string;
@@ -96,12 +96,12 @@ export function Sidebar() {
     badge: number;
     pill?: string;
   }> = [
+    { label: "Muhokamalar", rawHref: "/dashboard", icon: Home, badge: 0 },
     { label: "Media Portal", rawHref: "/", icon: Compass, badge: 0 },
     { label: "Maqolalar", rawHref: "/articles", icon: BookOpen, badge: 0 },
     { label: "Video darsliklar", rawHref: "/videos", icon: Video, badge: 0 },
     { label: "Yangiliklar", rawHref: "/news", icon: Flame, badge: 0 },
     { label: "Bilimlar Bazasi", rawHref: "/hub", icon: Layers, badge: 0 },
-    { label: "Muhokamalar", rawHref: "/dashboard", icon: Home, badge: 0 },
     { label: "Shorts", rawHref: "/dashboard/shorts", icon: Video, badge: 0 },
     { label: "Saqlanganlar", rawHref: "/dashboard/bookmarks", icon: Bookmark, badge: 0 },
     {

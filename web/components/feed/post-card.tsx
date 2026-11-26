@@ -31,7 +31,7 @@ import { ReportModal } from "@/components/ui/report-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EditPostModal } from "./edit-post-modal";
 import { useAuth } from "@/components/auth/auth-context";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { RichContent } from "./rich-content";
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
@@ -245,10 +245,17 @@ export function PostCard({
     }
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     setIsConfirmDeleteOpen(false);
-    toast.success(t("feed.deleteSuccess"));
-    onDelete?.(post.id);
+    try {
+      await api.posts.deletePost(post.id);
+      toast.success(t("feed.deleteSuccess"));
+      onDelete?.(post.id);
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.message : t("feed.deleteError");
+      toast.error(msg);
+    }
   };
 
   const handleOpenDiscussion = async () => {

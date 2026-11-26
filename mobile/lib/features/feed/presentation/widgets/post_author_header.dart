@@ -43,12 +43,22 @@ class PostAuthorHeader extends StatelessWidget {
       confirmLabel: 'O\'chirish',
       isDanger: true,
     );
-    if (ok) {
+    if (!ok) return;
+    try {
       await feedController.deletePost(post.id);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Post o\'chirildi'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Postni o\'chirishda xatolik: $e'),
             behavior: SnackBarBehavior.floating,
           ),
         );

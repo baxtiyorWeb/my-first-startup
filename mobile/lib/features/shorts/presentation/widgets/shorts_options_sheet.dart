@@ -211,11 +211,19 @@ class ShortsOptionsSheet {
                                   confirmLabel: 'O\'chirish',
                                   isDanger: true,
                                 );
-                                if (confirmed) {
+                                if (!confirmed) return;
+                                try {
                                   await feedController.deletePost(post.id);
                                   messenger.showSnackBar(
                                     const SnackBar(
                                       content: Text('Short o\'chirildi'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                } catch (e) {
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text('Shortni o\'chirishda xatolik: $e'),
                                       behavior: SnackBarBehavior.floating,
                                     ),
                                   );

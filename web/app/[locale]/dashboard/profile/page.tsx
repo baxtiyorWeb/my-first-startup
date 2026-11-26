@@ -201,15 +201,9 @@ function ProfileContent() {
     }
   };
 
-  const handleDeletePost = async (postId: string) => {
+  // PostCard handles the API request and only calls this after success.
+  const handleDeletePost = (postId: string) => {
     setUserPosts((prev) => prev.filter((p) => p.id !== postId));
-    try {
-      await api.posts.deletePost(postId);
-      toast.success(t("feed.deleteSuccess"));
-    } catch {
-      toast.error(t("feed.deleteError"));
-      fetchProfile();
-    }
   };
 
   if (isLoading) {

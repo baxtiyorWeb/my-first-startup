@@ -55,6 +55,10 @@ export default function BookmarksPage() {
     };
   }, [t]);
 
+  const handleDeletePost = (postId: string) => {
+    setSavedPosts((prev) => prev.filter((p) => p.id !== postId));
+  };
+
   const handleSaveChange = async (postId: string, isSaved: boolean) => {
     if (!isSaved) {
       setSavedPosts((prev) => prev.filter((p) => p.id !== postId));
@@ -133,6 +137,7 @@ export default function BookmarksPage() {
               key={post.id}
               post={post}
               onSaveChange={handleSaveChange}
+              onDelete={handleDeletePost}
             />
           ))}
         </div>
