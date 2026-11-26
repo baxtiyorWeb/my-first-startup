@@ -249,7 +249,10 @@ export default function AdminEnginePage() {
         toast.success(json.message);
         await fetchOverview();
       } else {
-        toast.error(json.error || "Amalni bajarishda xatolik yuz berdi");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "Amalni bajarishda xatolik yuz berdi"
+        );
       }
     } catch (err) {
       toast.error((err as Error).message || "Server bilan aloqa uzildi");

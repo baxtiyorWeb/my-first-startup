@@ -43,9 +43,17 @@ class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  bool? _peerFollowingOverride;
+
   bool get _isSelf {
     if (widget.targetAuthor == null) return true;
-    return widget.targetAuthor!.handle == widget.authController.currentUser.handle ||
+    final targetHandle =
+        widget.targetAuthor!.handle.replaceFirst('@', '').trim().toLowerCase();
+    final selfHandle = widget.authController.currentUser.handle
+        .replaceFirst('@', '')
+        .trim()
+        .toLowerCase();
+    return targetHandle == selfHandle ||
         widget.targetAuthor!.id == widget.authController.currentUser.id;
   }
 
@@ -104,9 +112,14 @@ class _ProfileScreenState extends State<ProfileScreen>
           0,
           (sum, p) => sum + p.viewsCount,
         );
-        final isFollowingPeer = widget.feedController.posts.any(
-          (p) => p.author.handle == cleanHandle && p.author.isFollowing,
-        );
+        final isFollowingPeer = _peerFollowingOverride ??
+            (widget.targetAuthor?.isFollowing ?? false) ||
+                widget.feedController.posts.any(
+                  (p) =>
+                      p.author.handle.replaceFirst('@', '').toLowerCase() ==
+                          cleanHandle.toLowerCase() &&
+                      p.author.isFollowing,
+                );
 
         return Scaffold(
           backgroundColor:
@@ -124,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   displayName: displayName,
                   cleanHandle: cleanHandle,
                   displayAvatar: displayAvatar,
-                  coverPhotoUrl: selfUser.coverPhotoUrl,
+                  coverPhotoUrl: _isSelf ? selfUser.coverPhotoUrl : null,
                   activeAccent: activeAccent,
                   surfaceBg: surfaceBg,
                   authController: widget.authController,
@@ -141,8 +154,38 @@ class _ProfileScreenState extends State<ProfileScreen>
                     isDark: isDark,
                     onCopyLink: () => _copyProfileLink(cleanHandle),
                   ),
-                  onToggleFollow: () =>
-                      widget.feedController.toggleFollowAuthor(cleanHandle),
+                  onToggleFollow: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    try {
+                      final next = await widget.feedController
+                          .toggleFollowAuthor(cleanHandle);
+                      if (!mounted) return;
+                      setState(() => _peerFollowingOverride = next);
+                      messenger
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              next
+                                  ? '$displayName obunalarga qo\'shildi'
+                                  : '$displayName obunadan chiqarildi',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                    } catch (e) {
+                      if (!mounted) return;
+                      messenger
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text(e.toString()),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: AppColors.dangerSurface,
+                          ),
+                        );
+                    }
+                  },
                   onMessage: () async {
                     final messenger = ScaffoldMessenger.of(context);
                     final navigator = Navigator.of(context);

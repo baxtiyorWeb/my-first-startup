@@ -156,6 +156,11 @@ export function DiscussionDrawer({
   };
 
   const toggleCommentLike = async (commentId: string, isNested = false, parentId?: string) => {
+    if (!session.isAuthenticated) {
+      toast.info(t("auth.loginRequired") || "Yoqtirish uchun tizimga kiring");
+      return;
+    }
+    const prevComments = comments;
     setComments((prev) =>
       prev.map((c) => {
         if (isNested && parentId && c.id === parentId) {
@@ -166,7 +171,7 @@ export function DiscussionDrawer({
                 ? {
                   ...r,
                   isLiked: !r.isLiked,
-                  likesCount: r.isLiked ? r.likesCount - 1 : r.likesCount + 1,
+                  likesCount: r.isLiked ? Math.max(0, r.likesCount - 1) : r.likesCount + 1,
                 }
                 : r
             ),
@@ -176,7 +181,7 @@ export function DiscussionDrawer({
           return {
             ...c,
             isLiked: !c.isLiked,
-            likesCount: c.isLiked ? c.likesCount - 1 : c.likesCount + 1,
+            likesCount: c.isLiked ? Math.max(0, c.likesCount - 1) : c.likesCount + 1,
           };
         }
         return c;
@@ -185,8 +190,9 @@ export function DiscussionDrawer({
 
     try {
       await api.comments.toggleLike(commentId);
-    } catch {
-      // Revert silently on failure
+    } catch (err) {
+      setComments(prevComments);
+      toast.error(err instanceof ApiError ? err.message : "Yoqtirish amalga oshmadi");
     }
   };
 

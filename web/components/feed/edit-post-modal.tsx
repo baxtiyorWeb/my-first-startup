@@ -75,7 +75,7 @@ export function EditPostModal({
     try {
       setIsSubmitting(true);
       const updated = await api.posts.updatePost(postId, {
-        title: title.trim() || undefined,
+        title: title.trim() || null,
         content: trimmedContent,
       });
 

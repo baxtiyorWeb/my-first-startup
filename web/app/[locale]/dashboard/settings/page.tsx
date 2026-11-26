@@ -175,14 +175,16 @@ export default function SettingsPage() {
       toast.error(t("profile.cover.coverSizeLimit"));
       return;
     }
+    const prevCover = coverPhotoUrl;
     setIsUploadingSettingsCover(true);
     try {
       const res = await uploadFile(file, "covers");
       setCoverPhotoUrl(res.url);
       await updateCurrentUser({ coverPhotoUrl: res.url });
       toast.success(t("settings.tabs.account.coverSaved"));
-    } catch {
-      toast.error(t("profile.cover.coverUploadError"));
+    } catch (err) {
+      setCoverPhotoUrl(prevCover);
+      toast.error(err instanceof Error ? err.message : t("profile.cover.coverUploadError"));
     } finally {
       setIsUploadingSettingsCover(false);
       if (settingsCoverRef.current) settingsCoverRef.current.value = "";
@@ -196,14 +198,16 @@ export default function SettingsPage() {
       toast.error(t("profile.cover.coverSizeLimit"));
       return;
     }
+    const prevAvatar = avatarUrl;
     setIsUploadingSettingsAvatar(true);
     try {
       const res = await uploadFile(file, "avatars");
       setAvatarUrl(res.url);
       await updateCurrentUser({ avatarUrl: res.url });
       toast.success(t("settings.tabs.account.avatarSaved"));
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      setAvatarUrl(prevAvatar);
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     } finally {
       setIsUploadingSettingsAvatar(false);
       if (settingsAvatarRef.current) settingsAvatarRef.current.value = "";
@@ -211,33 +215,39 @@ export default function SettingsPage() {
   };
 
   const handleSettingsRandomAvatar = async () => {
+    const prevAvatar = avatarUrl;
     const newAvatar = generateRandomAvatar();
     setAvatarUrl(newAvatar);
     try {
       await updateCurrentUser({ avatarUrl: newAvatar });
       toast.success(t("settings.tabs.account.avatarRandomSuccess"));
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      setAvatarUrl(prevAvatar);
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     }
   };
 
   const handleRemoveAvatar = async () => {
+    const prevAvatar = avatarUrl;
     setAvatarUrl("");
     try {
       await updateCurrentUser({ avatarUrl: "" });
       toast.success(t("settings.tabs.account.avatarRemoveSuccess"));
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      setAvatarUrl(prevAvatar);
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     }
   };
 
   const handleRemoveCover = async () => {
+    const prevCover = coverPhotoUrl;
     setCoverPhotoUrl("");
     try {
       await updateCurrentUser({ coverPhotoUrl: "" });
       toast.success(t("settings.tabs.account.coverRemoveSuccess"));
-    } catch {
-      toast.error(t("profile.cover.coverDeleteError"));
+    } catch (err) {
+      setCoverPhotoUrl(prevCover);
+      toast.error(err instanceof Error ? err.message : t("profile.cover.coverDeleteError"));
     }
   };
 
@@ -350,8 +360,8 @@ export default function SettingsPage() {
       setSavedSuccess(true);
       toast.success(t("settings.successSaved"));
       setTimeout(() => setSavedSuccess(false), 3000);
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     } finally {
       setIsSubmitting(false);
     }
@@ -369,8 +379,8 @@ export default function SettingsPage() {
       });
 
       toast.success(t("settings.tabs.privacy.savePrivacy"));
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     } finally {
       setIsSubmitting(false);
     }
@@ -382,8 +392,8 @@ export default function SettingsPage() {
       await apiClient(`/api/settings/blocks?userId=${userId}`, { method: "DELETE" });
       setBlockedUsers((prev) => prev.filter((u) => u.id !== userId));
       toast.success(t("settings.tabs.privacy.unblockSuccess"));
-    } catch {
-      toast.error(t("common.errorOccurred"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.errorOccurred"));
     }
   };
 
@@ -426,6 +436,8 @@ export default function SettingsPage() {
 
   // Save 2FA setting
   const handleToggle2FA = async (enabled: boolean, type: "authenticator" | "sms") => {
+    const prevEnabled = twoFactorEnabled;
+    const prevType = twoFactorType;
     setTwoFactorEnabled(enabled);
     setTwoFactorType(type);
     try {
@@ -434,8 +446,10 @@ export default function SettingsPage() {
         twoFactorType: type,
       });
       toast.success(t("settings.tabs.security.twoFactorUpdated"));
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      setTwoFactorEnabled(prevEnabled);
+      setTwoFactorType(prevType);
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     }
   };
 
@@ -453,8 +467,8 @@ export default function SettingsPage() {
         setActiveSessions((prev) => prev.filter((s) => s.isCurrent));
         toast.success(t("settings.tabs.security.allSessionsTerminatedSuccess"));
       }
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     }
   };
 
@@ -476,8 +490,8 @@ export default function SettingsPage() {
         }),
       });
       toast.success(t("settings.tabs.notifications.notificationsSavedSuccess"));
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     } finally {
       setIsSubmitting(false);
     }
@@ -570,8 +584,8 @@ export default function SettingsPage() {
       });
       toast.success(t("settings.modals.deactivate.success"));
       logout();
-    } catch {
-      toast.error(t("common.errorOccurred"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.errorOccurred"));
     }
   };
 
@@ -581,8 +595,8 @@ export default function SettingsPage() {
       await apiClient("/api/settings/account", { method: "DELETE" });
       toast.success(t("settings.modals.deleteAccount.success"));
       logout();
-    } catch {
-      toast.error(t("settings.modals.deleteAccount.error"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("settings.modals.deleteAccount.error"));
     }
   };
 

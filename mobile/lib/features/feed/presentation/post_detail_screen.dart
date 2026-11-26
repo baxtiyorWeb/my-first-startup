@@ -57,12 +57,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (!silent) {
       setState(() => _isLoadingComments = true);
     }
-    final data = await widget.feedController.repository.getComments(widget.postId);
-    if (mounted) {
-      setState(() {
-        _comments = data;
-        _isLoadingComments = false;
-      });
+    try {
+      final data =
+          await widget.feedController.repository.getComments(widget.postId);
+      if (mounted) {
+        setState(() {
+          _comments = data;
+          _isLoadingComments = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingComments = false);
+        if (!silent) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(e.toString()),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: AppColors.dangerSurface,
+              ),
+            );
+        }
+      }
     }
   }
 
@@ -82,6 +100,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       _replyingTo = null;
       _focusNode.unfocus();
       await _loadComments(silent: true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.dangerSurface,
+            ),
+          );
+      }
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
@@ -182,9 +212,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               _focusNode.requestFocus();
                             },
                             onLikeTap: (item) async {
-                              await widget.feedController.repository
-                                  .toggleCommentLike(post.id, item.id);
-                              await _loadComments(silent: true);
+                              try {
+                                await widget.feedController.repository
+                                    .toggleCommentLike(post.id, item.id);
+                                await _loadComments(silent: true);
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      content: Text(e.toString()),
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: AppColors.dangerSurface,
+                                    ),
+                                  );
+                              }
                             },
                             onReportTap: (item) => ReportBottomSheet.show(
                               context,

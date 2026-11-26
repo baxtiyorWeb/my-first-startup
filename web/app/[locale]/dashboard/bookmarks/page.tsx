@@ -59,6 +59,26 @@ export default function BookmarksPage() {
     setSavedPosts((prev) => prev.filter((p) => p.id !== postId));
   };
 
+  const handleLikeChange = async (postId: string, isLiked: boolean, count: number) => {
+    const prevPosts = savedPosts;
+    setSavedPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, isLiked, likesCount: count } : p))
+    );
+    try {
+      const res = await api.posts.toggleLike(postId);
+      setSavedPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, isLiked: res.liked, likesCount: res.likesCount }
+            : p
+        )
+      );
+    } catch (err) {
+      setSavedPosts(prevPosts);
+      toast.error(err instanceof ApiError ? err.message : t("feed.likeError"));
+    }
+  };
+
   const handleSaveChange = async (postId: string, isSaved: boolean) => {
     if (!isSaved) {
       setSavedPosts((prev) => prev.filter((p) => p.id !== postId));
@@ -136,6 +156,7 @@ export default function BookmarksPage() {
             <PostCard
               key={post.id}
               post={post}
+              onLikeChange={handleLikeChange}
               onSaveChange={handleSaveChange}
               onDelete={handleDeletePost}
             />

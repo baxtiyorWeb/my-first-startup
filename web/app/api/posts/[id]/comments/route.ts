@@ -41,12 +41,13 @@ export async function POST(
     const parseResult = AddCommentSchema.safeParse(body);
 
     if (!parseResult.success) {
+      const issues = parseResult.error.issues.map((e) => ({
+        field: String(e.path[0] ?? ""),
+        issue: e.message,
+      }));
       throw AppError.validation(
-        "Izoh ma’lumotlari noto‘g‘ri",
-        parseResult.error.issues.map((e) => ({
-          field: String(e.path[0] ?? ""),
-          issue: e.message,
-        }))
+        issues[0]?.issue || "Izoh ma’lumotlari noto‘g‘ri",
+        issues
       );
     }
 

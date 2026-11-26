@@ -100,37 +100,13 @@ export function SuggestedAuthorsWidget() {
       verified: boolean;
       isFollowing: boolean;
     }[]
-  >([
-    {
-      id: "a-madina",
-      name: "Madina Karimova",
-      handle: "madina_karimova",
-      role: "EdTech mutaxassisi",
-      verified: true,
-      isFollowing: false,
-    },
-    {
-      id: "a-feruz",
-      name: "Feruz Xolmurodov",
-      handle: "feruz_dev",
-      role: "Full-Stack Dasturchi",
-      verified: false,
-      isFollowing: false,
-    },
-    {
-      id: "a-frontend",
-      name: "Frontend Developer",
-      handle: "frontend_dev",
-      role: "Web dasturlash",
-      verified: true,
-      isFollowing: false,
-    },
-  ]);
+  >([]);
+  const [isLoadingAuthors, setIsLoadingAuthors] = useState(true);
+  const [pendingHandles, setPendingHandles] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    // Attempt to load dynamic recommendations if available
     let isMounted = true;
-    fetch("/api/users/recommended")
+    fetch("/api/users/recommended", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         const list = Array.isArray(data?.data?.thinkers)
@@ -138,7 +114,7 @@ export function SuggestedAuthorsWidget() {
           : Array.isArray(data?.data)
           ? data.data
           : [];
-        if (isMounted && list.length > 0) {
+        if (isMounted) {
           setAuthors(
             list.slice(0, 3).map((u: {
               id: string;
@@ -160,19 +136,24 @@ export function SuggestedAuthorsWidget() {
           );
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setIsLoadingAuthors(false);
+      });
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [session.isAuthenticated]);
 
   const handleToggleFollow = async (idx: number, handle: string, name: string) => {
     if (!session.isAuthenticated) {
       toast.info("Muallifga obuna bo'lish uchun tizimga kiring");
       return;
     }
+    if (pendingHandles[handle]) return;
 
     const currentFollowing = authors[idx].isFollowing;
+    setPendingHandles((prev) => ({ ...prev, [handle]: true }));
     setAuthors((prev) =>
       prev.map((a, i) => (i === idx ? { ...a, isFollowing: !currentFollowing } : a))
     );
@@ -188,13 +169,19 @@ export function SuggestedAuthorsWidget() {
       } else {
         toast.info(`${name} obunadan chiqarildi`);
       }
-    } catch {
+    } catch (err) {
       setAuthors((prev) =>
         prev.map((a, i) => (i === idx ? { ...a, isFollowing: currentFollowing } : a))
       );
-      toast.error("Amalni bajarishda xatolik yuz berdi");
+      toast.error(err instanceof Error ? err.message : "Amalni bajarishda xatolik yuz berdi");
+    } finally {
+      setPendingHandles((prev) => ({ ...prev, [handle]: false }));
     }
   };
+
+  if (!isLoadingAuthors && authors.length === 0) {
+    return null;
+  }
 
   return (
     <div
@@ -210,7 +197,14 @@ export function SuggestedAuthorsWidget() {
       </div>
 
       <div className="space-y-3">
-        {authors.map((author, idx) => (
+        {isLoadingAuthors ? (
+          <div className="space-y-2.5 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-11 rounded-lg bg-slate-100 dark:bg-[#16181c]" />
+            ))}
+          </div>
+        ) : (
+          authors.map((author, idx) => (
           <div
             key={author.id}
             className="flex items-center justify-between gap-2.5 p-1 -mx-1 rounded-lg hover:bg-slate-50 dark:hover:bg-[#16181c] transition-colors"
@@ -255,8 +249,9 @@ export function SuggestedAuthorsWidget() {
             {/* Follow Button */}
             <button
               type="button"
+              disabled={Boolean(pendingHandles[author.handle])}
               onClick={() => handleToggleFollow(idx, author.handle, author.name)}
-              className={`h-[30px] px-3 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+              className={`h-[30px] px-3 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1 disabled:opacity-60 ${
                 author.isFollowing
                   ? "bg-slate-100 dark:bg-[#202327] text-slate-700 dark:text-[#cfd9de] hover:bg-slate-200 dark:hover:bg-[#2f3336]"
                   : "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white shadow-xs"
@@ -275,7 +270,8 @@ export function SuggestedAuthorsWidget() {
               )}
             </button>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

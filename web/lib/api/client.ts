@@ -68,8 +68,14 @@ export async function apiClient<T>(
   const json = await response.json().catch(() => null);
 
   if (!response.ok || !json?.success) {
+    const rawError = json?.error;
+    const detailIssue =
+      Array.isArray(rawError?.details) && typeof rawError.details[0]?.issue === "string"
+        ? rawError.details[0].issue
+        : null;
     const message =
-      json?.error?.message ||
+      detailIssue ||
+      (typeof rawError === "string" ? rawError : rawError?.message) ||
       (response.status === 401
         ? "Avtorizatsiyadan o‘tilmagan"
         : response.status === 403
@@ -82,9 +88,9 @@ export async function apiClient<T>(
 
     throw new ApiError(
       message,
-      json?.error?.code || "UNKNOWN_ERROR",
+      (typeof rawError === "object" && rawError?.code) || "UNKNOWN_ERROR",
       response.status,
-      json?.error?.details
+      typeof rawError === "object" ? rawError?.details : undefined
     );
   }
 

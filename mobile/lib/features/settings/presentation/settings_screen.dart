@@ -70,13 +70,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         showOnlineStatus: showOnlineStatus,
         twoFactorEnabled: twoFactorEnabled,
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
-            content: Text('Sozlamani saqlashda xatolik yuz berdi'),
+          SnackBar(
+            content: Text(
+              e.toString().isNotEmpty
+                  ? e.toString()
+                  : 'Sozlamani saqlashda xatolik yuz berdi',
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.dangerSurface,
           ),

@@ -21,18 +21,27 @@ const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 let globalShowToast: ((message: string, type?: ToastType, duration?: number) => void) | null = null;
 
+function normalizeToastMessage(msg: unknown): string {
+  if (typeof msg === "string") return msg;
+  if (msg && typeof msg === "object" && "message" in msg) {
+    const inner = (msg as { message?: unknown }).message;
+    if (typeof inner === "string" && inner.trim()) return inner;
+  }
+  return msg ? String(msg) : "Xatolik yuz berdi";
+}
+
 export const toast = {
   success: (msg: string, duration?: number) => {
-    if (globalShowToast) globalShowToast(msg, "success", duration);
+    if (globalShowToast) globalShowToast(normalizeToastMessage(msg), "success", duration);
   },
   info: (msg: string, duration?: number) => {
-    if (globalShowToast) globalShowToast(msg, "info", duration);
+    if (globalShowToast) globalShowToast(normalizeToastMessage(msg), "info", duration);
   },
   error: (msg: string, duration?: number) => {
-    if (globalShowToast) globalShowToast(msg, "error", duration);
+    if (globalShowToast) globalShowToast(normalizeToastMessage(msg), "error", duration);
   },
   default: (msg: string, duration?: number) => {
-    if (globalShowToast) globalShowToast(msg, "default", duration);
+    if (globalShowToast) globalShowToast(normalizeToastMessage(msg), "default", duration);
   },
 };
 

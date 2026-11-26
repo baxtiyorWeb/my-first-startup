@@ -218,8 +218,8 @@ function ProfileEditForm({
 
       toast.success(t("common.saved"));
       onClose();
-    } catch {
-      toast.error(t("settings.errorSaved"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("settings.errorSaved"));
     } finally {
       setIsSaving(false);
     }

@@ -197,36 +197,47 @@ function PostDetailInner({
   }, [postId, t]);
 
   const handleLike = async () => {
-    const nextState = !isLiked;
+    if (!session.isAuthenticated) {
+      toast.info(t("auth.loginRequired") || "Yoqtirish uchun tizimga kiring");
+      return;
+    }
+    const prevLiked = isLiked;
+    const prevCount = likesCount;
+    const nextState = !prevLiked;
     setIsLiked(nextState);
-    setLikesCount((prev) => (nextState ? prev + 1 : Math.max(0, prev - 1)));
+    setLikesCount(nextState ? prevCount + 1 : Math.max(0, prevCount - 1));
 
     try {
       const res = await api.posts.toggleLike(postId);
       setIsLiked(res.liked);
       setLikesCount(res.likesCount);
-    } catch {
-      setIsLiked(!nextState);
-      setLikesCount((prev) => (!nextState ? prev + 1 : Math.max(0, prev - 1)));
-      toast.error("Yoqtirish amalga oshmadi");
+    } catch (err) {
+      setIsLiked(prevLiked);
+      setLikesCount(prevCount);
+      toast.error(err instanceof Error ? err.message : "Yoqtirish amalga oshmadi");
     }
   };
 
   const handleSave = async () => {
-    const nextState = !isSaved;
-    setIsSaved(nextState);
-    if (nextState) {
-      toast.success("Saqlanganlarga qo‘shildi");
-    } else {
-      toast.info("Saqlanganlardan olib tashlandi");
+    if (!session.isAuthenticated) {
+      toast.info(t("auth.loginRequired") || "Saqlash uchun tizimga kiring");
+      return;
     }
+    const prevSaved = isSaved;
+    const nextState = !prevSaved;
+    setIsSaved(nextState);
 
     try {
       const res = await api.posts.toggleBookmark(postId);
       setIsSaved(res.saved);
-    } catch {
-      setIsSaved(!nextState);
-      toast.error("Saqlashda xatolik yuz berdi");
+      if (res.saved) {
+        toast.success("Saqlanganlarga qo‘shildi");
+      } else {
+        toast.info("Saqlanganlardan olib tashlandi");
+      }
+    } catch (err) {
+      setIsSaved(prevSaved);
+      toast.error(err instanceof Error ? err.message : "Saqlashda xatolik yuz berdi");
     }
   };
 
@@ -242,8 +253,8 @@ function PostDetailInner({
       await api.posts.deletePost(postId);
       toast.success(t("feed.deleteSuccess") || "Post o'chirildi");
       router.push(localePath("/dashboard"));
-    } catch {
-      toast.error(t("feed.deleteError") || "O'chirishda xatolik");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : (t("feed.deleteError") || "O'chirishda xatolik"));
     }
   };
 
@@ -274,8 +285,8 @@ function PostDetailInner({
       setCommentsCount((prev) => prev + 1);
       setNewCommentText("");
       toast.success(t("discussion.publishSuccess") || "Fikringiz muvaffaqiyatli chop etildi!");
-    } catch {
-      toast.error(t("discussion.sendError") || "Fikr yuborishda xatolik yuz berdi");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : (t("discussion.sendError") || "Fikr yuborishda xatolik yuz berdi"));
     } finally {
       setIsSubmittingComment(false);
     }
@@ -320,8 +331,8 @@ function PostDetailInner({
       setReplyText("");
       setReplyingToId(null);
       toast.success(t("discussion.publishSuccess") || "Javobingiz chop etildi!");
-    } catch {
-      toast.error(t("discussion.sendError") || "Javob yuborishda xatolik yuz berdi");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : (t("discussion.sendError") || "Javob yuborishda xatolik yuz berdi"));
     } finally {
       setIsSubmittingReply(false);
     }
@@ -333,6 +344,7 @@ function PostDetailInner({
       return;
     }
 
+    const prevComments = comments;
     setComments((prev) =>
       prev.map((c) => {
         if (c.id === commentId) {
@@ -365,8 +377,9 @@ function PostDetailInner({
 
     try {
       await api.comments.toggleCommentLike(commentId);
-    } catch {
-      toast.error("Yoqtirish amalga oshmadi");
+    } catch (err) {
+      setComments(prevComments);
+      toast.error(err instanceof Error ? err.message : "Yoqtirish amalga oshmadi");
     }
   };
 
@@ -495,9 +508,9 @@ function PostDetailInner({
                       } else {
                         toast.info(`${post.author.name} kuzatish to'xtatildi`);
                       }
-                    } catch {
+                    } catch (err) {
                       setIsFollowingAuthor(!nextState);
-                      toast.error("Kuzatish amalida xatolik yuz berdi");
+                      toast.error(err instanceof Error ? err.message : "Kuzatish amalida xatolik yuz berdi");
                     }
                   }}
                   className={`h-[32px] px-3 rounded-[12px] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${

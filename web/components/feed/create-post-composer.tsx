@@ -81,22 +81,37 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const remainingSlots = 3 - mediaUrls.length;
+    if (remainingSlots <= 0) {
+      toast.error("Ko‘pi bilan 3 tagacha rasm biriktirish mumkin");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setIsUploading(true);
     setIsExpanded(true);
 
     try {
-      for (let i = 0; i < files.length; i++) {
+      let uploadedCount = 0;
+      const limit = Math.min(files.length, remainingSlots);
+      if (files.length > remainingSlots) {
+        toast.info("Ko‘pi bilan 3 tagacha rasm yuklanadi");
+      }
+      for (let i = 0; i < limit; i++) {
         const file = files[i];
         if (file.size > 10 * 1024 * 1024) {
           toast.error("Fayl hajmi 10MB dan oshmasligi kerak");
           continue;
         }
         const result = await api.upload.uploadFile(file);
-        setMediaUrls((prev) => [...prev, result.url]);
+        setMediaUrls((prev) => [...prev, result.url].slice(0, 3));
+        uploadedCount += 1;
       }
-      toast.success("Rasm yuklandi");
-    } catch {
-      toast.error("Tasvirni yuklashda xatolik yuz berdi");
+      if (uploadedCount > 0) {
+        toast.success("Rasm yuklandi");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Tasvirni yuklashda xatolik yuz berdi");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -112,6 +127,10 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
     const trimmed = content.trim();
     if (!trimmed && mediaUrls.length === 0) {
       toast.error("Iltimos, post matnini kiriting yoki rasm biriktiring");
+      return;
+    }
+    if (mediaUrls.length === 0 && trimmed.length < 5) {
+      toast.error("Post matni kamida 5 ta belgidan iborat bo‘lishi kerak");
       return;
     }
 

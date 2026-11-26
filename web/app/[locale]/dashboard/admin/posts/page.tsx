@@ -111,7 +111,10 @@ export default function AdminPostsPage() {
         toast.success(json.message);
         fetchPosts();
       } else {
-        toast.error(json.error || "Xatolik yuz berdi");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "Xatolik yuz berdi"
+        );
       }
     } catch {
       toast.error("Server bilan aloqa uzildi");
@@ -131,7 +134,10 @@ export default function AdminPostsPage() {
         toast.success(locale === "uz" ? "Post o'chirildi" : "Пост удален");
         fetchPosts();
       } else {
-        toast.error(json.error || "O'chirishda xatolik");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "O'chirishda xatolik"
+        );
       }
     } catch {
       toast.error("Xatolik yuz berdi");

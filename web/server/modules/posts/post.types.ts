@@ -316,7 +316,11 @@ export function normalizeEditorialFields(input: PostEditorialInput, plainText: s
   const sanitizedTitle = input.title ? input.title.trim().slice(0, 300) : null;
   const sanitizedMediaUrls = Array.isArray(input.mediaUrls)
     ? input.mediaUrls
-        .filter((u) => typeof u === "string" && (u.startsWith("http://") || u.startsWith("https://")))
+        .filter(
+          (u) =>
+            typeof u === "string" &&
+            (u.startsWith("http://") || u.startsWith("https://") || u.startsWith("/"))
+        )
         .slice(0, 3)
     : [];
 

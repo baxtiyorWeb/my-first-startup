@@ -90,7 +90,10 @@ export default function AdminReportsPage() {
         toast.success(json.message);
         setReports((prev) => prev.filter((r) => r.id !== reportId));
       } else {
-        toast.error(json.error || "Amalni bajarishda xatolik yuz berdi");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "Amalni bajarishda xatolik yuz berdi"
+        );
       }
     } catch {
       toast.error("Server bilan aloqa uzildi");

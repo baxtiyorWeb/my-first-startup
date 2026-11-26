@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { requireAuth, SESSION_COOKIE_NAME } from "@/server/common/auth-guard";
 import { successResponse, errorResponse } from "@/server/common/response";
+import { AppError } from "@/server/common/errors";
 import { db } from "@/server/db";
 import { users } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
       return response;
     }
 
-    return errorResponse(new Error("Noto'g'ri amal ko'rsatildi"));
+    throw AppError.badRequest("Noto‘g‘ri amal ko‘rsatildi");
   } catch (error) {
     return errorResponse(error);
   }

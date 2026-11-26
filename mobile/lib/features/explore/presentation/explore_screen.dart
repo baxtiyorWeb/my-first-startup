@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_avatar.dart';
@@ -32,6 +33,8 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _category = 'all';
+  List<Author> _recommendedAuthors = const [];
+  final Map<String, bool> _followOverrides = {};
 
   static const List<Map<String, String>> _categories = [
     {'id': 'all', 'label': 'Barchasi'},
@@ -40,35 +43,71 @@ class _ExploreScreenState extends State<ExploreScreen> {
     {'id': 'discussions', 'label': 'Munozaralar'},
   ];
 
-  static const List<Author> _recommendedAuthors = [
-    Author(
-      id: 'u3',
-      name: 'Madina Karimova',
-      handle: 'madina_ux',
-      role: 'Product Designer',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-      verified: true,
-    ),
-    Author(
-      id: 'u2',
-      name: 'Sardor Rahimov',
-      handle: 'sardor_dev',
-      role: 'Full-Stack Dev',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-      verified: true,
-    ),
-    Author(
-      id: 'u4',
-      name: 'Javohir Toshmatov',
-      handle: 'javohir_ai',
-      role: 'AI Researcher',
-      avatarUrl:
-          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-      verified: true,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadRecommendedAuthors();
+  }
+
+  Future<void> _loadRecommendedAuthors() async {
+    try {
+      final decoded = await widget.authController.apiClient
+          .get('${ApiConstants.usersEndpoint}/recommended');
+      final data = decoded['data'];
+      final rawList = data is Map<String, dynamic> && data['thinkers'] is List
+          ? data['thinkers'] as List<dynamic>
+          : data is List
+              ? data
+              : const <dynamic>[];
+      final loaded = rawList
+          .whereType<Map<String, dynamic>>()
+          .map(Author.fromJson)
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _recommendedAuthors = loaded;
+        for (final a in loaded) {
+          _followOverrides[a.handle.replaceFirst('@', '').toLowerCase()] =
+              a.isFollowing;
+        }
+      });
+    } catch (_) {
+      // Fallback to authors already present in loaded feed posts
+    }
+  }
+
+  Future<void> _handleToggleFollow(Author author) async {
+    final key = author.handle.replaceFirst('@', '').toLowerCase();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final next = await widget.feedController.toggleFollowAuthor(author.handle);
+      if (!mounted) return;
+      setState(() => _followOverrides[key] = next);
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              next
+                  ? '${author.name} obunalarga qo\'shildi'
+                  : '${author.name} obunadan chiqarildi',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.dangerSurface,
+          ),
+        );
+    }
+  }
 
   @override
   void dispose() {
@@ -202,13 +241,33 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   return true;
                 }).toList();
 
+                final selfHandle = widget.authController.currentUser.handle
+                    .replaceFirst('@', '')
+                    .toLowerCase();
+                final List<Author> displayAuthors;
+                if (_recommendedAuthors.isNotEmpty) {
+                  displayAuthors = _recommendedAuthors;
+                } else {
+                  final seen = <String>{selfHandle};
+                  final derived = <Author>[];
+                  for (final post in allPosts) {
+                    final h =
+                        post.author.handle.replaceFirst('@', '').toLowerCase();
+                    if (h.isNotEmpty && seen.add(h)) {
+                      derived.add(post.author);
+                      if (derived.length >= 6) break;
+                    }
+                  }
+                  displayAuthors = derived;
+                }
+
                 return CustomScrollView(
                   scrollCacheExtent: const ScrollCacheExtent.pixels(500),
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   physics: const BouncingScrollPhysics(),
                   slivers: [
-                    if (query.isEmpty) ...[
+                    if (query.isEmpty && displayAuthors.isNotEmpty) ...[
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
@@ -231,22 +290,29 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             scrollDirection: Axis.horizontal,
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: _recommendedAuthors.length,
+                            itemCount: displayAuthors.length,
                             separatorBuilder: (_, _) => const SizedBox(width: 10),
                             itemBuilder: (context, idx) {
-                              final author = _recommendedAuthors[idx];
-                              final isFollowing = allPosts.any(
-                                (p) =>
-                                    p.author.handle == author.handle &&
-                                    p.author.isFollowing,
-                              );
+                              final author = displayAuthors[idx];
+                              final cleanHandle = author.handle
+                                  .replaceFirst('@', '')
+                                  .toLowerCase();
+                              final isFollowing = _followOverrides[cleanHandle] ??
+                                  author.isFollowing ||
+                                      allPosts.any(
+                                        (p) =>
+                                            p.author.handle
+                                                    .replaceFirst('@', '')
+                                                    .toLowerCase() ==
+                                                cleanHandle &&
+                                            p.author.isFollowing,
+                                      );
                               return _RecommendedAuthorCard(
                                 author: author,
                                 isFollowing: isFollowing,
                                 isDark: isDark,
                                 onTap: () => widget.onAuthorTap(author),
-                                onToggleFollow: () => widget.feedController
-                                    .toggleFollowAuthor(author.handle),
+                                onToggleFollow: () => _handleToggleFollow(author),
                               );
                             },
                           ),

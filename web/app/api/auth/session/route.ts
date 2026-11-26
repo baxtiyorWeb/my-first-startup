@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { getOptionalAuth } from "@/server/common/auth-guard";
 import { successResponse, errorResponse } from "@/server/common/response";
-import { getProfileSummaryByHandle } from "@/server/modules/users/users.service";
+import { getProfileSummaryByUserId } from "@/server/modules/users/users.service";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
     // Identity + counters only: the session payload must not carry the user's
     // post and discussion collections on every app start.
-    const profile = await getProfileSummaryByHandle(authUser.handle, authUser.userId);
+    const profile = await getProfileSummaryByUserId(authUser.userId);
 
     return successResponse({
       isAuthenticated: true,

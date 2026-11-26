@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { LOCALES, DEFAULT_LOCALE, isValidLocale } from "./lib/i18n/config";
+import { evaluateApiOrigin } from "./lib/security/origin-guard";
+
+const SESSION_COOKIE_NAME = "gogetters_session";
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -27,32 +30,24 @@ export function proxy(request: NextRequest) {
 
   // 0. Handle CORS and Preflight for all API routes safely
   if (pathname.startsWith("/api")) {
-    const origin = request.headers.get("origin");
-    const allowedOrigins = new Set([
-      process.env.NEXT_PUBLIC_APP_URL,
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-    ].filter(Boolean));
+    const originCheck = evaluateApiOrigin({
+      method: request.method,
+      pathname,
+      requestUrl: request.url,
+      originHeader: request.headers.get("origin"),
+      hostHeader: request.headers.get("host"),
+      forwardedHostHeader: request.headers.get("x-forwarded-host"),
+      forwardedProtoHeader: request.headers.get("x-forwarded-proto"),
+      authorizationHeader: request.headers.get("authorization"),
+      hasSessionCookie: request.cookies.has(SESSION_COOKIE_NAME),
+    });
 
-    let isAllowed = false;
-    if (origin) {
-      if (allowedOrigins.has(origin)) {
-        isAllowed = true;
-      } else if (process.env.NEXT_PUBLIC_APP_URL) {
-        try {
-          const appOrigin = new URL(process.env.NEXT_PUBLIC_APP_URL).origin;
-          if (origin === appOrigin) isAllowed = true;
-        } catch {
-          // ignore
-        }
-      }
-    }
+    const { origin, isAllowedOrigin: isAllowed, shouldBlockCsrf } = originCheck;
 
     // Defense-in-depth CSRF guard for cookie-authenticated API calls.
-    // Native mobile clients authenticate with a Bearer token and send no Origin.
-    const isStateChanging = !["GET", "HEAD", "OPTIONS"].includes(request.method);
-    const isPaymentWebhook = pathname.startsWith("/api/subscriptions/webhook");
-    if (isStateChanging && origin && !isAllowed && !isPaymentWebhook) {
+    // Same-origin requests, apex<->www siblings, configured origins, webhooks,
+    // and Bearer-only mobile/API requests pass; cross-site forged origins are blocked.
+    if (shouldBlockCsrf) {
       return NextResponse.json(
         {
           success: false,
@@ -70,8 +65,9 @@ export function proxy(request: NextRequest) {
       const preflightHeaders: Record<string, string> = {
         "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
         "Access-Control-Allow-Headers":
-          "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization",
+          "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, Idempotency-Key",
         "Access-Control-Max-Age": "86400",
+        Vary: "Origin",
       };
 
       if (isAllowed && origin) {
@@ -92,8 +88,9 @@ export function proxy(request: NextRequest) {
       response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
       response.headers.set(
         "Access-Control-Allow-Headers",
-        "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+        "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, Idempotency-Key"
       );
+      response.headers.set("Vary", "Origin");
     }
     return response;
   }

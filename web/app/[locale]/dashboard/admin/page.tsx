@@ -89,7 +89,11 @@ export default function AdminOverviewPage() {
         toast.success(json.message);
         await fetchOverview();
       } else {
-        toast.error(json.error || "Amalni bajarishda xatolik yuz berdi");
+        const errMsg =
+          typeof json.error === "string"
+            ? json.error
+            : json.error?.message || "Amalni bajarishda xatolik yuz berdi";
+        toast.error(errMsg);
       }
     } catch (err) {
       toast.error((err as Error).message || "Server bilan aloqa uzildi");

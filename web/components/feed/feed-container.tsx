@@ -108,7 +108,14 @@ export function FeedContainer() {
     );
 
     try {
-      await api.posts.toggleLike(postId);
+      const res = await api.posts.toggleLike(postId);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, isLiked: res.liked, likesCount: res.likesCount }
+            : p,
+        ),
+      );
     } catch (err) {
       setPosts(prevPosts);
       const msg = err instanceof ApiError ? err.message : t("feed.likeError");
@@ -123,7 +130,13 @@ export function FeedContainer() {
     );
 
     try {
-      await api.posts.toggleBookmark(postId);
+      const res = await api.posts.toggleBookmark(postId);
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, isSaved: res.saved } : p)),
+      );
+      if (res.saved) {
+        toast.success(t("common.saved"));
+      }
     } catch (err) {
       setPosts(prevPosts);
       const msg = err instanceof ApiError ? err.message : t("feed.saveError");

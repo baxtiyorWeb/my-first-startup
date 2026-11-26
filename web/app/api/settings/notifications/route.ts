@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { requireAuth } from "@/server/common/auth-guard";
 import { successResponse, errorResponse } from "@/server/common/response";
+import { AppError } from "@/server/common/errors";
 import { db } from "@/server/db";
 import { notificationSettings } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
@@ -58,7 +59,7 @@ export async function PATCH(req: NextRequest) {
     const parseResult = NotificationSettingsSchema.safeParse(body);
 
     if (!parseResult.success) {
-      return errorResponse(new Error("Noto'g'ri bildirishnoma sozlamalari"));
+      throw AppError.validation("Noto‘g‘ri bildirishnoma sozlamalari");
     }
 
     const updates = parseResult.data;

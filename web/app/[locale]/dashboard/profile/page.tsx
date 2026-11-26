@@ -154,17 +154,22 @@ function ProfileContent() {
 
   const handleFollowToggle = async () => {
     if (!profile) return;
+    if (!session.isAuthenticated) {
+      toast.info(t("auth.loginRequired") || "Kuzatish uchun tizimga kiring");
+      throw new Error("AUTH_REQUIRED");
+    }
     if (isSelf) {
       toast.error(t("profile.cannotFollowSelf"));
       return;
     }
     try {
       const data = await api.users.toggleFollow(currentHandle);
+      const following = data.isFollowing ?? data.following;
       setProfile((prev) =>
         prev
           ? {
               ...prev,
-              isFollowing: data.following,
+              isFollowing: following,
               stats: {
                 ...prev.stats,
                 followersCount: data.followersCount,
@@ -172,38 +177,81 @@ function ProfileContent() {
             }
           : null
       );
+      if (following) {
+        toast.success(`${profile.name} (${t("common.following")})`);
+      } else {
+        toast.info(`${profile.name} (${t("common.unfollow")})`);
+      }
     } catch (err) {
       const msg =
         err instanceof ApiError ? err.message : t("common.errorOccurred");
       toast.error(msg);
+      throw err;
     }
   };
 
   const handleLikeChange = async (postId: string, isLiked: boolean, count: number) => {
-    setUserPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, isLiked, likesCount: count } : p))
-    );
+    const prevUserPosts = userPosts;
+    const prevDiscussions = discussionPosts;
+    const patch = (list: Post[]) =>
+      list.map((p) => (p.id === postId ? { ...p, isLiked, likesCount: count } : p));
+    setUserPosts(patch);
+    setDiscussionPosts(patch);
     try {
-      await api.posts.toggleLike(postId);
-    } catch {
-      // Revert silently on failure
+      const res = await api.posts.toggleLike(postId);
+      const sync = (list: Post[]) =>
+        list.map((p) =>
+          p.id === postId
+            ? { ...p, isLiked: res.liked, likesCount: res.likesCount }
+            : p
+        );
+      setUserPosts(sync);
+      setDiscussionPosts(sync);
+    } catch (err) {
+      setUserPosts(prevUserPosts);
+      setDiscussionPosts(prevDiscussions);
+      toast.error(err instanceof ApiError ? err.message : t("feed.likeError"));
     }
   };
 
   const handleSaveChange = async (postId: string, isSaved: boolean) => {
-    setUserPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, isSaved } : p))
-    );
+    const prevUserPosts = userPosts;
+    const prevDiscussions = discussionPosts;
+    const patch = (list: Post[]) =>
+      list.map((p) => (p.id === postId ? { ...p, isSaved } : p));
+    setUserPosts(patch);
+    setDiscussionPosts(patch);
     try {
-      await api.posts.toggleBookmark(postId);
-    } catch {
-      // Revert silently on failure
+      const res = await api.posts.toggleBookmark(postId);
+      const sync = (list: Post[]) =>
+        list.map((p) => (p.id === postId ? { ...p, isSaved: res.saved } : p));
+      setUserPosts(sync);
+      setDiscussionPosts(sync);
+      if (res.saved) {
+        toast.success(t("common.saved"));
+      }
+    } catch (err) {
+      setUserPosts(prevUserPosts);
+      setDiscussionPosts(prevDiscussions);
+      toast.error(err instanceof ApiError ? err.message : t("feed.saveError"));
     }
   };
 
   // PostCard handles the API request and only calls this after success.
   const handleDeletePost = (postId: string) => {
     setUserPosts((prev) => prev.filter((p) => p.id !== postId));
+    setDiscussionPosts((prev) => prev.filter((p) => p.id !== postId));
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            stats: {
+              ...prev.stats,
+              postsCount: Math.max(0, prev.stats.postsCount - 1),
+            },
+          }
+        : null
+    );
   };
 
   if (isLoading) {

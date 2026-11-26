@@ -273,7 +273,7 @@ class FeedRepositoryImpl implements FeedRepository {
     final cleanHandle = handle.replaceFirst('@', '').trim();
     final decoded = await _apiClient.post('${ApiConstants.usersEndpoint}/$cleanHandle/follow');
     final data = decoded['data'] as Map<String, dynamic>? ?? const {};
-    return (data['following'] as bool?) ?? false;
+    return (data['isFollowing'] as bool?) ?? (data['following'] as bool?) ?? false;
   }
 
   @override

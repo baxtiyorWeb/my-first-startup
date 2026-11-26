@@ -43,12 +43,17 @@ function StudioEditorWorkspace() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
+  const kindParam = searchParams.get("kind");
 
   const { t, localePath } = useI18n();
   const editorRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const [contentKind, setContentKind] = useState<ContentKind>("article");
+  const initialKind: ContentKind =
+    kindParam === "video" || kindParam === "news" || kindParam === "article" || kindParam === "thought"
+      ? kindParam
+      : "article";
+  const [contentKind, setContentKind] = useState<ContentKind>(initialKind);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -450,8 +455,8 @@ function StudioEditorWorkspace() {
         newUrls.push(uploadRes.url);
       }
       setMediaUrls((prev) => [...prev, ...newUrls].slice(0, 3));
-    } catch {
-      toast.error("Rasmni yuklashda xatolik yuz berdi");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Rasmni yuklashda xatolik yuz berdi");
     } finally {
       setIsUploadingImage(false);
       if (imageInputRef.current) imageInputRef.current.value = "";

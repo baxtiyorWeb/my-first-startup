@@ -234,7 +234,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Future<void> _handleSubmit() async {
     if (_isSubmitting) return;
     final content = _contentController.text.trim();
-    if (content.length < 5) {
+    final hasMedia = _mediaItems.isNotEmpty;
+    if (_isEditing && content.isEmpty) {
+      _showSnack('Post matni bo\'sh bo\'lishi mumkin emas');
+      return;
+    }
+    if (!_isEditing && !hasMedia && content.length < 5) {
       _showSnack('Post matni kamida 5 ta belgidan iborat bo\'lishi kerak');
       return;
     }

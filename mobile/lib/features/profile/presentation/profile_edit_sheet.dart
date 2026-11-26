@@ -107,14 +107,18 @@ class _ProfileEditSheetState extends State<ProfileEditSheet> {
             backgroundColor: AppColors.success,
           ),
         );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
-            content: Text('Profilni saqlashda xatolik yuz berdi'),
+          SnackBar(
+            content: Text(
+              e.toString().isNotEmpty
+                  ? e.toString()
+                  : 'Profilni saqlashda xatolik yuz berdi',
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.dangerSurface,
           ),

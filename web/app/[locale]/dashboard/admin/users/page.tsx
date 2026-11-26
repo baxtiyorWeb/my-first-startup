@@ -116,7 +116,10 @@ export default function AdminUsersPage() {
         );
         fetchUsers();
       } else {
-        toast.error(json.error || "Xatolik yuz berdi");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "Xatolik yuz berdi"
+        );
       }
     } catch {
       toast.error("Server bilan aloqa uzildi");
@@ -171,7 +174,10 @@ export default function AdminUsersPage() {
         setEditingBot(null);
         fetchUsers();
       } else {
-        toast.error(json.error || "Saqlashda xatolik yuz berdi");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "Saqlashda xatolik yuz berdi"
+        );
       }
     } catch {
       toast.error("Server bilan aloqa uzildi");
@@ -189,7 +195,10 @@ export default function AdminUsersPage() {
         toast.success(locale === "uz" ? "Profil o'chirildi" : "Профиль удален");
         fetchUsers();
       } else {
-        toast.error(json.error || "O'chirishda xatolik");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "O'chirishda xatolik"
+        );
       }
     } catch {
       toast.error("Xatolik yuz berdi");
@@ -214,7 +223,10 @@ export default function AdminUsersPage() {
           prev.map((u) => (u.id === userId ? { ...u, verified: newVerified } : u))
         );
       } else {
-        toast.error(json.error || "Xatolik yuz berdi");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "Xatolik yuz berdi"
+        );
       }
     } catch {
       toast.error("Server bilan aloqa uzildi");
@@ -239,7 +251,10 @@ export default function AdminUsersPage() {
           prev.map((u) => (u.id === userId ? { ...u, isDeactivated: newDeactivated } : u))
         );
       } else {
-        toast.error(json.error || "Xatolik yuz berdi");
+        toast.error(
+          (typeof json.error === "string" ? json.error : json.error?.message) ||
+            "Xatolik yuz berdi"
+        );
       }
     } catch {
       toast.error("Server bilan aloqa uzildi");

@@ -156,7 +156,7 @@ export async function recordPostView(id: string) {
 }
 
 export interface CreatePostPayload {
-  title?: string;
+  title?: string | null;
   slug?: string;
   content: string;
   postType?: PostType;

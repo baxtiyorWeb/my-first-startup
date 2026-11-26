@@ -66,6 +66,12 @@ export function PostCard({
   const [isShareActive, setIsShareActive] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
+  useEffect(() => {
+    setIsLiked(post.isLiked ?? false);
+    setLikesCount(post.likesCount);
+    setIsSaved(post.isSaved ?? false);
+  }, [post.id, post.isLiked, post.likesCount, post.isSaved]);
+
   const mediaList: string[] = Array.isArray(post.mediaUrls)
     ? post.mediaUrls
     : typeof (post as any).mediaUrls === "string"
@@ -158,23 +164,56 @@ export function PostCard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const nextState = !isLiked;
-    const nextCount = nextState ? likesCount + 1 : Math.max(0, likesCount - 1);
+    if (!session.isAuthenticated) {
+      toast.info(t("auth.loginRequired") || "Yoqtirish uchun tizimga kiring");
+      return;
+    }
+    const prevLiked = isLiked;
+    const prevCount = likesCount;
+    const nextState = !prevLiked;
+    const nextCount = nextState ? prevCount + 1 : Math.max(0, prevCount - 1);
     setIsLiked(nextState);
     setLikesCount(nextCount);
-    onLikeChange?.(post.id, nextState, nextCount);
+    if (onLikeChange) {
+      onLikeChange(post.id, nextState, nextCount);
+      return;
+    }
+    try {
+      const res = await api.posts.toggleLike(post.id);
+      setIsLiked(res.liked);
+      setLikesCount(res.likesCount);
+    } catch (err) {
+      setIsLiked(prevLiked);
+      setLikesCount(prevCount);
+      toast.error(err instanceof ApiError ? err.message : t("feed.likeError"));
+    }
   };
 
-  const handleSave = (e: React.MouseEvent) => {
+  const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const nextState = !isSaved;
-    setIsSaved(nextState);
-    if (nextState) {
-      toast.success(t("common.saved"));
+    if (!session.isAuthenticated) {
+      toast.info(t("auth.loginRequired") || "Saqlash uchun tizimga kiring");
+      return;
     }
-    onSaveChange?.(post.id, nextState);
+    const prevSaved = isSaved;
+    const nextState = !prevSaved;
+    setIsSaved(nextState);
+    if (onSaveChange) {
+      onSaveChange(post.id, nextState);
+      return;
+    }
+    try {
+      const res = await api.posts.toggleBookmark(post.id);
+      setIsSaved(res.saved);
+      if (res.saved) {
+        toast.success(t("common.saved"));
+      }
+    } catch (err) {
+      setIsSaved(prevSaved);
+      toast.error(err instanceof ApiError ? err.message : t("feed.saveError"));
+    }
   };
 
   const handleShare = (e?: React.MouseEvent) => {

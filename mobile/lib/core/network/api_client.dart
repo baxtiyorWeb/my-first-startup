@@ -149,7 +149,19 @@ class ApiClient {
     }
 
     final errorObj = decoded?['error'];
-    final message = (errorObj is Map ? errorObj['message']?.toString() : null) ??
+    String? detailIssue;
+    if (errorObj is Map && errorObj['details'] is List && (errorObj['details'] as List).isNotEmpty) {
+      final firstDetail = (errorObj['details'] as List).first;
+      if (firstDetail is Map && firstDetail['issue'] is String) {
+        detailIssue = firstDetail['issue'] as String;
+      }
+    }
+    final message = detailIssue ??
+        (errorObj is Map
+            ? errorObj['message']?.toString()
+            : errorObj is String && errorObj.isNotEmpty
+                ? errorObj
+                : null) ??
         'Server xatoligi (HTTP ${response.statusCode})';
     final code = errorObj is Map ? errorObj['code']?.toString() : null;
     throw ApiException(message, statusCode: response.statusCode, code: code);

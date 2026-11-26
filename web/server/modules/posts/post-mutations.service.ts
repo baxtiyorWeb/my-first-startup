@@ -15,6 +15,7 @@ import {
   detachPostTagsOnDeleteTx,
   resolveAndSyncPostTagsTx,
 } from "@/server/modules/tags/tags.service";
+import { validateTagInput } from "@/server/modules/tags/tag-normalizer";
 import {
   UUID_REGEX,
   getPublicRouteKind,
@@ -47,12 +48,14 @@ export async function createPost(
   userId: string,
   input: PostEditorialInput
 ): Promise<PostResponse> {
-  const plainText = stripHtmlToPlainText(input.content);
-  if (plainText.length < 5) {
+  const plainText = stripHtmlToPlainText(input.content || "");
+  const norm = normalizeEditorialFields(input, plainText);
+  const hasMedia = norm.sanitizedMediaUrls.length > 0 || Boolean(norm.videoUrl);
+  if (!hasMedia && plainText.length < 5) {
     throw AppError.validation("Post matni kamida 5 ta belgidan iborat bo‘lishi kerak");
   }
 
-  const sanitizedContent = sanitizeRichContent(input.content);
+  const sanitizedContent = sanitizeRichContent(input.content || "");
   const words = plainText.split(/\s+/).filter(Boolean).length;
   const readingTimeMinutes = Math.max(1, Math.ceil(words / 180));
   const sanitizedProjectUrl = input.projectUrl ? input.projectUrl.trim().slice(0, 500) : null;
@@ -60,13 +63,15 @@ export async function createPost(
   const sanitizedLookingFor = input.lookingFor ? input.lookingFor.trim().slice(0, 50) : null;
   const postType = input.postType === "project" ? "project" : "thought";
 
-  const norm = normalizeEditorialFields(input, plainText);
-  const slugSource = input.slug?.trim() || norm.sanitizedTitle || plainText.slice(0, 64);
+  const slugSource = input.slug?.trim() || norm.sanitizedTitle || plainText.slice(0, 64) || "post";
   const uniqueSlug = await resolveUniqueSlug(slugSource);
   const resolvedDurationSeconds = await resolveVideoDuration(norm.videoUrl, norm.videoDurationSeconds);
   const isShort = Boolean(norm.videoUrl) && isShortVideoDuration(resolvedDurationSeconds);
 
-  const inlineTags = (plainText.match(/#[a-zA-Z0-9_\u0400-\u04FF\u0100-\u024F'ʻʼ]+/g) ?? []).slice(0, 5);
+  const inlineTags = (plainText.match(/#[a-zA-Z0-9_\u0400-\u04FF\u0100-\u024F'ʻʼ]+/g) ?? [])
+    .filter((tag) => validateTagInput(tag).valid)
+    .slice(0, 5);
+  const explicitTagsProvided = norm.tags.length > 0 || (Array.isArray(input.tagIds) && input.tagIds.length > 0);
   const tagInputs = norm.tags.length > 0 ? norm.tags : inlineTags;
 
   try {
@@ -110,13 +115,25 @@ export async function createPost(
         })
         .returning();
 
-      const synced = await resolveAndSyncPostTagsTx(tx, {
-        postId: row.id,
-        userId,
-        tagInputs,
-        tagIds: input.tagIds,
-        isPostActive: norm.status === "published",
-      });
+      let synced: Awaited<ReturnType<typeof resolveAndSyncPostTagsTx>> = {
+        tagNames: [],
+        tagItems: [],
+      };
+      if (explicitTagsProvided || tagInputs.length > 0) {
+        try {
+          synced = await resolveAndSyncPostTagsTx(tx, {
+            postId: row.id,
+            userId,
+            tagInputs,
+            tagIds: input.tagIds,
+            isPostActive: norm.status === "published",
+          });
+        } catch (tagErr) {
+          // Never fail a post solely because an auto-extracted inline hashtag hit a tag quota/restriction
+          if (explicitTagsProvided) throw tagErr;
+          console.warn("[POSTS] Skipping auto-extracted inline tags:", tagErr);
+        }
+      }
 
       if (synced.tagNames.length > 0) {
         await tx
@@ -257,7 +274,7 @@ export async function updatePost(
       throw AppError.forbidden("Siz faqat o‘zingiz yozgan postlarni tahrirlashingiz mumkin");
     }
 
-    const trimmedContent = data.content.trim();
+    const trimmedContent = typeof data.content === "string" ? data.content.trim() : "";
     if (!trimmedContent) {
       throw AppError.badRequest("Post matni bo‘sh bo‘lishi mumkin emas");
     }
@@ -296,22 +313,30 @@ export async function updatePost(
       }
     }
 
-    // Tags are typed as hashtags inside the post content; extract them here
-    // because the editor no longer has a separate tags field.
-    const inlineTags = (plainText.match(/#[a-zA-Z0-9_\u0400-\u04FF\u0100-\u024F'ʻʼ]+/g) ?? []).slice(0, 10);
-    const tagsProvided = data.tags !== undefined || data.tagIds !== undefined || inlineTags.length > 0;
+    // Tags are typed as hashtags inside the post content; extract valid ones here
+    // so numbers like #1 or #2026 in normal prose never break editing.
+    const inlineTags = (plainText.match(/#[a-zA-Z0-9_\u0400-\u04FF\u0100-\u024F'ʻʼ]+/g) ?? [])
+      .filter((tag) => validateTagInput(tag).valid)
+      .slice(0, 10);
+    const explicitTagsProvided = data.tags !== undefined || data.tagIds !== undefined;
+    const tagsProvided = explicitTagsProvided || inlineTags.length > 0;
 
     await db.transaction(async (tx) => {
       let updatedTagNames: string[] | undefined;
       if (tagsProvided) {
-        const synced = await resolveAndSyncPostTagsTx(tx, {
-          postId,
-          userId,
-          tagInputs: norm.tags.length > 0 ? norm.tags : inlineTags,
-          tagIds: data.tagIds,
-          isPostActive: norm.status === "published",
-        });
-        updatedTagNames = synced.tagNames;
+        try {
+          const synced = await resolveAndSyncPostTagsTx(tx, {
+            postId,
+            userId,
+            tagInputs: norm.tags.length > 0 ? norm.tags : inlineTags,
+            tagIds: data.tagIds,
+            isPostActive: norm.status === "published",
+          });
+          updatedTagNames = synced.tagNames;
+        } catch (tagErr) {
+          if (explicitTagsProvided) throw tagErr;
+          console.warn("[POSTS] Skipping auto-extracted inline tags on update:", tagErr);
+        }
       }
 
       await tx
@@ -320,7 +345,12 @@ export async function updatePost(
           slug: finalSlug,
           title: data.title !== undefined ? norm.sanitizedTitle : undefined,
           content: sanitizedContent,
-          postType: data.postType === "project" ? "project" : undefined,
+          postType:
+            data.postType !== undefined
+              ? data.postType === "project"
+                ? "project"
+                : "thought"
+              : undefined,
           contentKind: data.contentKind !== undefined ? norm.contentKind : undefined,
           status: data.status !== undefined ? norm.status : undefined,
           isIndexable:

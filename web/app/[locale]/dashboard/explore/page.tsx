@@ -88,7 +88,7 @@ export default function ExplorePage() {
       e.preventDefault();
       e.stopPropagation();
 
-      if (!session?.user) {
+      if (!session?.isAuthenticated) {
         toast.error(t("auth.loginRequired") || "Iltimos, avval tizimga kiring");
         return;
       }
@@ -100,16 +100,18 @@ export default function ExplorePage() {
       setFollowingMap((m) => ({ ...m, [handle]: next }));
 
       try {
-        await api.users.toggleFollow(handle);
+        const res = await api.users.toggleFollow(handle);
+        const finalFollowing = res.isFollowing ?? res.following;
+        setFollowingMap((m) => ({ ...m, [handle]: finalFollowing }));
         toast.success(
-          next
+          finalFollowing
             ? `@${handle.replace(/^@/, "")} kuzatuvchilaringizga qo'shildi`
             : `@${handle.replace(/^@/, "")} kuzatuvdan olindi`
         );
-      } catch {
+      } catch (err) {
         // Revert on error
         setFollowingMap((m) => ({ ...m, [handle]: prev }));
-        toast.error("Amalni bajarishda xatolik yuz berdi");
+        toast.error(err instanceof Error ? err.message : "Amalni bajarishda xatolik yuz berdi");
       }
     },
     [session, followingMap, t]

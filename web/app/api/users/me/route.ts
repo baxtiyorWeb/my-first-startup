@@ -1,16 +1,26 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/server/common/auth-guard";
-import { updateProfile, getProfileByHandle } from "@/server/modules/users/users.service";
+import { updateProfile, getProfileByUserId } from "@/server/modules/users/users.service";
 import { successResponse, errorResponse } from "@/server/common/response";
 import { AppError } from "@/server/common/errors";
 
 const UpdateProfileSchema = z.object({
-  name: z.string().min(2, "Ism kamida 2 ta belgidan iborat bo‘lishi kerak").optional(),
-  role: z.string().min(2, "Rol kamida 2 ta belgidan iborat bo‘lishi kerak").optional(),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Ism kamida 2 ta belgidan iborat bo‘lishi kerak")
+    .max(100, "Ism 100 belgidan oshmasligi kerak")
+    .optional(),
+  role: z
+    .string()
+    .trim()
+    .max(100, "Rol 100 belgidan oshmasligi kerak")
+    .nullable()
+    .optional(),
   bio: z.string().max(1000, "Bio 1000 belgidan oshmasligi kerak").nullable().optional(),
-  location: z.string().max(100).nullable().optional(),
-  website: z.string().max(200).nullable().optional(),
+  location: z.string().max(100, "Manzil 100 belgidan oshmasligi kerak").nullable().optional(),
+  website: z.string().max(200, "Veb-sayt havolasi 200 belgidan oshmasligi kerak").nullable().optional(),
   avatarUrl: z
     .string()
     .url("Noto‘g‘ri rasm havolasi")
@@ -23,15 +33,16 @@ const UpdateProfileSchema = z.object({
     .string()
     .url("Noto‘g‘ri muqova rasmi havolasi")
     .or(z.string().startsWith("/"))
+    .or(z.string().startsWith("data:image/"))
     .or(z.literal(""))
     .nullable()
     .optional(),
   socialLinks: z
     .object({
-      github: z.string().nullable().optional(),
-      linkedin: z.string().nullable().optional(),
-      twitter: z.string().nullable().optional(),
-      website: z.string().nullable().optional(),
+      github: z.string().max(250).nullable().optional(),
+      linkedin: z.string().max(250).nullable().optional(),
+      twitter: z.string().max(250).nullable().optional(),
+      website: z.string().max(250).nullable().optional(),
     })
     .nullable()
     .optional(),
@@ -59,17 +70,22 @@ export async function PATCH(req: NextRequest) {
     const parseResult = UpdateProfileSchema.safeParse(body);
 
     if (!parseResult.success) {
+      const issues = parseResult.error.issues.map((e) => ({
+        field: String(e.path[0] ?? ""),
+        issue: e.message,
+      }));
       throw AppError.validation(
-        "Profil ma’lumotlari noto‘g‘ri",
-        parseResult.error.issues.map((e) => ({
-          field: String(e.path[0] ?? ""),
-          issue: e.message,
-        }))
+        issues[0]?.issue || "Profil ma’lumotlari noto‘g‘ri",
+        issues
       );
     }
 
-    await updateProfile(authUser.userId, parseResult.data);
-    const updated = await getProfileByHandle(authUser.handle, authUser.userId);
+    const { role, ...rest } = parseResult.data;
+    await updateProfile(authUser.userId, {
+      ...rest,
+      ...(role !== undefined ? { role: role ?? "" } : {}),
+    });
+    const updated = await getProfileByUserId(authUser.userId);
 
     return successResponse(updated);
   } catch (error) {

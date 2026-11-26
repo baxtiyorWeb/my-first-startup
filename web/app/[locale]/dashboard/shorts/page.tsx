@@ -114,8 +114,8 @@ export default function ShortsPage() {
             : p
         )
       );
-    } catch {
-      toast.error("Like bosish uchun tizimga kiring");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Like bosishda xatolik yuz berdi");
     }
   };
 
@@ -126,8 +126,8 @@ export default function ShortsPage() {
         prev.map((p) => (p.id === post.id ? { ...p, isSaved: res.saved } : p))
       );
       toast.success(res.saved ? "Saqlandi" : "Saqlanganlardan olib tashlandi");
-    } catch {
-      toast.error("Saqlash uchun tizimga kiring");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Saqlashda xatolik yuz berdi");
     }
   };
 

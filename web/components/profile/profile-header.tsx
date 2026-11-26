@@ -23,7 +23,7 @@ interface ProfileHeaderProps {
   profile: UserProfile;
   isSelf: boolean;
   onEditClick: () => void;
-  onFollowToggle?: (isFollowing: boolean) => void;
+  onFollowToggle?: (isFollowing: boolean) => void | Promise<void>;
   onTabChange?: (tab: ProfileTab) => void;
   onProfileUpdate?: (updates: Partial<UserProfile>) => void;
 }
@@ -41,6 +41,7 @@ export function ProfileHeader({
   const isSelfUser = isSelf || isSameUser(session.user, profile);
   const [isFollowing, setIsFollowing] = useState(isSelfUser ? false : (profile.isFollowing ?? false));
   const [followersCount, setFollowersCount] = useState(profile.stats.followersCount);
+  const [isFollowBusy, setIsFollowBusy] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState(profile.coverPhotoUrl || "");
@@ -51,6 +52,11 @@ export function ProfileHeader({
     setCoverPhotoUrl(profile.coverPhotoUrl || "");
   }, [profile.coverPhotoUrl]);
 
+  React.useEffect(() => {
+    setIsFollowing(isSelfUser ? false : Boolean(profile.isFollowing));
+    setFollowersCount(profile.stats.followersCount);
+  }, [profile.id, profile.isFollowing, profile.stats.followersCount, isSelfUser]);
+
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -60,6 +66,7 @@ export function ProfileHeader({
       return;
     }
 
+    const prevCover = coverPhotoUrl;
     setIsUploadingCover(true);
     try {
       const res = await api.upload.uploadFile(file, "covers");
@@ -67,8 +74,9 @@ export function ProfileHeader({
       await updateCurrentUser({ coverPhotoUrl: res.url });
       onProfileUpdate?.({ coverPhotoUrl: res.url });
       toast.success(t("profile.cover.coverUpdated"));
-    } catch {
-      toast.error(t("profile.cover.coverUploadError"));
+    } catch (err) {
+      setCoverPhotoUrl(prevCover);
+      toast.error(err instanceof Error ? err.message : t("profile.cover.coverUploadError"));
     } finally {
       setIsUploadingCover(false);
       if (coverInputRef.current) {
@@ -78,14 +86,16 @@ export function ProfileHeader({
   };
 
   const handleRemoveCover = async () => {
+    const prevCover = coverPhotoUrl;
     setIsUploadingCover(true);
     try {
       setCoverPhotoUrl("");
       await updateCurrentUser({ coverPhotoUrl: "" });
       onProfileUpdate?.({ coverPhotoUrl: "" });
       toast.success(t("profile.cover.coverRemoved"));
-    } catch {
-      toast.error(t("profile.cover.coverDeleteError"));
+    } catch (err) {
+      setCoverPhotoUrl(prevCover);
+      toast.error(err instanceof Error ? err.message : t("profile.cover.coverDeleteError"));
     } finally {
       setIsUploadingCover(false);
       if (coverInputRef.current) {
@@ -94,21 +104,29 @@ export function ProfileHeader({
     }
   };
 
-  const handleFollow = () => {
+  const handleFollow = async () => {
+    if (isFollowBusy) return;
+    if (!session.isAuthenticated) {
+      toast.info(t("auth.loginRequired") || "Kuzatish uchun tizimga kiring");
+      return;
+    }
     if (isSelfUser) {
       toast.error(t("profile.cannotFollowSelf"));
       return;
     }
-    const nextState = !isFollowing;
-    const nextCount = nextState ? followersCount + 1 : Math.max(0, followersCount - 1);
+    const prevFollowing = isFollowing;
+    const prevCount = followersCount;
+    const nextState = !prevFollowing;
     setIsFollowing(nextState);
-    setFollowersCount(nextCount);
-    onFollowToggle?.(nextState);
-
-    if (nextState) {
-      toast.success(`${profile.name} (${t("common.following")})`);
-    } else {
-      toast.info(`${profile.name} (${t("common.unfollow")})`);
+    setFollowersCount(nextState ? prevCount + 1 : Math.max(0, prevCount - 1));
+    setIsFollowBusy(true);
+    try {
+      await onFollowToggle?.(nextState);
+    } catch {
+      setIsFollowing(prevFollowing);
+      setFollowersCount(prevCount);
+    } finally {
+      setIsFollowBusy(false);
     }
   };
 

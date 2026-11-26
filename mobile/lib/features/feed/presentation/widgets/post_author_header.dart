@@ -67,18 +67,33 @@ class PostAuthorHeader extends StatelessWidget {
   }
 
   Future<void> _handleFollowToggle(BuildContext context) async {
-    final next = await feedController.toggleFollowAuthor(post.author.handle);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          next
-              ? '${post.author.name} obunalarga qo\'shildi'
-              : '${post.author.name} obunadan chiqarildi',
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    try {
+      final next = await feedController.toggleFollowAuthor(post.author.handle);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              next
+                  ? '${post.author.name} obunalarga qo\'shildi'
+                  : '${post.author.name} obunadan chiqarildi',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.dangerSurface,
+          ),
+        );
+    }
   }
 
   void _onSelected(BuildContext context, String val) {

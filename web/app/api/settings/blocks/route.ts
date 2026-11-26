@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { requireAuth } from "@/server/common/auth-guard";
 import { successResponse, errorResponse } from "@/server/common/response";
+import { AppError } from "@/server/common/errors";
 import { db } from "@/server/db";
 import { userBlocks, users } from "@/server/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -35,7 +36,7 @@ export async function DELETE(req: NextRequest) {
     const targetUserId = searchParams.get("userId");
 
     if (!targetUserId) {
-      return errorResponse(new Error("Foydalanuvchi ID si ko'rsatilmadi"));
+      throw AppError.badRequest("Foydalanuvchi ID si ko‘rsatilmadi");
     }
 
     await db

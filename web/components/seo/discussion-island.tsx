@@ -102,10 +102,10 @@ export function DiscussionIsland({
       const res = await api.posts.toggleLike(postId);
       setIsLiked(res.liked);
       setLikesCount(res.likesCount);
-    } catch {
+    } catch (err) {
       setIsLiked(prevLiked);
       setLikesCount(prevCount);
-      toast.error("Amalni bajarishda xatolik");
+      toast.error(err instanceof Error ? err.message : "Amalni bajarishda xatolik");
     }
   }, [session?.isAuthenticated, isLiked, likesCount, postId]);
 
@@ -120,9 +120,9 @@ export function DiscussionIsland({
       const res = await api.posts.toggleBookmark(postId);
       setIsSaved(res.saved);
       toast.success(res.saved ? "Saqlanganlarga qo'shildi" : "Saqlanganlardan olindi");
-    } catch {
+    } catch (err) {
       setIsSaved(prev);
-      toast.error("Amalni bajarishda xatolik");
+      toast.error(err instanceof Error ? err.message : "Amalni bajarishda xatolik");
     }
   }, [session?.isAuthenticated, isSaved, postId]);
 
@@ -162,8 +162,8 @@ export function DiscussionIsland({
       }
       setCommentsCount((c) => c + 1);
       toast.success("Izohingiz qo'shildi");
-    } catch {
-      toast.error("Izohni yuborishda xatolik");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Izohni yuborishda xatolik");
     } finally {
       setIsSubmitting(false);
     }
@@ -184,8 +184,8 @@ export function DiscussionIsland({
           replies: item.replies ? patchList(item.replies) : undefined,
         }));
       setComments(patchList);
-    } catch {
-      toast.error("Xatolik yuz berdi");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Xatolik yuz berdi");
     }
   };
 

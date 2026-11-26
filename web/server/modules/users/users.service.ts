@@ -362,6 +362,35 @@ export async function getProfileSummaryByHandle(
 }
 
 /**
+ * Resolve a user's current canonical handle by immutable userId UUID.
+ * Prevents stale JWT handle claims from causing 404 on `/api/users/me` or `/api/auth/session`.
+ */
+export async function getProfileByUserId(
+  userId: string,
+  options: { includePosts?: boolean } = {}
+): Promise<UserProfileResponse> {
+  const [userRow] = await db
+    .select({ handle: users.handle })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!userRow) {
+    throw AppError.notFound("Foydalanuvchi profili topilmadi");
+  }
+
+  return getProfileByHandle(userRow.handle, userId, options);
+}
+
+export async function getProfileSummaryByUserId(
+  userId: string
+): Promise<UserProfileSummaryResponse> {
+  const profile = await getProfileByUserId(userId, { includePosts: false });
+  const { posts: _posts, discussions: _discussions, ...summary } = profile;
+  return summary;
+}
+
+/**
  * Toggle follow / unfollow on an author (Prevents self-follow)
  */
 export async function toggleFollow(
