@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/liquid_glass.dart';
+import '../../models/feed_category.dart';
 
 class FeedFilterToolbar extends StatelessWidget {
   final String activeTab;
@@ -12,6 +13,9 @@ class FeedFilterToolbar extends StatelessWidget {
   final ValueChanged<bool> onViewModeChanged;
   final String? selectedTopic;
   final VoidCallback? onClearTopic;
+  final List<FeedCategory> categories;
+  final String? selectedCategory;
+  final ValueChanged<String?>? onCategorySelected;
 
   const FeedFilterToolbar({
     super.key,
@@ -23,6 +27,9 @@ class FeedFilterToolbar extends StatelessWidget {
     required this.onViewModeChanged,
     this.selectedTopic,
     this.onClearTopic,
+    this.categories = const [],
+    this.selectedCategory,
+    this.onCategorySelected,
   });
 
   @override
@@ -96,6 +103,62 @@ class FeedFilterToolbar extends StatelessWidget {
               },
             ),
           ),
+
+          // Dynamic category chips (backend-driven; never hardcoded)
+          if (categories.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 32,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: categories.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  final isSelected = selectedCategory == category.slug;
+                  return LiquidGlassContainer(
+                    borderRadius: AppTheme.radiusFull,
+                    blurSigma: 14,
+                    tintColor: isSelected ? AppColors.primary : null,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    onTap: () => onCategorySelected
+                        ?.call(isSelected ? null : category.slug),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          category.name,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? AppColors.onPrimary
+                                : (isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textPrimaryLight),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${category.count}',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? AppColors.onPrimary.withAlpha(190)
+                                : (isDark
+                                    ? AppColors.textMutedDark
+                                    : AppColors.textMutedLight),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
 
           const SizedBox(height: 10),
 

@@ -3,6 +3,7 @@ import '../../../core/network/api_client.dart';
 import '../models/author.dart';
 import '../models/post.dart';
 import '../models/comment.dart';
+import '../models/feed_category.dart';
 
 class FeedPageResult {
   final List<Post> posts;
@@ -19,9 +20,11 @@ abstract class FeedRepository {
     String? filterTab,
     String? sortBy,
     String? tag,
+    String? category,
     String? cursor,
     int limit = 20,
   });
+  Future<List<FeedCategory>> getCategories({String? kind});
   Future<FeedPageResult> getShortsPage({
     String filter = 'for_you',
     String? cursor,
@@ -76,6 +79,7 @@ class FeedRepositoryImpl implements FeedRepository {
     String? filterTab,
     String? sortBy,
     String? tag,
+    String? category,
     String? cursor,
     int limit = 20,
   }) async {
@@ -91,6 +95,9 @@ class FeedRepositoryImpl implements FeedRepository {
     }
     if (tag != null && tag.trim().isNotEmpty) {
       queryParams['tag'] = tag.trim();
+    }
+    if (category != null && category.trim().isNotEmpty) {
+      queryParams['category'] = category.trim().toLowerCase();
     }
     if (cursor != null && cursor.isNotEmpty) {
       queryParams['cursor'] = cursor;
@@ -112,6 +119,22 @@ class FeedRepositoryImpl implements FeedRepository {
       posts: _applyLocalSort(posts, filterTab, sortBy),
       nextCursor: meta?['nextCursor'] as String?,
     );
+  }
+
+  @override
+  Future<List<FeedCategory>> getCategories({String? kind}) async {
+    final decoded = await _apiClient.get(
+      ApiConstants.postsCategoriesEndpoint,
+      queryParameters: {
+        if (kind != null && kind.isNotEmpty && kind != 'all') 'kind': kind,
+      },
+    );
+    final rawList = decoded['data'] as List<dynamic>? ?? const [];
+    return rawList
+        .whereType<Map<String, dynamic>>()
+        .map(FeedCategory.fromJson)
+        .where((c) => c.slug.isNotEmpty)
+        .toList();
   }
 
   @override

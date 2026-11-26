@@ -3,6 +3,7 @@ import '../../../core/cache/local_cache_store.dart';
 import '../../../core/network/api_client.dart';
 import '../models/author.dart';
 import '../models/post.dart';
+import '../models/feed_category.dart';
 import 'feed_cache_helper.dart';
 import 'feed_repository.dart';
 import 'post_action_controller.dart';
@@ -32,6 +33,8 @@ class FeedController extends ChangeNotifier {
   String _activeSort = 'latest';
   String _activeShortsFilter = 'for_you';
   String? _selectedTopicFilter;
+  String? _selectedCategoryFilter;
+  List<FeedCategory> _categories = const [];
 
   FeedController(
     this._repository, {
@@ -49,6 +52,7 @@ class FeedController extends ChangeNotifier {
     this.actionController.addListener(notifyListeners);
     if (autoLoad) {
       loadPosts();
+      loadCategories();
     } else {
       _isLoading = false;
     }
@@ -71,6 +75,8 @@ class FeedController extends ChangeNotifier {
   String get activeSort => _activeSort;
   String get activeShortsFilter => _activeShortsFilter;
   String? get selectedTopicFilter => _selectedTopicFilter;
+  String? get selectedCategoryFilter => _selectedCategoryFilter;
+  List<FeedCategory> get categories => _categories;
   int get pendingSyncCount => actionController.pendingSyncCount;
 
   Post resolvePost(Post post) => actionController.resolvePost(post);
@@ -131,8 +137,25 @@ class FeedController extends ChangeNotifier {
     _shortsNextCursor = null;
   }
 
+  String get _categoryKind => _activeTab == 'articles' ? 'article' : 'all';
+
+  Future<void> loadCategories() async {
+    try {
+      final list = await _repository.getCategories(kind: _categoryKind);
+      _categories = list;
+      if (_selectedCategoryFilter != null &&
+          !list.any((c) => c.slug == _selectedCategoryFilter)) {
+        _selectedCategoryFilter = null;
+      }
+      notifyListeners();
+    } catch (_) {
+      // Categories are optional UI: keep whatever we already have on failure.
+    }
+  }
+
   Future<void> loadPosts({bool forceRefresh = false}) async {
-    final cacheKey = 'posts_${_activeTab}_${_activeSort}_${_selectedTopicFilter ?? 'all'}';
+    final cacheKey =
+        'posts_${_activeTab}_${_activeSort}_${_selectedTopicFilter ?? 'all'}_${_selectedCategoryFilter ?? 'all'}';
     if (!forceRefresh && _rawPosts.isEmpty) {
       final cached = await FeedCacheHelper.readCachedPosts(_cacheStore, cacheKey);
       if (cached != null) {
@@ -149,7 +172,11 @@ class FeedController extends ChangeNotifier {
     _errorMessage = null;
     try {
       final page = await _repository.getPostsPage(
-        filterTab: _activeTab, sortBy: _activeSort, tag: _selectedTopicFilter, limit: 20,
+        filterTab: _activeTab,
+        sortBy: _activeSort,
+        tag: _selectedTopicFilter,
+        category: _selectedCategoryFilter,
+        limit: 20,
       );
       actionController.ingestPosts(page.posts);
       _rawPosts = page.posts;
@@ -170,7 +197,12 @@ class FeedController extends ChangeNotifier {
     notifyListeners();
     try {
       final page = await _repository.getPostsPage(
-        filterTab: _activeTab, sortBy: _activeSort, tag: _selectedTopicFilter, cursor: _postsNextCursor, limit: 20,
+        filterTab: _activeTab,
+        sortBy: _activeSort,
+        tag: _selectedTopicFilter,
+        category: _selectedCategoryFilter,
+        cursor: _postsNextCursor,
+        limit: 20,
       );
       actionController.ingestPosts(page.posts);
       _rawPosts = FeedCacheHelper.mergePaginated(_rawPosts, page.posts);
@@ -275,6 +307,16 @@ class FeedController extends ChangeNotifier {
     _activeTab = tab;
     _rawPosts = [];
     _postsNextCursor = null;
+    loadCategories();
+    loadPosts();
+  }
+
+  void setCategoryFilter(String? category) {
+    final next = _selectedCategoryFilter == category ? null : category;
+    if (_selectedCategoryFilter == next) return;
+    _selectedCategoryFilter = next;
+    _rawPosts = [];
+    _postsNextCursor = null;
     loadPosts();
   }
 
@@ -310,6 +352,7 @@ class FeedController extends ChangeNotifier {
     );
     await _cacheStore.invalidatePrefix('posts_');
     await loadPosts(forceRefresh: true);
+    await loadCategories();
     if (created.isShort) {
       await _cacheStore.invalidatePrefix('shorts_');
       await loadShorts(forceRefresh: true);

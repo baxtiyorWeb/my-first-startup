@@ -80,6 +80,7 @@ export async function GET(req: NextRequest) {
     const typeParam = searchParams.get("type");
     const kindParam = searchParams.get("kind");
     const tagParam = searchParams.get("tag") || undefined;
+    const categoryParam = searchParams.get("category") || undefined;
     const postType = typeParam === "thought" || typeParam === "project" ? typeParam : undefined;
     const contentKind =
       kindParam === "article" || kindParam === "video" || kindParam === "news" || kindParam === "thought"
@@ -92,7 +93,8 @@ export async function GET(req: NextRequest) {
       authUser?.userId,
       postType,
       contentKind,
-      tagParam
+      tagParam,
+      categoryParam
     );
     const response = successResponse(result.posts, { nextCursor: result.nextCursor });
     response.headers.set(

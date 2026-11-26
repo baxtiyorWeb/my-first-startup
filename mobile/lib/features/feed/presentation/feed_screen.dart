@@ -247,6 +247,11 @@ class _FeedScreenState extends State<FeedScreen> {
                       ),
                       onClearTopic: () =>
                           widget.feedController.setTopicFilter(null),
+                      categories: widget.feedController.categories,
+                      selectedCategory:
+                          widget.feedController.selectedCategoryFilter,
+                      onCategorySelected:
+                          widget.feedController.setCategoryFilter,
                     ),
                   ),
                   if (widget.feedController.isLoading && posts.isEmpty)

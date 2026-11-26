@@ -8,6 +8,7 @@ import 'package:mobile/features/feed/data/feed_controller.dart';
 import 'package:mobile/features/feed/data/feed_repository.dart';
 import 'package:mobile/features/feed/models/author.dart';
 import 'package:mobile/features/feed/models/comment.dart';
+import 'package:mobile/features/feed/models/feed_category.dart';
 import 'package:mobile/features/feed/models/post.dart';
 import 'package:mobile/features/feed/presentation/create_post_screen.dart';
 import 'package:mobile/features/feed/presentation/widgets/trending_topics_bar.dart';
@@ -94,12 +95,16 @@ class FakeFeedRepo implements FeedRepository {
     String? filterTab,
     String? sortBy,
     String? tag,
+    String? category,
     String? cursor,
     int limit = 20,
   }) async {
     lastRequestedTag = tag;
     return const FeedPageResult(posts: []);
   }
+
+  @override
+  Future<List<FeedCategory>> getCategories({String? kind}) async => const [];
 
   @override
   Future<FeedPageResult> getShortsPage({

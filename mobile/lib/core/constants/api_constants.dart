@@ -28,6 +28,7 @@ abstract class ApiConstants {
   }
 
   static const String postsEndpoint = '/posts';
+  static const String postsCategoriesEndpoint = '/posts/categories';
   static const String shortsEndpoint = '/shorts';
   static const String bookmarksEndpoint = '/bookmarks';
   static const String actionsSyncEndpoint = '/actions/sync';

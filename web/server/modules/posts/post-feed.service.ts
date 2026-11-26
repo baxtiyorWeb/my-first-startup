@@ -127,14 +127,16 @@ export async function getFeed(
   currentUserId?: string,
   postType?: string,
   contentKind?: string,
-  tag?: string
+  tag?: string,
+  category?: string
 ): Promise<{ posts: PostResponse[]; nextCursor: string | null }> {
   try {
     const queryLimit = Math.min(Math.max(limit, 1), 50);
     const safeUserId = toSafeUserId(currentUserId);
     const viewerScope = safeUserId ? `u:${safeUserId}` : "guest";
     const cleanTag = tag?.trim() || undefined;
-    const cacheKey = `feed:${viewerScope}:${postType ?? "all"}:${contentKind ?? "all"}:${cleanTag ?? "all"}:${cursor ?? "first"}:${queryLimit}`;
+    const cleanCategory = category?.trim().toLowerCase() || undefined;
+    const cacheKey = `feed:${viewerScope}:${postType ?? "all"}:${contentKind ?? "all"}:${cleanTag ?? "all"}:${cleanCategory ?? "all"}:${cursor ?? "first"}:${queryLimit}`;
 
     const cached = feedCache.get(cacheKey) as
       | { posts: PostResponse[]; nextCursor: string | null }
@@ -147,6 +149,7 @@ export async function getFeed(
     if (postType) conditions.push(eq(posts.postType, postType));
     if (contentKind) conditions.push(eq(posts.contentKind, contentKind));
     if (cleanTag) conditions.push(buildActivePostTagFilterCondition(cleanTag));
+    if (cleanCategory) conditions.push(eq(posts.category, cleanCategory));
     conditions.push(...buildVisibilityConditions(safeUserId));
 
     const rows = await db
