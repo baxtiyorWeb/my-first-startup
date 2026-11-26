@@ -263,6 +263,59 @@ export async function getPublishedContentList(options: {
   }
 }
 
+export interface PublicContentCategory {
+  slug: string;
+  count: number;
+}
+
+/**
+ * Aggregates the categories actually used by published content of a given kind,
+ * so every section shows its own dynamic topic list instead of a hardcoded one.
+ */
+export async function getPublishedContentCategories(
+  kind?: PublicContentKind | "all"
+): Promise<PublicContentCategory[]> {
+  try {
+    const conditions = [
+      isNull(posts.deletedAt),
+      eq(posts.status, "published"),
+      eq(posts.isIndexable, true),
+      eq(users.isPrivate, false),
+      eq(users.isDeactivated, false),
+    ];
+
+    if (kind && kind !== "all") {
+      conditions.push(eq(posts.contentKind, kind));
+    } else {
+      conditions.push(
+        or(
+          eq(posts.contentKind, "article"),
+          eq(posts.contentKind, "video"),
+          eq(posts.contentKind, "news")
+        )!
+      );
+    }
+
+    const rows = await db
+      .select({ category: posts.category, count: sql<number>`count(*)::int` })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .where(and(...conditions))
+      .groupBy(posts.category)
+      .orderBy(desc(sql`count(*)`));
+
+    return rows
+      .map((row) => ({
+        slug: (row.category || "").trim().toLowerCase(),
+        count: Number(row.count) || 0,
+      }))
+      .filter((row) => row.slug.length > 0);
+  } catch (err) {
+    console.error("[SEO_CONTENT] Category aggregation failed:", err);
+    return [];
+  }
+}
+
 export async function getPublishedContentBySlugOrId(
   slugOrId: string,
   expectedKind?: PublicContentKind

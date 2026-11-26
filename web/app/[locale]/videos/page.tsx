@@ -32,6 +32,7 @@ export default async function VideosPage({
       kind="video"
       locale={data.typedLocale}
       items={data.items}
+      categories={data.categories}
       total={data.total}
       page={data.page}
       limit={data.limit}

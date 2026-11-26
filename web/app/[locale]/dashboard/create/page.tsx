@@ -686,17 +686,21 @@ function StudioEditorWorkspace() {
                 <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
                   Kategoriya
                 </label>
-                <select
+                <input
+                  type="text"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
-                >
+                  list="category-suggestions"
+                  placeholder="Sohangizni yozing (masalan: marketing)"
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                />
+                <datalist id="category-suggestions">
                   {CONTENT_CATEGORIES.map((c) => (
                     <option key={c.slug} value={c.slug}>
                       {c.label.uz}
                     </option>
                   ))}
-                </select>
+                </datalist>
               </div>
             </div>
 

@@ -4,6 +4,7 @@ import { isValidLocale, type Locale } from "@/lib/i18n/config";
 import { SITE_CONFIG, getCanonicalUrl, getLanguageAlternates } from "@/lib/seo/config";
 import {
   getPublishedContentBySlugOrId,
+  getPublishedContentCategories,
   getPublishedContentList,
   getRelatedContentAndPillars,
   getPublicKindPathSegment,
@@ -23,11 +24,11 @@ export async function generateEditorialListMetadata(
     article: {
       title:
         typedLocale === "uz"
-          ? "IT Maqolalar va Dasturlash Qo'llanmalari — Geters"
+          ? "Maqolalar va Amaliy Qo'llanmalar — Geters"
           : typedLocale === "ru"
-          ? "Технические статьи и руководства — Geters"
-          : "Developer Articles & Engineering Guides — Geters",
-      desc: "Dasturlash, sun'iy intellekt, frontend, backend va DevOps bo'yicha chuqur tahliliy maqolalar.",
+          ? "Статьи и практические руководства — Geters"
+          : "Articles & Practical Guides — Geters",
+      desc: "Turli sohalar bo'yicha chuqur tahliliy maqolalar, amaliy tajriba va qo'llanmalar.",
     },
     video: {
       title:
@@ -206,19 +207,23 @@ export async function resolveEditorialListPageData(
   const page = Math.max(1, Number(searchParams.page) || 1);
   const limit = 12;
 
-  const { items, total } = await getPublishedContentList({
-    kind,
-    category: activeCategory,
-    search: activeSearch,
-    tag: activeTag,
-    page,
-    limit,
-  });
+  const [{ items, total }, categories] = await Promise.all([
+    getPublishedContentList({
+      kind,
+      category: activeCategory,
+      search: activeSearch,
+      tag: activeTag,
+      page,
+      limit,
+    }),
+    getPublishedContentCategories(kind),
+  ]);
 
   return {
     typedLocale,
     items,
     total,
+    categories,
     page,
     limit,
     activeCategory,

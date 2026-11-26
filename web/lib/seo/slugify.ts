@@ -71,6 +71,60 @@ export const CONTENT_CATEGORIES: ContentCategoryMeta[] = [
     },
   },
   {
+    slug: "marketing",
+    label: { uz: "Marketing & SMM", ru: "Маркетинг и SMM", en: "Marketing & SMM" },
+    description: {
+      uz: "Brend, kontent-marketing, SMM strategiyalari va auditoriya o'sishi.",
+      ru: "Бренд, контент-маркетинг, SMM-стратегии и рост аудитории.",
+      en: "Branding, content marketing, SMM strategy, and audience growth.",
+    },
+  },
+  {
+    slug: "design",
+    label: { uz: "Dizayn & UX", ru: "Дизайн и UX", en: "Design & UX" },
+    description: {
+      uz: "Interfeys dizayni, UX tadqiqotlari, brending va vizual komunikatsiya.",
+      ru: "Интерфейсный дизайн, UX-исследования, брендинг и визуальные коммуникации.",
+      en: "Interface design, UX research, branding, and visual communication.",
+    },
+  },
+  {
+    slug: "biznes",
+    label: { uz: "Biznes & Moliya", ru: "Бизнес и финансы", en: "Business & Finance" },
+    description: {
+      uz: "Tadbirkorlik, moliya, investitsiyalar va biznes jarayonlarini optimallashtirish.",
+      ru: "Предпринимательство, финансы, инвестиции и оптимизация бизнес-процессов.",
+      en: "Entrepreneurship, finance, investments, and business process optimization.",
+    },
+  },
+  {
+    slug: "talim",
+    label: { uz: "Ta'lim & Kadrlar", ru: "Образование и кадры", en: "Education & HR" },
+    description: {
+      uz: "Ta'lim metodikalari, kadrlar boshqaruvi va kasbiy rivojlanish.",
+      ru: "Методики обучения, управление персоналом и профессиональное развитие.",
+      en: "Teaching methods, people management, and professional development.",
+    },
+  },
+  {
+    slug: "sogliq",
+    label: { uz: "Sog'liq & Tibbiyot", ru: "Здоровье и медицина", en: "Health & Medicine" },
+    description: {
+      uz: "Tibbiyot, sog'lom turmush tarzi va psixologik farovonlik bo'yicha materiallar.",
+      ru: "Материалы о медицине, здоровом образе жизни и психологическом благополучии.",
+      en: "Articles on medicine, healthy living, and mental wellbeing.",
+    },
+  },
+  {
+    slug: "shaxsiy",
+    label: { uz: "Shaxsiy Rivojlanish", ru: "Личное развитие", en: "Personal Growth" },
+    description: {
+      uz: "O'z-o'zini rivojlantirish, produktivlik va ijodiy fikrlash amaliyotlari.",
+      ru: "Саморазвитие, продуктивность и практики креативного мышления.",
+      en: "Self-development, productivity, and creative thinking practices.",
+    },
+  },
+  {
     slug: "news",
     label: { uz: "Texnologiya Yangiliklari", ru: "Новости технологий", en: "Tech News" },
     description: {
@@ -81,11 +135,33 @@ export const CONTENT_CATEGORIES: ContentCategoryMeta[] = [
   },
 ];
 
+/** Turns an arbitrary category value (e.g. "content-marketing") into a readable label. */
+export function humanizeCategory(value?: string | null): string {
+  const raw = (value || "").trim();
+  if (!raw) return "";
+  return raw
+    .replace(/[-_]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toLocaleUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export function getCategoryMeta(slug?: string | null): ContentCategoryMeta {
-  return (
-    CONTENT_CATEGORIES.find((c) => c.slug === slug) ||
-    CONTENT_CATEGORIES[0]
+  const key = (slug || "").trim();
+  const found = CONTENT_CATEGORIES.find(
+    (c) => c.slug === key || c.label.uz.toLowerCase() === key.toLowerCase()
   );
+  if (found) return found;
+
+  const label = humanizeCategory(key);
+  if (!label) return CONTENT_CATEGORIES[0];
+
+  return {
+    slug: key,
+    label: { uz: label, ru: label, en: label },
+    description: { uz: "", ru: "", en: "" },
+  };
 }
 
 const CYRILLIC_MAP: Record<string, string> = {

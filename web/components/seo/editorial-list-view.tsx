@@ -4,7 +4,7 @@ import type { PublicContentItem, PublicContentKind } from "@/server/modules/cont
 import type { Locale } from "@/lib/i18n/config";
 import { getCanonicalUrl } from "@/lib/seo/config";
 import { generateBreadcrumbSchema, generateItemListSchema } from "@/lib/seo/schema";
-import { CONTENT_CATEGORIES } from "@/lib/seo/slugify";
+import { getCategoryMeta } from "@/lib/seo/slugify";
 import { PublicNavbar } from "./public-navbar";
 import { PublicFooter } from "./public-footer";
 import { ContentCard } from "./content-card";
@@ -13,6 +13,7 @@ interface EditorialListViewProps {
   kind: PublicContentKind;
   locale: Locale;
   items: PublicContentItem[];
+  categories: { slug: string; count: number }[];
   total: number;
   page: number;
   limit: number;
@@ -25,6 +26,7 @@ export function EditorialListView({
   kind,
   locale,
   items,
+  categories,
   total,
   page,
   limit,
@@ -34,21 +36,28 @@ export function EditorialListView({
 }: EditorialListViewProps) {
   const seg = kind === "video" ? "videos" : kind === "news" ? "news" : "articles";
 
+  const categoryTabs = categories.map((cat) => ({
+    ...cat,
+    label: getCategoryMeta(cat.slug).label[locale],
+  }));
+  const activeCategoryLabel =
+    activeCategory !== "all" ? getCategoryMeta(activeCategory).label[locale] : null;
+
   const copy = {
     article: {
       badge: "Maqolalar & Qo'llanmalar",
       title:
         locale === "uz"
-          ? "Dasturlash va Texnologiya Maqolalari"
+          ? "Barcha Sohalar Uchun Maqolalar"
           : locale === "ru"
-          ? "Технические статьи и руководства"
-          : "Engineering Articles & Deep Dives",
+          ? "Статьи для всех сфер"
+          : "Articles for Every Field",
       subtitle:
         locale === "uz"
-          ? "Senior muhandislar tajribasi, arxitektura tahlillari va amaliy qo'llanmalar."
+          ? "Turli soha mutaxassislarining amaliy tajribasi, tahlillari va qo'llanmalari."
           : locale === "ru"
-          ? "Практический опыт инженеров, архитектурные разборы и глубокие руководства."
-          : "Practical engineering insights, system architecture deep dives, and hands-on guides.",
+          ? "Практический опыт, разборы и руководства специалистов разных сфер."
+          : "Hands-on experience, analysis, and guides from specialists across industries.",
       Icon: BookOpen,
     },
     video: {
@@ -134,7 +143,7 @@ export function EditorialListView({
                 <span>{copy.badge}</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-                {copy.title}
+                {activeCategoryLabel || copy.title}
               </h1>
               <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 {copy.subtitle}
@@ -177,7 +186,7 @@ export function EditorialListView({
               >
                 Barchasi ({total})
               </Link>
-              {CONTENT_CATEGORIES.map((cat) => (
+              {categoryTabs.map((cat) => (
                 <Link
                   key={cat.slug}
                   href={buildFilterUrl(cat.slug, 1)}
@@ -187,7 +196,7 @@ export function EditorialListView({
                       : "bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] text-slate-600 dark:text-slate-300 hover:border-[#1d9bf0]/40"
                   }`}
                 >
-                  {cat.label[locale]}
+                  {cat.label} ({cat.count})
                 </Link>
               ))}
             </div>
