@@ -175,6 +175,7 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
   }, [currentUserId]);
 
   // Connect to SSE Stream
+  const connectSSERef = useRef<(() => void) | null>(null);
   const connectSSE = useCallback(() => {
     if (!currentUserId || typeof window === "undefined") return;
 
@@ -383,13 +384,17 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
 
         if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = setTimeout(() => {
-          connectSSE();
+          connectSSERef.current?.();
         }, delay);
       };
     } catch {
       setIsConnected(false);
     }
   }, [currentUserId, playNotificationChime, refreshConversations]);
+
+  useEffect(() => {
+    connectSSERef.current = connectSSE;
+  }, [connectSSE]);
 
   // Initial load and SSE setup
   useEffect(() => {

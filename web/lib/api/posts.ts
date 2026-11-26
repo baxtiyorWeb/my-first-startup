@@ -1,8 +1,18 @@
 import { apiClient } from "./client";
-import type { Post, PostType, ProjectStage, ProjectLookingFor, UserIntent } from "@/types/social";
+import type {
+  Post,
+  PostType,
+  ContentKind,
+  ContentStatus,
+  VideoChapterItem,
+  ProjectStage,
+  ProjectLookingFor,
+  UserIntent,
+} from "@/types/social";
 
 export interface PostResponse {
   id: string;
+  slug?: string | null;
   author: {
     id: string;
     name: string;
@@ -16,12 +26,32 @@ export interface PostResponse {
   title?: string | null;
   content: string;
   postType?: PostType;
+  contentKind?: ContentKind;
+  status?: ContentStatus;
+  isIndexable?: boolean;
+  locale?: string;
+  category?: string;
+  tags?: string[];
+  coverImageUrl?: string | null;
+  coverImageAlt?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  focusKeyword?: string | null;
+  canonicalUrl?: string | null;
+  videoUrl?: string | null;
+  youtubeVideoId?: string | null;
+  bunnyVideoId?: string | null;
+  videoDurationSeconds?: number | null;
+  videoChapters?: VideoChapterItem[];
+  transcript?: string | null;
+  publishedAt?: string;
   projectUrl?: string | null;
   projectStage?: ProjectStage | null;
   lookingFor?: ProjectLookingFor | null;
   mediaUrls?: string[];
   readingTimeMinutes: number;
   createdAt: string;
+  updatedAt?: string;
   likesCount: number;
   commentsCount: number;
   sharesCount: number;
@@ -34,6 +64,7 @@ export interface GetFeedParams {
   cursor?: string;
   limit?: number;
   postType?: PostType;
+  contentKind?: ContentKind;
 }
 
 /**
@@ -42,6 +73,7 @@ export interface GetFeedParams {
 export function mapPostResponseToPost(p: PostResponse): Post {
   return {
     id: p.id,
+    slug: p.slug || null,
     author: {
       id: p.author.id,
       name: p.author.name,
@@ -55,14 +87,33 @@ export function mapPostResponseToPost(p: PostResponse): Post {
     title: p.title || undefined,
     content: p.content,
     postType: p.postType || "thought",
+    contentKind: p.contentKind || "thought",
+    status: p.status || "published",
+    isIndexable: Boolean(p.isIndexable),
+    locale: p.locale || "uz",
+    category: p.category || "umumiy",
+    tags: Array.isArray(p.tags) ? p.tags : [],
+    coverImageUrl: p.coverImageUrl || null,
+    coverImageAlt: p.coverImageAlt || null,
+    seoTitle: p.seoTitle || null,
+    seoDescription: p.seoDescription || null,
+    focusKeyword: p.focusKeyword || null,
+    canonicalUrl: p.canonicalUrl || null,
+    videoUrl: p.videoUrl || null,
+    youtubeVideoId: p.youtubeVideoId || null,
+    bunnyVideoId: p.bunnyVideoId || null,
+    videoDurationSeconds: p.videoDurationSeconds ?? null,
+    videoChapters: Array.isArray(p.videoChapters) ? p.videoChapters : [],
+    transcript: p.transcript || null,
+    publishedAt: p.publishedAt || p.createdAt,
     projectUrl: p.projectUrl || undefined,
     projectStage: p.projectStage || undefined,
     lookingFor: p.lookingFor || undefined,
     mediaUrls: p.mediaUrls || [],
-    topic: "Umumiy",
-    category: p.title ? "analytical" : "discussion",
+    topic: p.category || "Umumiy",
     readingTimeMinutes: p.readingTimeMinutes,
     createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
     likesCount: p.likesCount,
     commentsCount: p.commentsCount,
     sharesCount: p.sharesCount,
@@ -77,6 +128,7 @@ export async function getFeed(params: GetFeedParams = {}) {
   if (params.cursor) query.set("cursor", params.cursor);
   if (params.limit) query.set("limit", String(params.limit));
   if (params.postType) query.set("type", params.postType);
+  if (params.contentKind) query.set("kind", params.contentKind);
 
   const qs = query.toString() ? `?${query.toString()}` : "";
   const res = await apiClient<PostResponse[]>(`/api/posts${qs}`);
@@ -105,8 +157,27 @@ export async function recordPostView(id: string) {
 
 export interface CreatePostPayload {
   title?: string;
+  slug?: string;
   content: string;
   postType?: PostType;
+  contentKind?: ContentKind;
+  status?: ContentStatus;
+  isIndexable?: boolean;
+  locale?: string;
+  category?: string;
+  tags?: string[];
+  coverImageUrl?: string | null;
+  coverImageAlt?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  focusKeyword?: string | null;
+  canonicalUrl?: string | null;
+  videoUrl?: string | null;
+  youtubeVideoId?: string | null;
+  bunnyVideoId?: string | null;
+  videoDurationSeconds?: number | null;
+  videoChapters?: VideoChapterItem[];
+  transcript?: string | null;
   projectUrl?: string | null;
   projectStage?: ProjectStage | null;
   lookingFor?: ProjectLookingFor | null;
@@ -123,7 +194,7 @@ export async function createPost(payload: CreatePostPayload) {
 
 export async function updatePost(
   id: string,
-  payload: { title?: string; content: string }
+  payload: Partial<CreatePostPayload> & { content: string }
 ) {
   const res = await apiClient<PostResponse>(`/api/posts/${id}`, {
     method: "PATCH",
@@ -151,6 +222,13 @@ export async function toggleLike(id: string) {
 
 export async function toggleBookmark(id: string) {
   const res = await apiClient<{ saved: boolean }>(`/api/posts/${id}/bookmark`, {
+    method: "POST",
+  });
+  return res.data;
+}
+
+export async function recordView(id: string) {
+  const res = await apiClient<{ viewsCount: number }>(`/api/posts/${id}/view`, {
     method: "POST",
   });
   return res.data;

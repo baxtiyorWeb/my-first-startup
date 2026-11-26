@@ -6,10 +6,36 @@ import { successResponse, errorResponse } from "@/server/common/response";
 import { AppError } from "@/server/common/errors";
 import { enforceRateLimit } from "@/server/common/rate-limiter";
 
+const VideoChapterSchema = z.object({
+  time: z.string().max(16),
+  seconds: z.number().min(0),
+  title: z.string().min(1).max(140),
+});
+
 const CreatePostSchema = z.object({
   title: z.string().optional(),
+  slug: z.string().optional(),
   content: z.string().min(5, "Post matni kamida 5 ta belgidan iborat bo‘lishi kerak"),
   postType: z.enum(["thought", "project"]).optional().default("thought"),
+  contentKind: z.enum(["article", "video", "news", "thought"]).optional().default("thought"),
+  status: z.enum(["draft", "published", "archived"]).optional().default("published"),
+  isIndexable: z.boolean().optional(),
+  locale: z.enum(["uz", "ru", "en"]).optional().default("uz"),
+  category: z.string().max(64).optional().default("umumiy"),
+  tags: z.array(z.string().max(40)).max(10).optional().default([]),
+  tagIds: z.array(z.string().uuid()).max(8).optional(),
+  coverImageUrl: z.string().optional().nullable(),
+  coverImageAlt: z.string().max(255).optional().nullable(),
+  seoTitle: z.string().max(180).optional().nullable(),
+  seoDescription: z.string().max(340).optional().nullable(),
+  focusKeyword: z.string().max(120).optional().nullable(),
+  canonicalUrl: z.string().max(500).optional().nullable(),
+  videoUrl: z.string().optional().nullable(),
+  youtubeVideoId: z.string().max(64).optional().nullable(),
+  bunnyVideoId: z.string().max(128).optional().nullable(),
+  videoDurationSeconds: z.number().int().min(0).optional().nullable(),
+  videoChapters: z.array(VideoChapterSchema).max(50).optional().default([]),
+  transcript: z.string().optional().nullable(),
   projectUrl: z
     .string()
     .trim()
@@ -33,10 +59,28 @@ export async function GET(req: NextRequest) {
     const cursor = searchParams.get("cursor") || undefined;
     const limit = Number(searchParams.get("limit")) || 20;
     const typeParam = searchParams.get("type");
-    const postType = (typeParam === "thought" || typeParam === "project") ? typeParam : undefined;
+    const kindParam = searchParams.get("kind");
+    const tagParam = searchParams.get("tag") || undefined;
+    const postType = typeParam === "thought" || typeParam === "project" ? typeParam : undefined;
+    const contentKind =
+      kindParam === "article" || kindParam === "video" || kindParam === "news" || kindParam === "thought"
+        ? kindParam
+        : undefined;
 
-    const result = await getFeed(cursor, limit, authUser?.userId, postType);
-    return successResponse(result.posts, { nextCursor: result.nextCursor });
+    const result = await getFeed(
+      cursor,
+      limit,
+      authUser?.userId,
+      postType,
+      contentKind,
+      tagParam
+    );
+    const response = successResponse(result.posts, { nextCursor: result.nextCursor });
+    response.headers.set(
+      "Cache-Control",
+      authUser ? "private, no-store" : "public, s-maxage=15, stale-while-revalidate=30"
+    );
+    return response;
   } catch (error) {
     return errorResponse(error);
   }

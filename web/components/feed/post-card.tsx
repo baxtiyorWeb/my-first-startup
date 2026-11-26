@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   HeartIcon,
@@ -22,6 +22,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Check,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import type { Post } from "@/types/social";
@@ -36,6 +37,7 @@ import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { isSameUser } from "@/lib/user-utils";
+import { useContentFormat } from "@/components/format";
 
 interface PostCardProps {
   post: Post;
@@ -56,6 +58,7 @@ export function PostCard({
 }: PostCardProps) {
   const { session } = useAuth();
   const { t, localePath, formatRelativeTime } = useI18n();
+  const { stripHtml, getExcerpt, formatCompactNumber } = useContentFormat();
 
   const [isLiked, setIsLiked] = useState(post.isLiked ?? false);
   const [likesCount, setLikesCount] = useState(post.likesCount);
@@ -137,7 +140,7 @@ export function PostCard({
     id: post.id,
     type: "post",
     author: post.author.name,
-    snippet: post.content.slice(0, 100),
+    snippet: getExcerpt(post.content, 100),
   });
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -188,6 +191,17 @@ export function PostCard({
     }
     setIsMenuOpen(false);
   };
+
+  const postDetailHref =
+    post.isIndexable && post.slug && post.contentKind && post.contentKind !== "thought"
+      ? `/${post.locale || "uz"}/${
+          post.contentKind === "video"
+            ? "videos"
+            : post.contentKind === "news"
+            ? "news"
+            : "articles"
+        }/${post.slug}`
+      : localePath(`/dashboard/posts/${post.id}`);
 
   const authorProfileHref = localePath(
     `/dashboard/profile?user=${encodeURIComponent(post.author.handle)}`,
@@ -249,454 +263,437 @@ export function PostCard({
     }
   };
 
+  const authorInitials = useMemo(() => {
+    const parts = (post.author.name || "").trim().split(/\s+/);
+    if (parts.length >= 2 && parts[0][0] && parts[1][0]) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return (post.author.name || "U").slice(0, 2).toUpperCase();
+  }, [post.author.name]);
+
+  const authorHandle = useMemo(() => {
+    const h = post.author.handle || "";
+    return h.startsWith("@") ? h : `@${h}`;
+  }, [post.author.handle]);
+
+  const formattedViews = useMemo(() => {
+    if (viewsCount >= 1_000_000) {
+      return `${(viewsCount / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+    }
+    if (viewsCount >= 1_000) {
+      return `${(viewsCount / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+    }
+    return viewsCount.toString();
+  }, [viewsCount]);
+
+  const extractedTags = useMemo(() => {
+    if (post.tags && post.tags.length > 0) {
+      return post.tags.map((t) => (t.startsWith("#") ? t : `#${t}`));
+    }
+    const matches = post.content.match(
+      /#[a-zA-Z0-9_\u0400-\u04FF\u0100-\u024F]+/g,
+    );
+    if (matches && matches.length > 0) {
+      return Array.from(new Set(matches)).slice(0, 4);
+    }
+    const tags: string[] = [];
+    if (post.topic)
+      tags.push(`#${post.topic.toLowerCase().replace(/[^a-z0-9]/g, "")}`);
+    if (post.projectStage) tags.push(`#${post.projectStage}`);
+    return tags;
+  }, [post.tags, post.content, post.topic, post.projectStage]);
+
   return (
     <>
       <article
         aria-label={`${post.author.name} posti`}
-        className={`bg-transparent border-b border-slate-200/60 dark:border-slate-800/60 pb-5 pt-4 px-2 sm:px-3 transition-all duration-200 ${
+        className={`relative w-full rounded-[17px] border transition-all duration-200 p-4 sm:p-[19px] mb-4 ${
           highlightActive
-            ? "animate-highlight-pulse bg-slate-100/50 dark:bg-slate-800/30"
-            : ""
+            ? "animate-highlight-pulse bg-slate-100/70 dark:bg-[#151722] border-blue-500/50"
+            : "bg-white dark:bg-[#101117] border-slate-200/90 dark:border-[#24252f] hover:border-slate-300 dark:hover:border-[#383a48] shadow-xs"
         }`}
       >
         {/* 1. Header: Author Identity & Metadata */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             {/* Avatar */}
             <Link
               href={authorProfileHref}
-              className="shrink-0 cursor-pointer hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-700 transition-all rounded-full"
+              className="shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
               title={`${post.author.name} profili`}
             >
-              <UserAvatar
-                name={post.author.name}
-                avatarUrl={post.author.avatarUrl}
-                size="md"
-                className="w-9 h-9"
-              />
+              {post.author.avatarUrl ? (
+                <UserAvatar
+                  name={post.author.name}
+                  avatarUrl={post.author.avatarUrl}
+                  size="md"
+                  className="size-[38px] rounded-full border border-slate-200 dark:border-[#24252f]"
+                />
+              ) : (
+                <div className="size-[38px] rounded-full flex items-center justify-center bg-gradient-to-b from-slate-700 to-slate-900 dark:from-[#262838] dark:to-[#171822] text-white border border-slate-300 dark:border-[#34374a] shadow-xs">
+                  <span className="font-semibold text-[14px] tracking-wide">
+                    {authorInitials}
+                  </span>
+                </div>
+              )}
             </Link>
 
-            {/* Author Details */}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <Link
-                  href={authorProfileHref}
-                  className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-100 truncate cursor-pointer hover:underline"
-                >
-                  {post.author.name}
-                </Link>
-                {post.author.verified && (
-                  <span title={t("common.verifiedAuthor")}>
-                    <VerifiedBadgeIcon
-                      size={14}
-                      className="text-slate-900 dark:text-slate-100 shrink-0"
-                    />
-                  </span>
-                )}
-                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
-                  {post.author.handle}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  {post.author.role}
-                </p>
-                {post.author.intent && post.author.intent !== "none" && (
-                  <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
-                    {post.author.intent === "looking_for_cofounder" &&
-                      t("intents.badge_cofounder")}
-                    {post.author.intent === "open_to_work" &&
-                      t("intents.badge_open_to_work")}
-                    {post.author.intent === "raising_funds" &&
-                      t("intents.badge_raising")}
-                    {post.author.intent === "open_to_advisory" &&
-                      t("intents.badge_advisory")}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Time & Options Menu */}
-          <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500 shrink-0 select-none">
-            <span className="text-[11px] font-medium">
-              {formatRelativeTime(post.createdAt)}
-            </span>
-
-            {/* Options Dropdown Trigger */}
-            <div className="relative" ref={menuRef}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsMenuOpen((prev) => !prev);
-                }}
-                className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
-                aria-label={t("post.options")}
+            {/* Author Name, Verified Badge & Metadata */}
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <Link
+                href={authorProfileHref}
+                className="font-semibold text-[13px] sm:text-[14px] text-slate-900 dark:text-[#f6f6fa] hover:underline truncate"
               >
-                <MoreHorizontal size={15} />
-              </button>
+                {post.author.name}
+              </Link>
 
-              {isMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-lg py-1 z-20 text-xs animate-in fade-in zoom-in-95">
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                  >
-                    <LinkIcon className="w-3.5 h-3.5" />
-                    <span>{t("common.share")}</span>
-                  </button>
-
-                  {!isOwnPost && (
-                    <button
-                      type="button"
-                      onClick={handleToggleFollow}
-                      className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                    >
-                      {isFollowingAuthor ? (
-                        <>
-                          <UserCheck className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
-                          <span className="font-medium">
-                            {t("common.unfollow") || "Kuzatishni to‘xtatish"}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="w-3.5 h-3.5 text-slate-500" />
-                          <span>{t("common.follow") || "Kuzatish"}</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsMenuOpen(false);
-                      setReportTarget({
-                        id: post.id,
-                        type: "post",
-                        author: post.author.name,
-                        snippet: post.content.slice(0, 100),
-                      });
-                      setIsReportOpen(true);
-                    }}
-                    className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer"
-                  >
-                    <Flag className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                    <span>{t("post.report")}</span>
-                  </button>
-
-                  {isOwnPost && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          setIsEditModalOpen(true);
-                        }}
-                        className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
-                      >
-                        <Edit2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                        <span>Tahrirlash</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          setIsConfirmDeleteOpen(true);
-                        }}
-                        className="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-800"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                        <span>{t("post.deleteConfirm")}</span>
-                      </button>
-                    </>
-                  )}
+              {/* Verified Badge */}
+              {post.author.verified && (
+                <div
+                  className="bg-[#3995ff] rounded-[6px] size-[16px] flex items-center justify-center shrink-0"
+                  title={t("common.verifiedAuthor")}
+                >
+                  <Check size={11} className="text-white stroke-[2.5]" />
                 </div>
+              )}
+
+              {/* Metadata: @handle · time */}
+              <span className="text-[12px] text-slate-500 dark:text-[#a0a5b8] flex items-center gap-1.5 whitespace-nowrap">
+                <span className="font-normal">{authorHandle}</span>
+                <span>·</span>
+                <span>{formatRelativeTime(post.createdAt)}</span>
+              </span>
+
+              {/* Optional Intent Badge */}
+              {post.author.intent && post.author.intent !== "none" && (
+                <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#181920] text-slate-600 dark:text-[#a0a5b8] border border-slate-200 dark:border-[#262836]">
+                  {post.author.intent === "looking_for_cofounder" &&
+                    t("intents.badge_cofounder")}
+                  {post.author.intent === "open_to_work" &&
+                    t("intents.badge_open_to_work")}
+                  {post.author.intent === "raising_funds" &&
+                    t("intents.badge_raising")}
+                  {post.author.intent === "open_to_advisory" &&
+                    t("intents.badge_advisory")}
+                </span>
               )}
             </div>
           </div>
-        </div>
 
-        {/* 2. Content: Title (optional) + Body */}
-        <div className="mt-3 space-y-1.5">
-          {currentTitle && (
-            <Link href={localePath(`/dashboard/posts/${post.id}`)}>
-              <h2 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 tracking-tight leading-snug hover:underline cursor-pointer">
-                <HighlightText text={currentTitle} query={activeSearchQuery} />
-              </h2>
-            </Link>
-          )}
-          <div className="relative">
-            <div
-              className={
-                !isContentExpanded ? "line-clamp-4 overflow-hidden" : ""
-              }
+          {/* Options Dropdown Trigger */}
+          <div className="relative shrink-0" ref={menuRef}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen((prev) => !prev);
+              }}
+              className="p-1.5 rounded-md text-slate-400 dark:text-[#a0a5b8] hover:text-slate-700 dark:hover:text-[#f6f6fa] hover:bg-slate-100 dark:hover:bg-[#1c1e28] transition-colors cursor-pointer"
+              aria-label={t("post.options")}
             >
-              <Link
-                href={localePath(`/dashboard/posts/${post.id}`)}
-                className="block group"
-              >
-                <RichContent
-                  content={currentContent}
-                  searchQuery={activeSearchQuery}
-                  className="text-xs sm:text-[13.5px] group-hover:text-slate-950 dark:group-hover:text-slate-100 transition-colors"
-                />
-              </Link>
-            </div>
+              <MoreHorizontal size={18} />
+            </button>
 
-            {/* Read more toggle for posts longer than 4 lines or 200 chars */}
-            {(currentContent.length > 200 ||
-              (currentContent.match(/\n/g) || []).length >= 3) && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsContentExpanded((prev) => !prev);
-                }}
-                className="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer inline-flex items-center gap-0.5"
-              >
-                {isContentExpanded ? "Yashirish" : "Ko'proq o'qish"}
-              </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-[#151722] rounded-xl border border-slate-200 dark:border-[#24252f] shadow-lg py-1 z-20 text-xs animate-in fade-in zoom-in-95">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2 cursor-pointer"
+                >
+                  <LinkIcon className="w-3.5 h-3.5" />
+                  <span>{t("common.share")}</span>
+                </button>
+
+                {!isOwnPost && (
+                  <button
+                    type="button"
+                    onClick={handleToggleFollow}
+                    className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2 cursor-pointer"
+                  >
+                    {isFollowingAuthor ? (
+                      <>
+                        <UserCheck className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                        <span className="font-medium">
+                          {t("common.unfollow") || "Kuzatishni to‘xtatish"}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-3.5 h-3.5 text-slate-500" />
+                        <span>{t("common.follow") || "Kuzatish"}</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMenuOpen(false);
+                    setReportTarget({
+                      id: post.id,
+                      type: "post",
+                      author: post.author.name,
+                      snippet: getExcerpt(post.content, 100),
+                    });
+                    setIsReportOpen(true);
+                  }}
+                  className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2 cursor-pointer"
+                >
+                  <Flag className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                  <span>{t("post.report")}</span>
+                </button>
+
+                {isOwnPost && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setIsEditModalOpen(true);
+                      }}
+                      className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-[#24252f]"
+                    >
+                      <Edit2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                      <span>Tahrirlash</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setIsConfirmDeleteOpen(true);
+                      }}
+                      className="w-full px-3 py-2 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-[#24252f]"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                      <span>{t("post.deleteConfirm")}</span>
+                    </button>
+                  </>
+                )}
+              </div>
             )}
           </div>
+        </div>
 
-          {/* Post Media Attachments — Instagram-style responsive grid */}
-          {mediaList.length > 0 && (
-            <div className="mt-2.5 w-full overflow-hidden rounded-xl">
-              {mediaList.length === 1 ? (
-                /* Single image: fills the block width, natural aspect ratio capped */
+        {/* 2. Middle Body: Two-column layout (Left: Title, Description, Tags; Right: Media thumbnail) */}
+        <div className="mt-3.5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex-1 min-w-0 flex flex-col justify-between">
+            <div>
+              {/* Title */}
+              {currentTitle && (
+                <Link href={postDetailHref}>
+                  <h2 className="text-[14px] sm:text-[15px] font-bold text-slate-900 dark:text-[#f6f6fa] hover:underline cursor-pointer leading-[20px] line-clamp-2 mb-1.5">
+                    <HighlightText
+                      text={currentTitle}
+                      query={activeSearchQuery}
+                    />
+                  </h2>
+                </Link>
+              )}
+
+              {/* Description */}
+              <div className="relative">
                 <div
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setLightboxIndex(0);
-                  }}
-                  className="group/media relative w-full rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
+                  className={
+                    !isContentExpanded ? "line-clamp-3 overflow-hidden" : ""
+                  }
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={mediaList[0]}
-                    alt={post.title || "Attachment 1"}
-                    loading="lazy"
-                    className="w-full h-auto max-h-[280px] object-contain block transition-transform duration-300 transform-gpu group-hover/media:scale-[1.02]"
-                  />
-                  <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none rounded-xl" />
+                  <Link
+                    href={postDetailHref}
+                    className="block group"
+                  >
+                    <RichContent
+                      content={currentContent}
+                      searchQuery={activeSearchQuery}
+                      className="text-[12px] sm:text-[13px] leading-[20px] text-slate-600 dark:text-[#c4c7d9] group-hover:text-slate-900 dark:group-hover:text-[#f6f6fa] transition-colors"
+                    />
+                  </Link>
                 </div>
-              ) : mediaList.length === 2 ? (
-                /* Two images: equal-width columns, square-ish cells */
-                <div className="grid grid-cols-2 gap-1.5">
-                  {mediaList.map((url, idx) => (
-                    <div
-                      key={idx}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setLightboxIndex(idx);
-                      }}
-                      className="group/media relative w-full aspect-[4/3] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={post.title || `Attachment ${idx + 1}`}
-                        loading="lazy"
-                        className="w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
-                      />
-                      <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
-                    </div>
-                  ))}
-                </div>
-              ) : mediaList.length === 3 ? (
-                /* Three images: large left + two stacked right (Instagram 3-layout) */
-                <div className="grid grid-cols-2 gap-1.5">
-                  {/* Left — tall primary image */}
-                  <div
+
+                {/* Read more toggle if long content (calculated on clean text, not raw tags) */}
+                {(stripHtml(currentContent).length > 220 ||
+                  (stripHtml(currentContent).match(/\n/g) || []).length >= 3) && (
+                  <button
+                    type="button"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setLightboxIndex(0);
+                      setIsContentExpanded((prev) => !prev);
                     }}
-                    className="group/media relative row-span-2 aspect-[4/5] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
+                    className="mt-1 text-xs font-semibold text-blue-600 dark:text-[#3995ff] hover:underline cursor-pointer inline-flex items-center gap-0.5"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={mediaList[0]}
-                      alt={post.title || "Attachment 1"}
-                      loading="lazy"
-                      className="w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
-                    />
-                    <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
-                  </div>
-                  {/* Right column — two square cells */}
-                  {[1, 2].map((idx) => (
-                    <div
-                      key={idx}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setLightboxIndex(idx);
-                      }}
-                      className="group/media relative aspect-[4/3] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={mediaList[idx]}
-                        alt={post.title || `Attachment ${idx + 1}`}
-                        loading="lazy"
-                        className="w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
-                      />
-                      <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                /* 4+ images: 2×2 grid, last cell shows "+N more" overlay */
-                <div className="grid grid-cols-2 gap-1.5">
-                  {mediaList.slice(0, 4).map((url, idx) => (
-                    <div
-                      key={idx}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setLightboxIndex(idx);
-                      }}
-                      className="group/media relative aspect-[4/3] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 cursor-zoom-in overflow-hidden"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={post.title || `Attachment ${idx + 1}`}
-                        loading="lazy"
-                        className="w-full h-full object-contain transition-transform duration-300 transform-gpu group-hover/media:scale-[1.03]"
-                      />
-                      {/* "+N more" badge on the 4th cell when there are extras */}
-                      {idx === 3 && mediaList.length > 4 && (
-                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 rounded-xl">
-                          <span className="text-white text-lg font-bold">
-                            +{mediaList.length - 4}
-                          </span>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 z-10 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
-                    </div>
-                  ))}
+                    {isContentExpanded ? "Yashirish" : "Ko'proq o'qish"}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Tags - Neutral styling (NO pink, NO purple) */}
+            {extractedTags.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap mt-3">
+                {extractedTags.map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center px-2 py-0.5 rounded-[12px] bg-slate-100 dark:bg-[#181920] border border-slate-200/90 dark:border-[#262836] text-[11px] sm:text-[12px] font-medium text-slate-600 dark:text-[#a0a5b8]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Optional External Link Attachment */}
+            {post.projectUrl && (
+              <div className="mt-2.5">
+                <a
+                  href={post.projectUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#181920] text-blue-600 dark:text-[#3995ff] border border-slate-200/90 dark:border-[#262836] hover:border-slate-300 dark:hover:border-[#383a48] transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>
+                    {
+                      post.projectUrl
+                        .replace(/^https?:\/\/(www\.)?/, "")
+                        .split("/")[0]
+                    }
+                  </span>
+                </a>
+              </div>
+            )}
+          </div>
+
+          {/* Right: Media Thumbnail (Figma: w-[240px] h-[154px] rounded-[12px]) */}
+          {mediaList.length > 0 && (
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setLightboxIndex(0);
+              }}
+              className="group/media relative w-full sm:w-[220px] md:w-[240px] h-[140px] sm:h-[154px] shrink-0 rounded-[12px] border border-slate-200 dark:border-[#24252f] bg-slate-100 dark:bg-[#181920] cursor-zoom-in overflow-hidden"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={mediaList[0]}
+                alt={post.title || "Post tasviri"}
+                loading="lazy"
+                className="w-full h-full object-cover transition-transform duration-300 transform-gpu group-hover/media:scale-105"
+              />
+              {mediaList.length > 1 && (
+                <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/60 text-white text-[11px] font-semibold backdrop-blur-xs">
+                  +{mediaList.length - 1}
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Optional External Link Attachment */}
-          {post.projectUrl && (
-            <div className="mt-2.5">
-              <a
-                href={post.projectUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors shadow-2xs"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>
-                  {
-                    post.projectUrl
-                      .replace(/^https?:\/\/(www\.)?/, "")
-                      .split("/")[0]
-                  }
-                </span>
-              </a>
+              <div className="absolute inset-0 bg-black/0 group-hover/media:bg-black/10 transition-colors pointer-events-none" />
             </div>
           )}
         </div>
 
-        {/* 3. Action Bar */}
-        <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-4 sm:gap-6">
+        {/* Attached Video Player */}
+        {post.videoUrl && (
+          <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="mt-3 overflow-hidden rounded-[12px] bg-black"
+          >
+            <video
+              src={post.videoUrl}
+              poster={post.coverImageUrl || mediaList[0] || undefined}
+              controls
+              playsInline
+              preload="metadata"
+              className="w-full max-h-[420px] object-contain"
+            />
+          </div>
+        )}
+
+        {/* 3. Footer Action Bar */}
+        <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-[#24252f] flex items-center justify-between">
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
             {/* Like Action */}
             <button
               type="button"
               onClick={handleLike}
               aria-pressed={isLiked}
               aria-label={t("post.like")}
-              className={`flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1 -ml-1 ${
+              className={`flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1 -ml-1 ${
                 isLiked
-                  ? "text-slate-950 dark:text-slate-50 font-semibold"
-                  : "hover:text-slate-900 dark:hover:text-slate-200"
+                  ? "text-red-500 font-semibold"
+                  : "text-slate-500 dark:text-[#fafaff] hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <HeartIcon
-                size={15}
+                size={17}
                 className={`transition-transform duration-150 ${
                   isLiked
-                    ? "fill-slate-900 dark:fill-slate-100 stroke-slate-900 dark:stroke-slate-100 scale-110"
+                    ? "fill-red-500 stroke-red-500 scale-110"
                     : "hover:scale-105"
                 }`}
               />
               <span className="tabular-nums">{likesCount}</span>
             </button>
 
-            {/* Comment/Discussion Action: Opens Slide-over Drawer */}
+            {/* Comment Action: Opens Slide-over Drawer */}
             <button
               type="button"
               onClick={handleOpenDiscussion}
               aria-label={`${t("post.comment")} (${commentsCount})`}
-              className="flex items-center gap-1.5 text-xs font-medium cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1"
+              className="flex items-center gap-1.5 text-[12px] font-medium cursor-pointer text-slate-500 dark:text-[#fafaff] hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1"
             >
-              <MessageIcon size={15} />
+              <MessageIcon size={17} />
               <span className="tabular-nums">{commentsCount}</span>
-              <span className="hidden sm:inline-block text-[11px] text-slate-400">
-                {t("post.comment")}
-              </span>
             </button>
 
             {/* Views Count */}
             <div
               title={`${viewsCount} ${t("common.views")}`}
-              className="flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-slate-500 px-1 select-none"
+              className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 dark:text-[#fafaff] px-1 select-none"
             >
-              <Eye size={15} className="stroke-[1.75]" />
-              <span className="tabular-nums">{viewsCount}</span>
+              <Eye size={17} className="stroke-[1.8]" />
+              <span className="tabular-nums">{formattedViews}</span>
             </div>
 
-            {/* Share/Copy Link Action */}
+            {/* Share Action */}
             <button
               type="button"
               onClick={handleShare}
               aria-label={t("common.share")}
-              className={`flex items-center gap-1.5 text-xs font-medium cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1 ${
-                isShareActive
-                  ? "scale-95 text-slate-900 dark:text-slate-100"
-                  : ""
+              className={`flex items-center gap-1.5 text-[12px] font-medium cursor-pointer text-slate-500 dark:text-[#f5f5fa] hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1 ${
+                isShareActive ? "scale-95 text-slate-900 dark:text-white" : ""
               }`}
             >
-              <ShareIcon size={15} />
-              <span className="hidden sm:inline-block text-[11px]">
-                {t("common.share")}
-              </span>
+              <ShareIcon size={17} />
+              <span>Ulashish</span>
             </button>
           </div>
 
-          {/* Save / Bookmark Action */}
+          {/* Bookmark / Save Action */}
           <button
             type="button"
             onClick={handleSave}
             aria-pressed={isSaved}
             aria-label={isSaved ? t("post.saved") : t("post.save")}
-            className={`p-1.5 rounded cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 ${
+            className={`flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-2 py-1 ${
               isSaved
-                ? "text-slate-950 dark:text-slate-50"
-                : "text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                ? "text-blue-600 dark:text-[#3995ff] font-semibold"
+                : "text-slate-500 dark:text-[#f5f5fa] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#181920]"
             }`}
           >
             <BookmarkIcon
-              size={16}
+              size={17}
               className={isSaved ? "fill-current" : ""}
             />
+            <span className="hidden xs:inline-block">
+              {isSaved ? t("post.saved") || "Saqlandi" : "Saqlash"}
+            </span>
           </button>
         </div>
       </article>

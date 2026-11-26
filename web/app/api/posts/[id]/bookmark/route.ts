@@ -1,7 +1,15 @@
 import { type NextRequest } from "next/server";
+import { z } from "zod";
 import { requireAuth } from "@/server/common/auth-guard";
-import { togglePostBookmark } from "@/server/modules/posts/posts.service";
+import { applyPostBookmark } from "@/server/modules/posts/posts.service";
 import { successResponse, errorResponse } from "@/server/common/response";
+import { enforceRateLimit } from "@/server/common/rate-limiter";
+import { AppError } from "@/server/common/errors";
+
+const ActionBodySchema = z.object({
+  desiredState: z.boolean().optional(),
+  idempotencyKey: z.string().min(1).max(120).optional(),
+});
 
 export async function POST(
   req: NextRequest,
@@ -9,9 +17,20 @@ export async function POST(
 ) {
   try {
     const authUser = await requireAuth(req);
+    enforceRateLimit(`bookmark:${authUser.userId}`, 120, 60);
     const { id } = await params;
 
-    const result = await togglePostBookmark(id, authUser.userId);
+    const rawBody = await req.json().catch(() => ({}));
+    const parsed = ActionBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      throw AppError.validation("Noto‘g‘ri so‘rov ma’lumotlari");
+    }
+
+    const headerKey = req.headers.get("idempotency-key")?.trim() || undefined;
+    const result = await applyPostBookmark(id, authUser.userId, {
+      desiredState: parsed.data.desiredState,
+      idempotencyKey: parsed.data.idempotencyKey || headerKey,
+    });
     return successResponse(result);
   } catch (error) {
     return errorResponse(error);

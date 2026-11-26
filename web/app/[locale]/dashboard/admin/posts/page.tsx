@@ -22,12 +22,18 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { EditPostModal } from "@/components/feed/edit-post-modal";
 import { useI18n } from "@/lib/i18n/context";
 import { toast } from "@/components/ui/toast";
+import { ContentPreview } from "@/components/format";
 
 interface AdminPost {
   id: string;
+  slug?: string | null;
   title: string | null;
   content: string;
   postType: string;
+  contentKind?: string;
+  status?: string;
+  isIndexable?: boolean;
+  locale?: string;
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
@@ -300,17 +306,33 @@ export default function AdminPostsPage() {
                         </span>
                       </div>
 
-                      {/* Title */}
-                      {p.title && (
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-                          {p.title}
-                        </h4>
-                      )}
+                      {/* Title + SEO Status */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {p.title && (
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                            {p.title}
+                          </h4>
+                        )}
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300">
+                          {p.contentKind || p.postType}
+                        </span>
+                        {p.isIndexable ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            SEO Index: ON
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-400">
+                            noindex
+                          </span>
+                        )}
+                      </div>
 
-                      {/* Content Preview */}
-                      <p className="text-xs text-slate-600 dark:text-zinc-300 line-clamp-3 leading-relaxed">
-                        {p.content}
-                      </p>
+                      {/* Content Preview (Using unified ContentPreview to prevent raw HTML leaking) */}
+                      <ContentPreview
+                        content={p.content}
+                        lineClamp={3}
+                        className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed"
+                      />
 
                       {/* Stats counter */}
                       <div className="flex items-center gap-4 pt-1 text-[11px] text-slate-400 dark:text-zinc-500">
@@ -331,17 +353,35 @@ export default function AdminPostsPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-1.5 self-end sm:self-start shrink-0">
+                      <Link
+                        href={localePath(`/dashboard/create?edit=${p.id}`)}
+                        className="px-2.5 py-1.5 rounded-xl border border-[#3995ff]/30 bg-[#3995ff]/10 text-[#3995ff] hover:bg-[#3995ff]/20 text-[11px] font-bold transition-colors"
+                        title="SEO Studio'da tahrirlash"
+                      >
+                        SEO Studio
+                      </Link>
+
                       <button
                         type="button"
                         onClick={() => setEditingPost(p)}
                         className="p-2 rounded-xl border border-slate-200/80 dark:border-white/10 text-slate-600 dark:text-zinc-300 hover:text-blue-600 hover:border-blue-500/50 dark:hover:text-blue-400 transition-colors cursor-pointer"
-                        title="Tahrirlash"
+                        title="Tezkor tahrirlash"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
 
                       <Link
-                        href={localePath(`/dashboard/posts/${p.id}`)}
+                        href={
+                          p.isIndexable && p.slug
+                            ? `/${p.locale || locale}/${
+                                p.contentKind === "video"
+                                  ? "videos"
+                                  : p.contentKind === "news"
+                                  ? "news"
+                                  : "articles"
+                              }/${p.slug}`
+                            : localePath(`/dashboard/posts/${p.id}`)
+                        }
                         target="_blank"
                         className="p-2 rounded-xl border border-slate-200/80 dark:border-white/10 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors"
                         title="Saytda ko'rish"

@@ -350,7 +350,7 @@ export const en: typeof uz = {
         setPasswordBtn: "Set Password",
         passwordChangedSuccess: "Password updated successfully",
         passwordMismatch: "New passwords do not match",
-        passwordMinLength: "Password must be at least 6 characters long",
+        passwordMinLength: "Password must be at least 8 characters long",
         twoFactorHeading: "Two-Factor Authentication (2FA)",
         twoFactorPlanned: "Planned",
         twoFactorDesc: "Extra security layer via Google Authenticator or SMS verification",

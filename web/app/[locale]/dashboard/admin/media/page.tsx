@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Image as ImageIcon,
   Video,
@@ -22,7 +22,6 @@ import {
   Loader2,
   Folder,
   RefreshCw,
-  Sparkles,
   Cloud,
   CheckCircle2,
 } from "lucide-react";
@@ -154,7 +153,7 @@ export default function MediaEnginePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load media list
-  const loadMedia = async (isManualRefresh = false) => {
+  const loadMedia = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
     else setLoading(true);
 
@@ -185,19 +184,11 @@ export default function MediaEnginePage() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [selectedType, selectedCollection, searchQuery, selectedDate, selectedSort]);
 
   useEffect(() => {
     loadMedia();
-  }, [selectedType, selectedCollection, selectedDate, selectedSort]);
-
-  // Debounced search
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      loadMedia();
-    }, 400);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
+  }, [loadMedia]);
 
   // Sync with Bunny.net
   const handleSyncWithBunny = async () => {
@@ -212,8 +203,8 @@ export default function MediaEnginePage() {
         `Bunny.net bilan sinxronlandi! (Jami ${data.data?.totalFiles || 0} ta fayl, ${data.data?.collections?.length || 0} ta to'plam)`
       );
       loadMedia();
-    } catch (err: any) {
-      toast.error(err.message || "Bunny.net bilan sinxronlashda xatolik yuz berdi");
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "Bunny.net bilan sinxronlashda xatolik yuz berdi");
     } finally {
       setSyncing(false);
     }
@@ -459,7 +450,7 @@ export default function MediaEnginePage() {
                   }}
                   className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-slate-200 hover:bg-zinc-800/80 transition text-left cursor-pointer"
                 >
-                  <Video className="w-4 h-4 text-purple-400" />
+                  <Video className="w-4 h-4 text-sky-400" />
                   <div>
                     <div className="font-medium">Video yuklash (Bunny Stream)</div>
                     <div className="text-[11px] text-slate-400">MP4, MOV • CDN Streaming</div>
@@ -710,7 +701,7 @@ export default function MediaEnginePage() {
               )}
               {fileBarPercent > 0 && (
                 <div
-                  className="bg-purple-500 h-full transition-all duration-500"
+                  className="bg-amber-500 h-full transition-all duration-500"
                   style={{ width: `${fileBarPercent}%` }}
                   title={`Fayl: ${formatBytes(fileStorageBytes)}`}
                 />
@@ -733,7 +724,7 @@ export default function MediaEnginePage() {
                 <span className="text-slate-300">Rasm: {formatBytes(imageStorageBytes)}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                 <span className="text-slate-300">Fayl: {formatBytes(fileStorageBytes)}</span>
               </div>
             </div>
@@ -793,7 +784,7 @@ export default function MediaEnginePage() {
                   {coll.count}
                 </span>
                 {coll.isStream && (
-                  <span className="text-[9px] px-1 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  <span className="text-[9px] px-1 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">
                     Stream
                   </span>
                 )}
@@ -1317,7 +1308,7 @@ export default function MediaEnginePage() {
                 />
               ) : previewItem.bunnyVideoId ? (
                 <iframe
-                  src={`https://iframe.mediadelivery.net/embed/813790/${previewItem.bunnyVideoId}?autoplay=true&loop=false&muted=false&preload=true`}
+                  src={`https://iframe.mediadelivery.net/embed/${accountInfo?.streamLibraryId || "813790"}/${previewItem.bunnyVideoId}?autoplay=true&loop=false&muted=false&preload=true`}
                   loading="lazy"
                   className="w-full h-full aspect-video rounded-lg border-0"
                   allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"

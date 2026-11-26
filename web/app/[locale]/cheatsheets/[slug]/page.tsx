@@ -13,9 +13,7 @@ import { CHEATSHEETS_DATA, getCheatSheetBySlug } from "@/lib/seo/data/cheatsheet
 import {
   ArrowRight,
   CheckCircle2,
-  Copy,
   Lightbulb,
-  Sparkles,
   Terminal,
 } from "lucide-react";
 
@@ -114,7 +112,6 @@ export default async function CheatSheetDetailPage({
 
         <main className="flex-1 py-10 md:py-16">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            {/* Breadcrumb nav */}
             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 mb-6 font-medium">
               <Link href={`/${locale}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Asosiy
@@ -129,7 +126,6 @@ export default async function CheatSheetDetailPage({
               </span>
             </div>
 
-            {/* Header */}
             <div className="space-y-4 mb-10 pb-8 border-b border-slate-200/80 dark:border-white/10">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-bold uppercase tracking-wider">
                 <Terminal className="h-3.5 w-3.5" />
@@ -146,7 +142,6 @@ export default async function CheatSheetDetailPage({
             </div>
 
             <article className="space-y-12">
-              {/* Sections & Commands */}
               {sheet.sections.map((sec, idx) => (
                 <section key={idx} className="space-y-4">
                   <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white pb-2 border-b border-slate-200/80 dark:border-white/10">
@@ -175,7 +170,6 @@ export default async function CheatSheetDetailPage({
                 </section>
               ))}
 
-              {/* Best Practice Tips */}
               <section className="p-6 rounded-2xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/40 dark:bg-blue-950/20 space-y-4">
                 <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-bold text-sm">
                   <Lightbulb className="h-5 w-5" />
@@ -193,12 +187,12 @@ export default async function CheatSheetDetailPage({
                 </div>
               </section>
 
-              {/* Related Cheatsheets */}
               {relatedSheets.length > 0 && (
                 <section className="space-y-4 pt-6 border-t border-slate-200/80 dark:border-white/10">
                   <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                     Boshqa Cheat Sheetlar
                   </h2>
+
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {relatedSheets.map((rel) => (
                       rel && (

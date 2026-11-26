@@ -8,6 +8,31 @@ declare global {
     OneSignalDeferred?: any[];
     OneSignal?: any;
     __onesignal_logged_user_id?: string | null;
+    __onesignal_initialized?: boolean;
+    __onesignal_ready_promise?: Promise<any | null>;
+  }
+}
+
+/**
+ * Wait until OneSignal.init() has actually finished resolving (avoiding calling
+ * OneSignal.login / Slidedown while the SDK is still initializing).
+ */
+async function waitForOneSignalReady(timeoutMs = 10000): Promise<any | null> {
+  if (typeof window === "undefined") return null;
+  if (window.__onesignal_initialized && window.OneSignal) {
+    return window.OneSignal;
+  }
+  if (!window.__onesignal_ready_promise) {
+    return null;
+  }
+  try {
+    const result = await Promise.race([
+      window.__onesignal_ready_promise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+    ]);
+    return window.__onesignal_initialized && result ? result : null;
+  } catch {
+    return null;
   }
 }
 
@@ -41,22 +66,21 @@ export async function promptPushNotification(): Promise<boolean> {
     }
   };
 
-  // If SDK already loaded and initialized — call directly
-  if (window.OneSignal && typeof window.OneSignal.init === "function") {
-    return callOneSignal(window.OneSignal);
+  const OS = await waitForOneSignalReady(5000);
+  if (OS) {
+    return callOneSignal(OS);
   }
 
-  // SDK not yet loaded — push into the deferred queue
-  return new Promise((resolve) => {
+  // Fallback to native browser Notification API if OneSignal is unavailable/blocked
+  if (typeof Notification !== "undefined" && typeof Notification.requestPermission === "function") {
     try {
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      window.OneSignalDeferred.push(async (OneSignal: any) => {
-        resolve(await callOneSignal(OneSignal));
-      });
+      const perm = await Notification.requestPermission();
+      return perm === "granted";
     } catch {
-      resolve(false);
+      return false;
     }
-  });
+  }
+  return false;
 }
 
 /**
@@ -139,17 +163,32 @@ export function OneSignalInitializer() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const syncUser = async (OneSignal: any) => {
-      try {
-        if (!OneSignal || typeof OneSignal.login !== "function") return;
+    let cancelled = false;
 
+    const syncUser = async () => {
+      const OneSignal = await waitForOneSignalReady(15000);
+      if (cancelled || !OneSignal || !window.__onesignal_initialized) return;
+      if (typeof OneSignal.login !== "function") return;
+      if (
+        OneSignal.Notifications?.isPushSupported &&
+        !OneSignal.Notifications.isPushSupported()
+      ) {
+        return;
+      }
+
+      try {
         if (session.isAuthenticated && session.user?.id) {
-          if (window.__onesignal_logged_user_id !== session.user.id) {
-            await OneSignal.login(session.user.id);
+          if (window.__onesignal_logged_user_id === session.user.id) return;
+
+          if (OneSignal.User?.externalId === session.user.id) {
             window.__onesignal_logged_user_id = session.user.id;
-            if (process.env.NODE_ENV !== "production") {
-              console.log("[ONESIGNAL] Synced user login external_id:", session.user.id);
-            }
+            return;
+          }
+
+          await OneSignal.login(session.user.id);
+          window.__onesignal_logged_user_id = session.user.id;
+          if (process.env.NODE_ENV !== "production") {
+            console.log("[ONESIGNAL] Synced user login external_id:", session.user.id);
           }
         } else if (!session.isAuthenticated && window.__onesignal_logged_user_id) {
           if (typeof OneSignal.logout === "function") {
@@ -158,17 +197,17 @@ export function OneSignalInitializer() {
           window.__onesignal_logged_user_id = null;
         }
       } catch (err: any) {
-        console.warn("[ONESIGNAL AUTH SYNC WARN]:", err?.message || err);
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[ONESIGNAL AUTH SYNC WARN]:", err?.message || err);
+        }
       }
     };
 
-    // If SDK already initialized, call directly; otherwise queue it
-    if (window.OneSignal && typeof window.OneSignal.init === "function") {
-      syncUser(window.OneSignal);
-    } else {
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      window.OneSignalDeferred.push(syncUser);
-    }
+    syncUser();
+
+    return () => {
+      cancelled = true;
+    };
   }, [session.isAuthenticated, session.user?.id]);
 
   return null;

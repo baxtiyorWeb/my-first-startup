@@ -18,8 +18,6 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
-  Sliders,
-  Shield,
   Save,
 } from "lucide-react";
 import { useAdmin } from "@/components/admin/admin-shell";
@@ -120,7 +118,9 @@ export default function AdminEnginePage() {
   }, []);
 
   const schedulerIntervalRef = useRef(schedulerIntervalSeconds);
-  schedulerIntervalRef.current = schedulerIntervalSeconds;
+  useEffect(() => {
+    schedulerIntervalRef.current = schedulerIntervalSeconds;
+  }, [schedulerIntervalSeconds]);
 
   const executeAutonomousCycle = useCallback(
     async (force = false) => {
@@ -156,7 +156,9 @@ export default function AdminEnginePage() {
   );
 
   const executeRef = useRef(executeAutonomousCycle);
-  executeRef.current = executeAutonomousCycle;
+  useEffect(() => {
+    executeRef.current = executeAutonomousCycle;
+  }, [executeAutonomousCycle]);
 
   // Solid, uninterrupted 1-second countdown timer
   useEffect(() => {

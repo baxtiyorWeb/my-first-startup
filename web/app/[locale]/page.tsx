@@ -11,6 +11,8 @@ import {
 } from "@/lib/seo/schema";
 import { PublicNavbar } from "@/components/seo/public-navbar";
 import { PublicFooter } from "@/components/seo/public-footer";
+import { ContentCard } from "@/components/seo/content-card";
+import { getPublishedContentList } from "@/server/modules/content/seo-content.service";
 import { TOPICS_DATA } from "@/lib/seo/data/topics";
 import { GLOSSARY_DATA } from "@/lib/seo/data/glossary";
 import { CHEATSHEETS_DATA } from "@/lib/seo/data/cheatsheets";
@@ -20,10 +22,12 @@ import {
   BookOpen,
   Code2,
   Layers,
-  Sparkles,
+  Newspaper,
+  PlayCircle,
   Terminal,
-  Users,
 } from "lucide-react";
+
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -147,36 +151,44 @@ export default async function LocaleHomePage({
   const organizationSchema = generateOrganizationSchema();
   const faqSchema = generateFAQSchema(faqs);
 
+  const [articlesRes, videosRes, newsRes] = await Promise.all([
+    getPublishedContentList({ kind: "article", limit: 3, page: 1 }),
+    getPublishedContentList({ kind: "video", limit: 3, page: 1 }),
+    getPublishedContentList({ kind: "news", limit: 3, page: 1 }),
+  ]);
+
   const heroTexts = {
     uz: {
-      titleStart: "Dasturlash, Startaplar va",
-      titleHighlight: "Zamonaviy Texnologiyalar",
+      titleStart: "Maqolalar, Video Darsliklar va",
+      titleHighlight: "IT Texnologiyalar",
       titleEnd: "Ekotizimi",
       description:
-        "O'zbekiston va xalqaro dasturchilar uchun professional bilim markazi: eng so'nggi texnologiyalar, IT-lug'at, amaliy cheat sheetlar va texnik intervyu qo'llanmalari.",
-      exploreHub: "Bilimlar Hubiga O'tish",
-      joinCommunity: "Hamjamiyatga Qo'shilish",
+        "O‘zbekistondagi dasturchilar va texnologiya mutaxassislari uchun chuqur maqolalar, amaliy video darsliklar, tezkor IT yangiliklar va mukammal bilimlar bazasi.",
+      exploreArticles: "Maqolalarni O‘qish",
+      exploreVideos: "Video Darsliklar",
+      exploreNews: "IT Yangiliklar",
       techHeading: "Zamonaviy Texnologiyalar Katalogi",
-      techSub: "Har bir texnologiya bo'yicha chuqur arxitektura va amaliy misollar",
-      glossaryHeading: "Dasturlash va IT Atamalar Lug'ati",
+      techSub: "Har bir texnologiya bo‘yicha chuqur arxitektura va amaliy misollar",
+      glossaryHeading: "Dasturlash va IT Atamalar Lug‘ati",
       glossarySub: "Murakkab dasturlash tushunchalarining sodda va aniq izohlari",
       cheatsheetsHeading: "Dasturchilar Cheat Sheetlari",
       cheatsheetsSub: "Ishingizni 10x tezlashtiruvchi buyruqlar va andozalar",
       interviewsHeading: "Texnik Intervyu Tayyorgarligi",
-      interviewsSub: "Junior'dan Senior'gacha: real intervyu savollari va tahlillari",
-      faqHeading: "Ko'p So'raladigan Savollar",
-      ctaTitle: "O'z bilimlaringizni yangi bosqichga olib chiqing",
-      ctaSub: "Geters platformasiga qo'shiling, tajriba almashing va loyihalaringizni kengaytiring.",
-      ctaBtn: "Bepul Ro'yxatdan O'tish",
+      interviewsSub: "Junior‘dan Senior‘gacha: real intervyu savollari va tahlillari",
+      faqHeading: "Ko‘p So‘raladigan Savollar",
+      ctaTitle: "O‘z tajribangiz va bilimlaringizni ulashing",
+      ctaSub: "Geters Studio orqali maqola, video darslik yoki IT yangilik joylang va minglab mutaxassislarga yetib boring.",
+      ctaBtn: "Studio‘da Yozish",
     },
     ru: {
-      titleStart: "Экосистема разработки,",
-      titleHighlight: "современных технологий",
-      titleEnd: "и стартапов",
+      titleStart: "Технические статьи, видеоуроки и",
+      titleHighlight: "IT-Экосистема",
+      titleEnd: "знаний",
       description:
-        "Профессиональный центр знаний для инженеров: архитектурные гайды, IT-глоссарий, практические шпаргалки и подготовка к техническим собеседованиям.",
-      exploreHub: "Перейти в Базу Знаний",
-      joinCommunity: "Войти в Сообщество",
+        "Профессиональный центр знаний: глубокие технические статьи, практические видеоуроки, свежие новости IT и справочники для разработчиков.",
+      exploreArticles: "Читать Статьи",
+      exploreVideos: "Видеоуроки",
+      exploreNews: "IT-Новости",
       techHeading: "Каталог современных технологий",
       techSub: "Глубокий разбор архитектуры и примеры внедрения",
       glossaryHeading: "IT-Глоссарий терминов",
@@ -186,18 +198,19 @@ export default async function LocaleHomePage({
       interviewsHeading: "Подготовка к собеседованиям",
       interviewsSub: "От Junior до Senior: реальные технические вопросы с разбором",
       faqHeading: "Часто задаваемые вопросы",
-      ctaTitle: "Выведите свои инженерные навыки на новый уровень",
-      ctaSub: "Присоединяйтесь к Geters, делитесь идеями и масштабируйте стартапы.",
-      ctaBtn: "Создать аккаунт бесплатно",
+      ctaTitle: "Делитесь опытом и обучайте тысячи разработчиков",
+      ctaSub: "Публикуйте статьи, видеоуроки и обзоры в Geters Studio с автоматической SEO-оптимизацией.",
+      ctaBtn: "Начать публикацию",
     },
     en: {
-      titleStart: "Architecting the Future of",
-      titleHighlight: "Modern Software",
-      titleEnd: "& Startups",
+      titleStart: "Technical Articles, Video Tutorials &",
+      titleHighlight: "IT News",
+      titleEnd: "Ecosystem",
       description:
-        "The authoritative knowledge platform for software engineers: deep technical guides, developer cheat sheets, comprehensive IT glossary, and interview prep.",
-      exploreHub: "Explore Knowledge Hub",
-      joinCommunity: "Join the Network",
+        "The premier knowledge platform for software engineers: in-depth engineering articles, structured video tutorials, industry news, and developer guides.",
+      exploreArticles: "Read Articles",
+      exploreVideos: "Video Tutorials",
+      exploreNews: "Tech News",
       techHeading: "Modern Technology Directory",
       techSub: "In-depth architecture analysis, code examples, and best practices",
       glossaryHeading: "Developer & IT Glossary",
@@ -207,9 +220,9 @@ export default async function LocaleHomePage({
       interviewsHeading: "Technical Interview Preparation",
       interviewsSub: "From Junior to Staff: rigorous technical questions and architecture trade-offs",
       faqHeading: "Frequently Asked Questions",
-      ctaTitle: "Elevate your software engineering craft today",
-      ctaSub: "Join thousands of ambitious developers, showcase ideas, and scale products on Geters.",
-      ctaBtn: "Get Started Free",
+      ctaTitle: "Share your engineering knowledge globally",
+      ctaSub: "Publish SEO-optimized technical articles, video tutorials, and news straight from Geters Studio.",
+      ctaBtn: "Open Studio",
     },
   }[typedLocale];
 
@@ -229,50 +242,142 @@ export default async function LocaleHomePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <div className="min-h-screen flex flex-col bg-slate-50/60 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors">
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0c13] text-slate-900 dark:text-slate-100 transition-colors">
         <PublicNavbar />
 
         <main className="flex-1">
           {/* Hero Section */}
-          <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-32 border-b border-slate-200/80 dark:border-white/10">
-            <div className="absolute inset-0 bg-linear-to-b from-blue-500/5 via-transparent to-transparent pointer-events-none" />
+          <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 border-b border-slate-200/80 dark:border-[#24252f]">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#3995ff]/8 via-transparent to-transparent pointer-events-none" />
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
               <div className="text-center max-w-3xl mx-auto space-y-6">
-
-
-                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.18]">
+                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-950 dark:text-white leading-[1.15]">
                   {heroTexts.titleStart}{" "}
-                  <span className="bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-blue-600 to-[#3995ff] dark:from-[#3995ff] dark:to-[#76d5f5] bg-clip-text text-transparent">
                     {heroTexts.titleHighlight}
                   </span>{" "}
                   {heroTexts.titleEnd}
                 </h1>
 
-                <p className="text-base sm:text-lg text-slate-600 dark:text-zinc-300 leading-relaxed font-normal max-w-2xl mx-auto">
+                <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-normal max-w-2xl mx-auto">
                   {heroTexts.description}
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                   <Link
-                    href={`/${locale}/hub`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all hover:scale-[1.02]"
+                    href={`/${locale}/articles`}
+                    className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl bg-[#3995ff] hover:bg-blue-600 text-white shadow-md shadow-[#3995ff]/20 transition-all hover:scale-[1.02]"
                   >
-                    <Layers className="h-4 w-4" />
-                    <span>{heroTexts.exploreHub}</span>
+                    <BookOpen className="h-4 w-4" />
+                    <span>{heroTexts.exploreArticles}</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
 
                   <Link
-                    href={`/${locale}/dashboard`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-900/80 hover:bg-slate-50 dark:hover:bg-zinc-850 text-slate-900 dark:text-white shadow-xs transition-all"
+                    href={`/${locale}/videos`}
+                    className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-[#24252f] bg-white dark:bg-[#101117] hover:border-emerald-500/50 text-slate-900 dark:text-white shadow-xs transition-all"
                   >
-                    <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    <span>{heroTexts.joinCommunity}</span>
+                    <PlayCircle className="h-4 w-4 text-emerald-500" />
+                    <span>{heroTexts.exploreVideos}</span>
+                  </Link>
+
+                  <Link
+                    href={`/${locale}/news`}
+                    className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-[#24252f] bg-white dark:bg-[#101117] hover:border-amber-500/50 text-slate-900 dark:text-white shadow-xs transition-all"
+                  >
+                    <Newspaper className="h-4 w-4 text-amber-500" />
+                    <span>{heroTexts.exploreNews}</span>
                   </Link>
                 </div>
               </div>
             </div>
           </section>
+
+          {/* Live Editorial Showcase: Maqolalar, Video Darsliklar & Yangiliklar */}
+          {(articlesRes.items.length > 0 || videosRes.items.length > 0 || newsRes.items.length > 0) && (
+            <section className="py-14 md:py-20 border-b border-slate-200/80 dark:border-[#24252f] space-y-14">
+              {articlesRes.items.length > 0 && (
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#3995ff]">
+                        Maqolalar
+                      </span>
+                      <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white mt-1">
+                        So‘nggi Texnik Maqolalar
+                      </h2>
+                    </div>
+                    <Link
+                      href={`/${locale}/articles`}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#3995ff] hover:underline shrink-0"
+                    >
+                      <span>Barcha maqolalar</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {articlesRes.items.map((item) => (
+                      <ContentCard key={item.id} item={item} locale={typedLocale} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {videosRes.items.length > 0 && (
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-500">
+                        Video Darsliklar
+                      </span>
+                      <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white mt-1">
+                        Amaliy Video Darsliklar
+                      </h2>
+                    </div>
+                    <Link
+                      href={`/${locale}/videos`}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-emerald-500 hover:underline shrink-0"
+                    >
+                      <span>Barcha videolar</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {videosRes.items.map((item) => (
+                      <ContentCard key={item.id} item={item} locale={typedLocale} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {newsRes.items.length > 0 && (
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-amber-500">
+                        Yangiliklar
+                      </span>
+                      <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white mt-1">
+                        IT va Texnologiya Yangiliklari
+                      </h2>
+                    </div>
+                    <Link
+                      href={`/${locale}/news`}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-amber-500 hover:underline shrink-0"
+                    >
+                      <span>Barcha yangiliklar</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {newsRes.items.map((item) => (
+                      <ContentCard key={item.id} item={item} locale={typedLocale} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Section 1: Technologies & Frameworks */}
           <section className="py-16 md:py-24 border-b border-slate-200/80 dark:border-white/10">
@@ -455,7 +560,7 @@ export default async function LocaleHomePage({
                         className="flex items-center justify-between p-4 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 shadow-2xs hover:shadow-sm transition-all"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#3995ff]/10 text-[#3995ff]">
                             <Code2 className="h-5 w-5" />
                           </div>
                           <div>
@@ -503,26 +608,26 @@ export default async function LocaleHomePage({
           {/* Section 5: CTA */}
           <section className="py-16 md:py-20 relative overflow-hidden">
             <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-              <div className="relative rounded-3xl border border-slate-200/90 dark:border-white/10 bg-gradient-to-r from-blue-50/70 via-white to-indigo-50/70 dark:from-zinc-900/90 dark:via-black dark:to-zinc-900/90 p-8 sm:p-12 text-center shadow-lg">
+              <div className="relative rounded-3xl border border-slate-200/90 dark:border-[#24252f] bg-gradient-to-r from-blue-50/70 via-white to-sky-50/70 dark:from-[#101117] dark:via-[#0b0c13] dark:to-[#101117] p-8 sm:p-12 text-center shadow-lg">
                 <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
                   {heroTexts.ctaTitle}
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-300 max-w-xl mx-auto mt-3 font-normal leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto mt-3 font-normal leading-relaxed">
                   {heroTexts.ctaSub}
                 </p>
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                   <Link
-                    href={`/${locale}/auth/register`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
+                    href={`/${locale}/dashboard/create`}
+                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-bold rounded-xl bg-[#3995ff] hover:bg-blue-600 text-white shadow-md transition-all"
                   >
                     <span>{heroTexts.ctaBtn}</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
-                    href={`/${locale}/dashboard`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all"
+                    href={`/${locale}/hub`}
+                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-[#24252f] bg-white dark:bg-[#14151d] text-slate-900 dark:text-white hover:border-[#3995ff]/50 transition-all"
                   >
-                    <span>Dasturchilar Lentasi</span>
+                    <span>Bilimlar Bazasi</span>
                   </Link>
                 </div>
               </div>

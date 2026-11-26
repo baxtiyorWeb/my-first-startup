@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Local development talks to http://127.0.0.1 / LAN dev servers.
+         Cleartext is intentionally limited to debug builds only. -->
+    <application android:usesCleartextTraffic="true" />
+</manifest>

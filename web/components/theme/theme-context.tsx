@@ -18,6 +18,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
+  const applyTheme = (t: Theme) => {
+    const root = document.documentElement;
+    if (t === "dark") {
+      root.classList.add("dark");
+      root.classList.remove("light");
+      root.style.colorScheme = "dark";
+    } else {
+      root.classList.remove("dark");
+      root.classList.add("light");
+      root.style.colorScheme = "light";
+    }
+  };
+
   useEffect(() => {
     // 1. Check saved preference
     const savedTheme = localStorage.getItem(THEME_KEY) as Theme | null;
@@ -31,19 +44,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
     setMounted(true);
   }, []);
-
-  const applyTheme = (t: Theme) => {
-    const root = document.documentElement;
-    if (t === "dark") {
-      root.classList.add("dark");
-      root.classList.remove("light");
-      root.style.colorScheme = "dark";
-    } else {
-      root.classList.remove("dark");
-      root.classList.add("light");
-      root.style.colorScheme = "light";
-    }
-  };
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);

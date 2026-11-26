@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { getOptionalAuth } from "@/server/common/auth-guard";
 import { successResponse, errorResponse } from "@/server/common/response";
-import { getProfileByHandle } from "@/server/modules/users/users.service";
+import { getProfileSummaryByHandle } from "@/server/modules/users/users.service";
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,8 +14,9 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Fetch full profile details in a single consolidated SQL query
-    const profile = await getProfileByHandle(authUser.handle, authUser.userId);
+    // Identity + counters only: the session payload must not carry the user's
+    // post and discussion collections on every app start.
+    const profile = await getProfileSummaryByHandle(authUser.handle, authUser.userId);
 
     return successResponse({
       isAuthenticated: true,

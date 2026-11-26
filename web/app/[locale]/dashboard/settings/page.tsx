@@ -398,7 +398,7 @@ export default function SettingsPage() {
       toast.error(t("settings.tabs.security.passwordMismatch"));
       return;
     }
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       toast.error(t("settings.tabs.security.passwordMinLength"));
       return;
     }
@@ -1333,7 +1333,7 @@ export default function SettingsPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                     placeholder={t("settings.tabs.security.passwordPlaceholder")}
                     className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
                   />
@@ -1348,7 +1348,7 @@ export default function SettingsPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                     placeholder={t("settings.tabs.security.passwordPlaceholder")}
                     className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md"
                   />

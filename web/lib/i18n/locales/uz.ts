@@ -348,7 +348,7 @@ export const uz = {
         setPasswordBtn: "Parol o‘rnatish",
         passwordChangedSuccess: "Parol muvaffaqiyatli yangilandi",
         passwordMismatch: "Yangi parollar mos kelmadi",
-        passwordMinLength: "Yangi parol kamida 6 belgidan iborat bo‘lishi kerak",
+        passwordMinLength: "Yangi parol kamida 8 belgidan iborat bo‘lishi kerak",
         twoFactorHeading: "Ikki bosqichli autentifikatsiya (2FA)",
         twoFactorPlanned: "Rejalashtirilgan",
         twoFactorDesc: "Google Authenticator yoki SMS orqali qo‘shimcha xavfsizlik qatlami",

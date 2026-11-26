@@ -116,14 +116,14 @@ function ShellLayoutInner({
           className={`flex-1 w-full focus:outline-none ${
             isMessagesPage
               ? "p-0 min-h-0 overflow-hidden flex flex-col"
-              : "px-4 sm:px-6 lg:px-8 py-5 sm:py-6"
+              : "px-4 sm:px-5 lg:pl-6 lg:pr-6 py-4 sm:py-5"
           }`}
         >
           <div
             className={`w-full ${
               isMessagesPage
                 ? "h-full flex-1 min-h-0"
-                : "mx-auto transition-[max-width] duration-200 ease-out"
+                : "transition-[max-width] duration-200 ease-out"
             }`}
             style={isMessagesPage ? undefined : { maxWidth: `var(--content-max-width, ${CONTENT_MAX_WIDTH}px)` }}
           >
@@ -146,10 +146,10 @@ function ShellLayoutInner({
         >
           <div className="flex flex-col min-w-0">
             <span className="text-xs sm:text-sm font-bold tracking-tight truncate">
-              The Go-getters tarmog‘iga xush kelibsiz!
+              Geters IT Media va Hamjamiyatiga xush kelibsiz!
             </span>
             <span className="text-[11px] opacity-75 truncate">
-              Fikr bildirish va jamoa tuzish uchun hisob oching.
+              Maqola yozish, video darsliklarni saqlash va muhokamada qatnashish uchun kiring.
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">

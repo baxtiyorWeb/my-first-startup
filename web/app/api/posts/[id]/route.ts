@@ -29,8 +29,28 @@ export async function PATCH(
 
     const updated = await updatePost(id, authUser.userId, {
       title: body.title,
+      slug: body.slug,
       content: body.content,
       postType: body.postType,
+      contentKind: body.contentKind,
+      status: body.status,
+      isIndexable: body.isIndexable,
+      locale: body.locale,
+      category: body.category,
+      tags: body.tags,
+      tagIds: body.tagIds,
+      coverImageUrl: body.coverImageUrl,
+      coverImageAlt: body.coverImageAlt,
+      seoTitle: body.seoTitle,
+      seoDescription: body.seoDescription,
+      focusKeyword: body.focusKeyword,
+      canonicalUrl: body.canonicalUrl,
+      videoUrl: body.videoUrl,
+      youtubeVideoId: body.youtubeVideoId,
+      bunnyVideoId: body.bunnyVideoId,
+      videoDurationSeconds: body.videoDurationSeconds,
+      videoChapters: body.videoChapters,
+      transcript: body.transcript,
       mediaUrls: body.mediaUrls,
     });
 
@@ -54,4 +74,3 @@ export async function DELETE(
     return errorResponse(error);
   }
 }
-

@@ -4,7 +4,6 @@ import {
   notifications,
   notificationSettings,
   users,
-  follows,
 } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 
@@ -24,9 +23,6 @@ export interface NotificationItem {
   };
 }
 
-/**
- * Send Web Push notification via OneSignal REST API (Non-blocking)
- */
 /**
  * Send Web Push notification via OneSignal REST API (Non-blocking)
  */
@@ -94,6 +90,44 @@ export async function sendOneSignalPush(
   } catch (err: any) {
     console.error("[ONESIGNAL PUSH ERROR]:", err);
     return { success: false, error: err?.message || "Push yuborishda xatolik" };
+  }
+}
+
+/**
+ * Send notification to Telegram bot if TELEGRAM_BOT_TOKEN and target chat are configured
+ */
+export async function sendTelegramNotification(
+  targetChatId: string | undefined,
+  title: string,
+  message: string,
+  link: string
+): Promise<boolean> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const defaultChatId = process.env.TELEGRAM_NOTIFICATION_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID;
+  const chatId = targetChatId || defaultChatId;
+
+  if (!token || !chatId) return false;
+
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://gogetters.uz").replace(/\/$/, "");
+  const fullLink = link.startsWith("http") ? link : `${appUrl}${link.startsWith("/") ? "" : "/"}${link}`;
+
+  const text = `🔔 *${title}*\n\n${message}\n\n👉 [Platformada ko'rish](${fullLink})`;
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: "Markdown",
+        disable_web_page_preview: false,
+      }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn("[TELEGRAM_NOTIFY_ERROR]", err);
+    return false;
   }
 }
 
@@ -200,6 +234,9 @@ export async function triggerNotification(input: {
     if (!skipPushForComment && (!settings || settings.pushEnabled)) {
       sendOneSignalPush([recipientId], title, message, link).catch(() => null);
     }
+
+    // 6. Non-blocking Telegram Notification Dispatch (if token & chat configured)
+    sendTelegramNotification(undefined, title, message, link).catch(() => null);
   } catch (err) {
     console.error("[NOTIFICATIONS] Error triggering notification:", err);
   }

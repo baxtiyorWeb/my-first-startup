@@ -1,28 +1,24 @@
 import { eq, and, or, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { comments, posts, users, commentLikes, userBlocks } from "@/server/db/schema";
+import {
+  comments,
+  posts,
+  users,
+  commentLikes,
+  userBlocks,
+  follows,
+} from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import { sanitizeRichContent } from "@/server/common/sanitizer";
 import { triggerNotification } from "@/server/modules/notifications/notifications.service";
+import { buildCommentTree } from "./comment-tree";
+import type { CommentItemResponse } from "./comment-tree";
 
-export interface CommentItemResponse {
-  id: string;
-  postId: string;
-  parentId?: string | null;
-  content: string;
-  likesCount: number;
-  isLiked: boolean;
-  createdAt: string;
-  author: {
-    id: string;
-    name: string;
-    handle: string;
-    role: string;
-    avatarUrl?: string | null;
-    verified: boolean;
-  };
-  replies?: CommentItemResponse[];
-}
+export { buildCommentTree } from "./comment-tree";
+export type { CommentItemResponse } from "./comment-tree";
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Get all comments for a post organized in nested reply trees
@@ -31,7 +27,51 @@ export async function getCommentsForPost(
   postId: string,
   currentUserId?: string
 ): Promise<CommentItemResponse[]> {
+  if (!UUID_REGEX.test(postId)) {
+    throw AppError.notFound("Post topilmadi");
+  }
+
   try {
+    // Discussions inherit the visibility of their post: deleted posts are gone,
+    // private-account discussions are readable only by the author and followers.
+    const [targetPost] = await db
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        authorIsPrivate: users.isPrivate,
+      })
+      .from(posts)
+      .innerJoin(users, eq(users.id, posts.authorId))
+      .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
+      .limit(1);
+
+    if (!targetPost) {
+      throw AppError.notFound("Post topilmadi");
+    }
+
+    const isAuthor = currentUserId === targetPost.authorId;
+    if (targetPost.authorIsPrivate && !isAuthor) {
+      let canView = false;
+      if (currentUserId) {
+        const [followRow] = await db
+          .select({ followerId: follows.followerId })
+          .from(follows)
+          .where(
+            and(
+              eq(follows.followerId, currentUserId),
+              eq(follows.followingId, targetPost.authorId)
+            )
+          )
+          .limit(1);
+        canView = Boolean(followRow);
+      }
+      if (!canView) {
+        throw AppError.forbidden(
+          "Ushbu hisob yopiq (Private). Munozarani ko‘rish uchun muallifga obuna bo‘ling."
+        );
+      }
+    }
+
     const rows = await db
       .select({
         id: comments.id,
@@ -55,44 +95,7 @@ export async function getCommentsForPost(
       .where(and(eq(comments.postId, postId), isNull(comments.deletedAt)))
       .orderBy(comments.createdAt);
 
-    // Group into root comments and nested replies
-    const rootComments: CommentItemResponse[] = [];
-    const repliesMap = new Map<string, CommentItemResponse[]>();
-
-    for (const r of rows) {
-      const item: CommentItemResponse = {
-        id: r.id,
-        postId: r.postId,
-        parentId: r.parentId,
-        content: r.content,
-        likesCount: r.likesCount,
-        isLiked: Boolean(r.isLiked),
-        createdAt: r.createdAt.toISOString(),
-        author: {
-          id: r.authorId,
-          name: r.authorName,
-          handle: r.authorHandle,
-          role: r.authorRole,
-          avatarUrl: r.authorAvatarUrl,
-          verified: r.authorVerified,
-        },
-      };
-
-      if (!r.parentId) {
-        rootComments.push(item);
-      } else {
-        const existing = repliesMap.get(r.parentId) || [];
-        existing.push(item);
-        repliesMap.set(r.parentId, existing);
-      }
-    }
-
-    // Attach replies to roots
-    for (const root of rootComments) {
-      root.replies = repliesMap.get(root.id) || [];
-    }
-
-    return rootComments;
+    return buildCommentTree(rows);
   } catch (err) {
     if (err instanceof AppError) throw err;
     console.error("[COMMENTS] Error fetching comments for post:", err);
@@ -257,7 +260,21 @@ export async function toggleCommentLike(
   commentId: string,
   userId: string
 ): Promise<{ isLiked: boolean; likesCount: number }> {
+  if (!UUID_REGEX.test(commentId)) {
+    throw AppError.notFound("Izoh topilmadi");
+  }
+
   try {
+    const [commentRow] = await db
+      .select({ id: comments.id })
+      .from(comments)
+      .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)))
+      .limit(1);
+
+    if (!commentRow) {
+      throw AppError.notFound("Izoh topilmadi");
+    }
+
     const [existing] = await db
       .select()
       .from(commentLikes)

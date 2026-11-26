@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Bold,
   Italic,
@@ -10,6 +10,7 @@ import {
   Heading3,
   Quote,
   Code,
+  FileCode2,
   List,
   ListOrdered,
   Link2,
@@ -24,11 +25,19 @@ import {
   Loader2,
   Sparkles,
   Paperclip,
+  BookOpen,
+  PlayCircle,
+  Newspaper,
+  MessageSquare,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { api, ApiError } from "@/lib/api";
 import { useI18n } from "@/lib/i18n/context";
 import { compressAvatarImage } from "@/lib/image-compressor";
+import { generateSeoSlug } from "@/lib/seo/slugify";
+import type { ContentKind, VideoChapterItem } from "@/types/social";
+import { SeoInspectorPanel } from "@/components/studio/seo-inspector-panel";
+import { VideoTutorialBox } from "@/components/studio/video-tutorial-box";
 
 interface FloatingToolbarState {
   visible: boolean;
@@ -36,40 +45,64 @@ interface FloatingToolbarState {
   left: number;
 }
 
-export default function CreatePostPage() {
+function StudioEditorWorkspace() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const initialKindParam = searchParams.get("kind");
+
   const { t, localePath } = useI18n();
   const editorRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
+  const [contentKind, setContentKind] = useState<ContentKind>(
+    initialKindParam === "video" || initialKindParam === "news" || initialKindParam === "thought"
+      ? initialKindParam
+      : "article"
+  );
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+
+  const [contentLocale, setContentLocale] = useState<"uz" | "ru" | "en">("uz");
+  const [category, setCategory] = useState("umumiy");
+  const [tagsInput, setTagsInput] = useState("");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [focusKeyword, setFocusKeyword] = useState("");
+  const [coverImageAlt, setCoverImageAlt] = useState("");
+  const [status, setStatus] = useState<"draft" | "published">("published");
+  const [isIndexable, setIsIndexable] = useState(true);
+
+  // Video specific state
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoDurationSeconds, setVideoDurationSeconds] = useState<number | null>(null);
+  const [videoChapters, setVideoChapters] = useState<VideoChapterItem[]>([]);
+  const [transcript, setTranscript] = useState("");
+
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [draftSavedTime, setDraftSavedTime] = useState<string>(() => t("create.draftStatus") || "Hozirgina");
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
+  const [htmlSnapshot, setHtmlSnapshot] = useState("");
 
-  // Word count & reading time
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(1);
 
-  // Link Modal state
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkModalText, setLinkModalText] = useState("");
   const [linkModalUrl, setLinkModalUrl] = useState("");
   const [savedRange, setSavedRange] = useState<Range | null>(null);
 
-  // History stack for Undo / Redo
   const historyRef = useRef<string[]>([]);
   const historyIndexRef = useRef<number>(-1);
 
-  // Floating selection toolbar
   const [floatingToolbar, setFloatingToolbar] = useState<FloatingToolbarState>({
     visible: false,
     top: 0,
     left: 0,
   });
 
-  // Active formats state for toolbar highlights
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
     italic: false,
@@ -83,16 +116,72 @@ export default function CreatePostPage() {
     link: false,
   });
 
-  // Update stats from editor text
+  // Load existing item if ?edit=<id>
+  useEffect(() => {
+    if (!editId) return;
+    setIsLoadingEdit(true);
+    api.posts
+      .getPost(editId)
+      .then((post) => {
+        setTitle(post.title || "");
+        setSlug(post.slug || "");
+        setSlugManuallyEdited(Boolean(post.slug));
+        setContentKind((post.contentKind as ContentKind) || "article");
+        setContentLocale(
+          post.locale === "ru" || post.locale === "en" ? post.locale : "uz"
+        );
+        setCategory(String(post.category || "umumiy"));
+        setTagsInput((post.tags || []).join(", "));
+        setSeoTitle(post.seoTitle || "");
+        setSeoDescription(post.seoDescription || "");
+        setFocusKeyword(post.focusKeyword || "");
+        setCoverImageAlt(post.coverImageAlt || "");
+        setStatus(post.status === "draft" ? "draft" : "published");
+        setIsIndexable(Boolean(post.isIndexable));
+        setVideoUrl(post.videoUrl || "");
+        setVideoDurationSeconds(post.videoDurationSeconds ?? null);
+        setVideoChapters(post.videoChapters || []);
+        setTranscript(post.transcript || "");
+        setMediaUrls(post.mediaUrls || []);
+
+        if (editorRef.current) {
+          editorRef.current.innerHTML = post.content || "";
+          setHtmlSnapshot(post.content || "");
+          const text = editorRef.current.innerText.trim();
+          const words = text ? text.split(/\s+/).length : 0;
+          setWordCount(words);
+          setReadingTime(Math.max(1, Math.ceil(words / 180)));
+          historyRef.current = [post.content || ""];
+          historyIndexRef.current = 0;
+        }
+      })
+      .catch(() => toast.error("Tahrirlanadigan material topilmadi"))
+      .finally(() => setIsLoadingEdit(false));
+  }, [editId]);
+
+  // Auto-derive slug from title unless manually edited
+  useEffect(() => {
+    if (!slugManuallyEdited && title.trim()) {
+      setSlug(generateSeoSlug(title));
+    }
+  }, [title, slugManuallyEdited]);
+
+  // Toggle indexable default automatically based on contentKind (only on create)
+  useEffect(() => {
+    if (!editId) {
+      setIsIndexable(contentKind !== "thought");
+    }
+  }, [contentKind, editId]);
+
   const updateEditorStats = useCallback(() => {
     if (!editorRef.current) return;
     const text = editorRef.current.innerText.trim();
     const words = text ? text.split(/\s+/).length : 0;
     setWordCount(words);
     setReadingTime(Math.max(1, Math.ceil(words / 180)));
+    setHtmlSnapshot(editorRef.current.innerHTML);
   }, []);
 
-  // Inspect DOM tree under current selection
   const getActiveFormats = useCallback(() => {
     const result = {
       bold: false,
@@ -114,10 +203,8 @@ export default function CreatePostPage() {
     while (node && node !== editorRef.current) {
       if (node instanceof HTMLElement) {
         const tag = node.tagName.toLowerCase();
-        if (tag === "b" || tag === "strong" || node.style.fontWeight === "bold")
-          result.bold = true;
-        if (tag === "i" || tag === "em" || node.style.fontStyle === "italic")
-          result.italic = true;
+        if (tag === "b" || tag === "strong" || node.style.fontWeight === "bold") result.bold = true;
+        if (tag === "i" || tag === "em" || node.style.fontStyle === "italic") result.italic = true;
         if (tag === "h2") result.h2 = true;
         if (tag === "h3") result.h3 = true;
         if (tag === "blockquote") result.quote = true;
@@ -136,13 +223,12 @@ export default function CreatePostPage() {
       if (document.queryCommandState("insertUnorderedList")) result.ul = true;
       if (document.queryCommandState("insertOrderedList")) result.ol = true;
     } catch {
-      // fallback
+      // ignore
     }
 
     return result;
   }, []);
 
-  // Save history snapshot
   const saveHistory = useCallback(() => {
     if (!editorRef.current) return;
     const currentHtml = editorRef.current.innerHTML;
@@ -156,7 +242,6 @@ export default function CreatePostPage() {
     historyIndexRef.current = newHistory.length - 1;
   }, []);
 
-  // Initialize history on mount
   useEffect(() => {
     if (editorRef.current && historyRef.current.length === 0) {
       historyRef.current = [editorRef.current.innerHTML || ""];
@@ -164,7 +249,6 @@ export default function CreatePostPage() {
     }
   }, []);
 
-  // Check selection and update floating toolbar position & active format states
   const checkSelection = useCallback(() => {
     if (typeof window === "undefined") return;
     const selection = window.getSelection();
@@ -175,18 +259,14 @@ export default function CreatePostPage() {
       !editorRef.current ||
       !editorRef.current.contains(selection.anchorNode)
     ) {
-      setFloatingToolbar((prev) =>
-        prev.visible ? { ...prev, visible: false } : prev,
-      );
+      setFloatingToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
       setActiveFormats(getActiveFormats());
       return;
     }
 
     const text = selection.toString().trim();
-    if (text.length === 0) {
-      setFloatingToolbar((prev) =>
-        prev.visible ? { ...prev, visible: false } : prev,
-      );
+    if (!text) {
+      setFloatingToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
       setActiveFormats(getActiveFormats());
       return;
     }
@@ -194,59 +274,29 @@ export default function CreatePostPage() {
     try {
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
-
-      const toolbarWidth = 340;
-      const toolbarHeight = 40;
-      const top = Math.max(8, rect.top - toolbarHeight - 6);
+      const toolbarWidth = 320;
+      const top = Math.max(8, rect.top - 46);
       const left = Math.max(
         8,
-        Math.min(
-          window.innerWidth - toolbarWidth - 8,
-          rect.left + rect.width / 2 - toolbarWidth / 2,
-        ),
+        Math.min(window.innerWidth - toolbarWidth - 8, rect.left + rect.width / 2 - toolbarWidth / 2)
       );
 
-      setFloatingToolbar({
-        visible: true,
-        top,
-        left,
-      });
-
+      setFloatingToolbar({ visible: true, top, left });
       setActiveFormats(getActiveFormats());
     } catch {
-      setFloatingToolbar((prev) =>
-        prev.visible ? { ...prev, visible: false } : prev,
-      );
+      setFloatingToolbar((prev) => (prev.visible ? { ...prev, visible: false } : prev));
     }
   }, [getActiveFormats]);
 
-  // Selection change listener
   useEffect(() => {
-    const handleSelectionChange = () => {
-      checkSelection();
-    };
-
-    document.addEventListener("selectionchange", handleSelectionChange);
-    window.addEventListener("resize", handleSelectionChange);
+    document.addEventListener("selectionchange", checkSelection);
+    window.addEventListener("resize", checkSelection);
     return () => {
-      document.removeEventListener("selectionchange", handleSelectionChange);
-      window.removeEventListener("resize", handleSelectionChange);
+      document.removeEventListener("selectionchange", checkSelection);
+      window.removeEventListener("resize", checkSelection);
     };
   }, [checkSelection]);
 
-  // Auto-save draft timer simulation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const now = new Date();
-      const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(
-        now.getMinutes(),
-      ).padStart(2, "0")}`;
-      setDraftSavedTime(timeStr);
-    }, 1800);
-    return () => clearTimeout(timer);
-  }, [title, wordCount]);
-
-  // Undo execution
   const executeUndo = useCallback(() => {
     if (!editorRef.current) return;
     if (historyIndexRef.current > 0) {
@@ -254,15 +304,12 @@ export default function CreatePostPage() {
       editorRef.current.innerHTML = historyRef.current[historyIndexRef.current];
       updateEditorStats();
       checkSelection();
-      toast.info(t("create.undoToast") || "Amal bekor qilindi");
     } else {
       document.execCommand("undo");
       updateEditorStats();
-      checkSelection();
     }
-  }, [updateEditorStats, checkSelection, t]);
+  }, [updateEditorStats, checkSelection]);
 
-  // Redo execution
   const executeRedo = useCallback(() => {
     if (!editorRef.current) return;
     if (historyIndexRef.current < historyRef.current.length - 1) {
@@ -270,31 +317,22 @@ export default function CreatePostPage() {
       editorRef.current.innerHTML = historyRef.current[historyIndexRef.current];
       updateEditorStats();
       checkSelection();
-      toast.info(t("create.redoToast") || "Amal qaytarildi");
     } else {
       document.execCommand("redo");
       updateEditorStats();
-      checkSelection();
     }
-  }, [updateEditorStats, checkSelection, t]);
+  }, [updateEditorStats, checkSelection]);
 
-  // Open Link Modal dialog
   const openLinkModal = useCallback(() => {
     if (typeof window === "undefined" || !editorRef.current) return;
     const selection = window.getSelection();
-
     let initialText = "";
     let initialUrl = "";
     let rangeToSave: Range | null = null;
 
-    if (
-      selection &&
-      selection.rangeCount > 0 &&
-      editorRef.current.contains(selection.anchorNode)
-    ) {
+    if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
       rangeToSave = selection.getRangeAt(0).cloneRange();
       initialText = selection.toString();
-
       let node: Node | null = selection.anchorNode;
       while (node && node !== editorRef.current) {
         if (node instanceof HTMLAnchorElement) {
@@ -308,157 +346,62 @@ export default function CreatePostPage() {
 
     setSavedRange(rangeToSave);
     setLinkModalText(initialText);
-    setLinkModalUrl(initialUrl || "https://");
+    setLinkModalUrl(initialUrl || "/uz/hub/");
     setIsLinkModalOpen(true);
   }, []);
 
-  // Format action execution
-  const executeCommand = (
-    command: string,
-    value: string | undefined = undefined,
-  ) => {
+  const executeCommand = (command: string, value?: string) => {
     if (!editorRef.current) return;
     editorRef.current.focus();
-
     saveHistory();
+    const current = getActiveFormats();
 
-    const currentFormats = getActiveFormats();
-
-    if (command === "undo") {
-      executeUndo();
-      return;
-    }
-
-    if (command === "redo") {
-      executeRedo();
-      return;
-    }
+    if (command === "undo") return executeUndo();
+    if (command === "redo") return executeRedo();
+    if (command === "link") return openLinkModal();
 
     if (command === "bold") {
       document.execCommand("bold", false);
     } else if (command === "italic") {
       document.execCommand("italic", false);
-    } else if (
-      command === "formatBlock" &&
-      (value === "<h2>" || value === "H2")
-    ) {
-      if (currentFormats.h2) {
-        document.execCommand("formatBlock", false, "<p>");
-      } else {
-        document.execCommand("formatBlock", false, "<h2>");
-      }
-    } else if (
-      command === "formatBlock" &&
-      (value === "<h3>" || value === "H3")
-    ) {
-      if (currentFormats.h3) {
-        document.execCommand("formatBlock", false, "<p>");
-      } else {
-        document.execCommand("formatBlock", false, "<h3>");
-      }
-    } else if (
-      command === "formatBlock" &&
-      (value === "<blockquote>" || value === "BLOCKQUOTE")
-    ) {
-      if (currentFormats.quote) {
-        document.execCommand("formatBlock", false, "<p>");
-      } else {
-        document.execCommand("formatBlock", false, "<blockquote>");
-      }
+    } else if (command === "formatBlock" && (value === "<h2>" || value === "H2")) {
+      document.execCommand("formatBlock", false, current.h2 ? "<p>" : "<h2>");
+    } else if (command === "formatBlock" && (value === "<h3>" || value === "H3")) {
+      document.execCommand("formatBlock", false, current.h3 ? "<p>" : "<h3>");
+    } else if (command === "formatBlock" && (value === "<blockquote>" || value === "BLOCKQUOTE")) {
+      document.execCommand("formatBlock", false, current.quote ? "<p>" : "<blockquote>");
+    } else if (command === "codeblock") {
+      document.execCommand(
+        "insertHTML",
+        false,
+        "<pre><code>// Kod misolini shu yerga yozing\nconst example = true;</code></pre><p><br /></p>"
+      );
     } else if (command === "code") {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      if (currentFormats.code) {
-        let node: Node | null = selection.anchorNode;
-        while (node && node !== editorRef.current) {
-          if (
-            node instanceof HTMLElement &&
-            node.tagName.toLowerCase() === "code"
-          ) {
-            const parent = node.parentNode;
-            if (parent) {
-              while (node.firstChild)
-                parent.insertBefore(node.firstChild, node);
-              parent.removeChild(node);
-            }
-            break;
-          }
-          node = node.parentNode;
-        }
-      } else {
-        const selectedText = selection.toString();
-        if (selectedText) {
-          const span = document.createElement("code");
-          span.textContent = selectedText;
-          const range = selection.getRangeAt(0);
-          range.deleteContents();
-          range.insertNode(span);
-          range.setStartAfter(span);
-          range.setEndAfter(span);
-          selection.removeAllRanges();
-          selection.addRange(range);
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const text = sel.toString();
+        if (text) {
+          const el = document.createElement("code");
+          el.textContent = text;
+          const r = sel.getRangeAt(0);
+          r.deleteContents();
+          r.insertNode(el);
         } else {
           document.execCommand("insertHTML", false, "<code>kod</code>&nbsp;");
         }
       }
     } else if (command === "highlight") {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      if (currentFormats.highlight) {
-        let node: Node | null = selection.anchorNode;
-        while (node && node !== editorRef.current) {
-          if (
-            node instanceof HTMLElement &&
-            node.tagName.toLowerCase() === "mark"
-          ) {
-            const parent = node.parentNode;
-            if (parent) {
-              while (node.firstChild)
-                parent.insertBefore(node.firstChild, node);
-              parent.removeChild(node);
-            }
-            break;
-          }
-          node = node.parentNode;
-        }
-      } else {
-        const selectedText = selection.toString();
-        if (selectedText) {
-          const mark = document.createElement("mark");
-          mark.textContent = selectedText;
-          const range = selection.getRangeAt(0);
-          range.deleteContents();
-          range.insertNode(mark);
-        }
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && sel.toString()) {
+        const mark = document.createElement("mark");
+        mark.textContent = sel.toString();
+        const r = sel.getRangeAt(0);
+        r.deleteContents();
+        r.insertNode(mark);
       }
     } else if (command === "clearFormat") {
       document.execCommand("removeFormat", false);
       document.execCommand("formatBlock", false, "<p>");
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        let node: Node | null = selection.anchorNode;
-        while (node && node !== editorRef.current) {
-          if (
-            node instanceof HTMLElement &&
-            (node.tagName.toLowerCase() === "code" ||
-              node.tagName.toLowerCase() === "mark")
-          ) {
-            const parent = node.parentNode;
-            if (parent) {
-              while (node.firstChild)
-                parent.insertBefore(node.firstChild, node);
-              parent.removeChild(node);
-            }
-          }
-          node = node.parentNode;
-        }
-      }
-      toast.info(t("create.formatClearedToast") || "Formatlash tozalandi");
-    } else if (command === "link") {
-      openLinkModal();
-      return;
     } else {
       document.execCommand(command, false, value);
     }
@@ -468,89 +411,50 @@ export default function CreatePostPage() {
     checkSelection();
   };
 
-  // Apply Link from Modal
   const handleApplyLink = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editorRef.current) return;
-
     let targetUrl = linkModalUrl.trim();
     if (!targetUrl) {
-      toast.error(t("create.linkModalUrlRequired") || "Iltimos, havola manzilini kiriting");
+      toast.error("Iltimos, havola manzilini kiriting");
       return;
     }
-
     if (!/^https?:\/\//i.test(targetUrl) && !targetUrl.startsWith("/")) {
       targetUrl = `https://${targetUrl}`;
     }
 
     editorRef.current.focus();
-
     if (savedRange && window.getSelection()) {
       const sel = window.getSelection();
-      if (sel) {
-        sel.removeAllRanges();
-        sel.addRange(savedRange);
-      }
+      sel?.removeAllRanges();
+      sel?.addRange(savedRange);
     }
+
     const displayText = linkModalText.trim() || targetUrl;
+    const isInternal = targetUrl.startsWith("/") || targetUrl.includes("geters.uz");
+    const sel = window.getSelection();
 
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
       document.execCommand("createLink", false, targetUrl);
-
-      const anchors = editorRef.current.getElementsByTagName("a");
-      for (let i = 0; i < anchors.length; i++) {
-        if (anchors[i].getAttribute("href") === targetUrl) {
-          anchors[i].setAttribute("target", "_blank");
-          anchors[i].setAttribute("rel", "noopener noreferrer");
-        }
-      }
     } else {
-      const linkHtml = `<a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-700">${displayText}</a>&nbsp;`;
-      document.execCommand("insertHTML", false, linkHtml);
+      const targetAttr = isInternal ? "" : ' target="_blank" rel="noopener noreferrer"';
+      document.execCommand(
+        "insertHTML",
+        false,
+        `<a href="${targetUrl}"${targetAttr}>${displayText}</a>&nbsp;`
+      );
     }
 
     saveHistory();
     updateEditorStats();
-    checkSelection();
     setIsLinkModalOpen(false);
-    toast.success(t("create.linkAddedToast") || "Havola qo‘shildi");
+    toast.success("Havola qo‘shildi");
   };
 
-  // Remove Link from Modal
-  const handleRemoveLink = () => {
-    if (!editorRef.current) return;
-    editorRef.current.focus();
-
-    if (savedRange && window.getSelection()) {
-      const sel = window.getSelection();
-      if (sel) {
-        sel.removeAllRanges();
-        sel.addRange(savedRange);
-      }
-    }
-
-    document.execCommand("unlink", false);
-    saveHistory();
-    updateEditorStats();
-    checkSelection();
-    setIsLinkModalOpen(false);
-    toast.info(t("create.linkRemovedToast") || "Havola olib tashlandi");
-  };
-
-  // Smart paste: Auto-convert raw URL strings into clickable HTML links
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     e.preventDefault();
     const text = e.clipboardData.getData("text/plain");
-
-    if (/^https?:\/\/[^\s]+$/i.test(text.trim())) {
-      const url = text.trim();
-      const linkHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-700">${url}</a>&nbsp;`;
-      document.execCommand("insertHTML", false, linkHtml);
-    } else {
-      document.execCommand("insertText", false, text);
-    }
-
+    document.execCommand("insertText", false, text);
     saveHistory();
     updateEditorStats();
   };
@@ -560,10 +464,7 @@ export default function CreatePostPage() {
     if (!files || files.length === 0) return;
 
     if (mediaUrls.length + files.length > 3) {
-      toast.error(
-        t("project.maxImagesError") ||
-          "Ko‘pi bilan 3 tagacha rasm yuklash mumkin",
-      );
+      toast.error("Ko‘pi bilan 3 tagacha rasm yuklash mumkin");
       return;
     }
 
@@ -573,44 +474,23 @@ export default function CreatePostPage() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (file.size > 10 * 1024 * 1024) {
-          toast.error(
-            t("project.imageSizeError") ||
-              "Rasm hajmi 10MB dan oshmasligi kerak",
-          );
+          toast.error("Rasm hajmi 10MB dan oshmasligi kerak");
           continue;
         }
-
         const compressedBlob = await compressAvatarImage(file);
-        const compressedFile = new File(
-          [compressedBlob],
-          `post-${Date.now()}-${i}.webp`,
-          {
-            type: "image/webp",
-          },
-        );
-
-        const uploadRes = await api.upload.uploadFile(
-          compressedFile,
-          "projects",
-        );
+        const compressedFile = new File([compressedBlob], `editorial-${Date.now()}-${i}.webp`, {
+          type: "image/webp",
+        });
+        const uploadRes = await api.upload.uploadFile(compressedFile, "projects");
         newUrls.push(uploadRes.url);
       }
-
       setMediaUrls((prev) => [...prev, ...newUrls].slice(0, 3));
     } catch {
-      toast.error(
-        t("create.errorPublishing") || "Rasmni yuklashda xatolik yuz berdi",
-      );
+      toast.error("Rasmni yuklashda xatolik yuz berdi");
     } finally {
       setIsUploadingImage(false);
-      if (imageInputRef.current) {
-        imageInputRef.current.value = "";
-      }
+      if (imageInputRef.current) imageInputRef.current.value = "";
     }
-  };
-
-  const handleRemoveImage = (indexToRemove: number) => {
-    setMediaUrls((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -619,264 +499,182 @@ export default function CreatePostPage() {
     let htmlContent = editorRef.current?.innerHTML.trim() || "";
 
     if (!plainText) {
-      toast.error(
-        t("create.contentRequired") || "Iltimos, post matnini kiriting",
-      );
+      toast.error("Iltimos, material matnini kiriting");
       editorRef.current?.focus();
       return;
     }
 
-    // Normalize empty line breaks from various browsers (Chrome div breaks)
+    if (contentKind !== "thought" && !title.trim()) {
+      toast.error("Maqola, video darslik yoki yangilik uchun sarlavha (H1) shart");
+      return;
+    }
+
+    if (contentKind === "video" && !videoUrl.trim()) {
+      toast.error("Video darslik uchun YouTube yoki Bunny Stream havolasini kiriting");
+      return;
+    }
+
     htmlContent = htmlContent
       .replace(/<div><br\s*\/?><\/div>/gi, "<p><br /></p>")
       .replace(/<div>(.*?)<\/div>/gi, "<p>$1</p>")
       .replace(/<p><\/p>/gi, "<p><br /></p>");
 
-    // Auto-detect the first URL in content (from <a> tags or raw text) for projectUrl metadata
-    let autoDetectedUrl: string | undefined = undefined;
-    const anchorMatch = htmlContent.match(/href=["'](https?:\/\/[^"']+)["']/i);
-    if (anchorMatch && anchorMatch[1]) {
-      autoDetectedUrl = anchorMatch[1];
-    } else {
-      const urlMatch = plainText.match(/https?:\/\/[^\s"<]+/i);
-      if (urlMatch && urlMatch[0]) {
-        autoDetectedUrl = urlMatch[0];
-      }
-    }
+    const parsedTags = tagsInput
+      .split(",")
+      .map((s) => s.replace(/^#/, "").trim())
+      .filter(Boolean)
+      .slice(0, 10);
 
     setIsSubmitting(true);
-
     try {
-      await api.posts.createPost({
+      const payload = {
         title: title.trim() || undefined,
+        slug: slug.trim() || undefined,
         content: htmlContent || plainText,
-        postType: "thought",
-        projectUrl: autoDetectedUrl,
+        postType: "thought" as const,
+        contentKind,
+        status,
+        isIndexable: contentKind === "thought" ? false : isIndexable,
+        locale: contentLocale,
+        category,
+        tags: parsedTags,
+        coverImageUrl: mediaUrls[0] || undefined,
+        coverImageAlt: coverImageAlt.trim() || undefined,
+        seoTitle: seoTitle.trim() || undefined,
+        seoDescription: seoDescription.trim() || undefined,
+        focusKeyword: focusKeyword.trim() || undefined,
+        videoUrl: contentKind === "video" ? videoUrl.trim() : undefined,
+        videoDurationSeconds: contentKind === "video" ? videoDurationSeconds : undefined,
+        videoChapters: contentKind === "video" ? videoChapters : [],
+        transcript: contentKind === "video" ? transcript.trim() || undefined : undefined,
         mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
-      });
+      };
+
+      const saved = editId
+        ? await api.posts.updatePost(editId, payload)
+        : await api.posts.createPost(payload);
 
       toast.success(
-        t("create.successPublished") || "Post muvaffaqiyatli chop etildi!",
+        editId ? "Material muvaffaqiyatli yangilandi!" : "Material muvaffaqiyatli chop etildi!"
       );
-      router.push(localePath("/dashboard"));
+
+      if (status === "published" && saved.slug && contentKind !== "thought") {
+        const seg =
+          contentKind === "video" ? "videos" : contentKind === "news" ? "news" : "articles";
+        router.push(`/${contentLocale}/${seg}/${saved.slug}`);
+      } else {
+        router.push(localePath("/dashboard"));
+      }
     } catch (err) {
       const msg =
         err instanceof ApiError
           ? err.message
-          : t("create.errorPublishing") || "Chop etishda xatolik yuz berdi";
+          : "Saqlashda xatolik yuz berdi";
       toast.error(msg);
       setIsSubmitting(false);
     }
   };
 
+  const kindCards: Array<{ id: ContentKind; label: string; desc: string; Icon: React.ElementType }> = [
+    { id: "article", label: "Maqola", desc: "Chuqur qo‘llanma", Icon: BookOpen },
+    { id: "video", label: "Video darslik", desc: "Video + Konspekt", Icon: PlayCircle },
+    { id: "news", label: "IT Yangilik", desc: "Tezkor xabar", Icon: Newspaper },
+    { id: "thought", label: "Qisqa fikr", desc: "Ichki lenta", Icon: MessageSquare },
+  ];
+
+  const toolBtn = (active: boolean) =>
+    `p-1.5 rounded-lg transition-colors cursor-pointer ${
+      active
+        ? "bg-[#3995ff] text-white font-bold"
+        : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e202b]"
+    }`;
+
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-3.5 py-1 text-slate-800 dark:text-slate-200">
-      {/* 1. Header & Quick Status */}
-      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-2.5">
+    <div className="w-full max-w-6xl mx-auto space-y-5 pb-12 text-slate-800 dark:text-slate-200">
+      {/* Top Studio Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-[#24252f]">
+        <div className="flex items-center gap-3">
           <Link
             href={localePath("/dashboard")}
-            className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors flex items-center gap-1 rounded-lg px-2 py-1 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800"
+            className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white flex items-center gap-1.5 rounded-xl px-3 py-1.5 bg-white dark:bg-[#101117] border border-slate-200 dark:border-[#24252f]"
           >
-            <ArrowLeft className="w-3 h-3" />
-            <span>{t("create.backToDashboard") || "Lentaga qaytish"}</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Orqaga</span>
           </Link>
-
-          <span className="hidden sm:inline-block text-slate-300 dark:text-slate-700">
-            |
-          </span>
-
-          <span className="hidden sm:inline-block text-[11px] text-slate-400">
-            {draftSavedTime}
-          </span>
+          <div>
+            <h1 className="text-base sm:text-lg font-extrabold text-slate-950 dark:text-white">
+              {editId ? "Materialni tahrirlash (SEO Studio)" : "Geters SEO Editorial Studio"}
+            </h1>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Maqolalar, video darsliklar va yangiliklarni Google/Yandex standartida chop eting
+            </p>
+          </div>
         </div>
 
-        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-800/60 px-2 py-0.5 rounded-md">
-          {wordCount} {t("create.words") || "so‘z"} • ~{readingTime}{" "}
-          {t("create.readingTime") || "min"}
+        <div className="text-xs font-mono font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#101117] border border-slate-200 dark:border-[#24252f] px-3 py-1.5 rounded-xl">
+          {wordCount} {t("create.words") || "so‘z"} • ~{readingTime} min
         </div>
       </div>
 
-      {/* 2. Floating Selection Toolbar (WYSIWYG bubble) */}
+      {/* Floating Selection Toolbar */}
       {floatingToolbar.visible && (
         <div
-          role="toolbar"
-          aria-label={t("create.editorFormattingTools") || "Formatlash asboblari"}
-          style={{
-            position: "fixed",
-            top: `${floatingToolbar.top}px`,
-            left: `${floatingToolbar.left}px`,
-            zIndex: 60,
-          }}
-          className="flex items-center gap-0.5 p-1 rounded-xl bg-slate-900/95 dark:bg-slate-100/95 text-white dark:text-slate-900 shadow-xl backdrop-blur-md border border-slate-800 dark:border-slate-200 animate-in fade-in zoom-in-95 duration-100 select-none"
+          style={{ position: "fixed", top: `${floatingToolbar.top}px`, left: `${floatingToolbar.left}px`, zIndex: 60 }}
+          className="flex items-center gap-0.5 p-1 rounded-xl bg-[#0b0c13] text-white shadow-xl border border-[#24252f]"
         >
-          {/* Bold */}
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              executeCommand("bold");
-            }}
-            title={t("create.editorBold") || "Qalin (Ctrl+B)"}
-            aria-label={t("create.editorBoldAria") || "Qalin matn"}
-            className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.bold
-                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                : ""
-            }`}
-          >
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("bold"); }} className={toolBtn(activeFormats.bold)}>
             <Bold className="w-3.5 h-3.5" />
           </button>
-
-          {/* Italic */}
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              executeCommand("italic");
-            }}
-            title={t("create.editorItalic") || "Kursiv (Ctrl+I)"}
-            aria-label={t("create.editorItalicAria") || "Kursiv matn"}
-            className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.italic
-                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                : ""
-            }`}
-          >
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("italic"); }} className={toolBtn(activeFormats.italic)}>
             <Italic className="w-3.5 h-3.5" />
           </button>
-
-          <span className="w-px h-3.5 bg-slate-700 dark:bg-slate-300 mx-0.5" />
-
-          {/* Heading 2 */}
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              executeCommand("formatBlock", "<h2>");
-            }}
-            title={t("create.editorH2") || "Sarlavha (H2)"}
-            aria-label={t("create.editorH2Aria") || "Sarlavha formati"}
-            className={`px-1.5 py-0.5 text-[11px] font-bold rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.h2
-                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                : ""
-            }`}
-          >
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h2 ? "bg-[#3995ff] text-white" : "text-slate-200 hover:bg-[#1e202b]"}`}>
             H2
           </button>
-
-          {/* Quote */}
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              executeCommand("formatBlock", "<blockquote>");
-            }}
-            title={t("create.editorQuote") || "Iqtibos bloki"}
-            aria-label={t("create.editorQuoteAria") || "Iqtibos bloki"}
-            className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.quote
-                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                : ""
-            }`}
-          >
-            <Quote className="w-3.5 h-3.5" />
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h3 ? "bg-[#3995ff] text-white" : "text-slate-200 hover:bg-[#1e202b]"}`}>
+            H3
           </button>
-
-          {/* Highlight Marker */}
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              executeCommand("highlight");
-            }}
-            title={t("create.editorHighlight") || "Belgilash (Sariq fon)"}
-            aria-label={t("create.editorHighlightAria") || "Matnni belgilash"}
-            className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.highlight ? "bg-amber-400 text-slate-950" : ""
-            }`}
-          >
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("highlight"); }} className={toolBtn(activeFormats.highlight)}>
             <Highlighter className="w-3.5 h-3.5" />
           </button>
-
-          {/* Code */}
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              executeCommand("code");
-            }}
-            title={t("create.editorCode") || "Kod"}
-            aria-label={t("create.editorCodeAria") || "Kod formati"}
-            className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.code
-                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                : ""
-            }`}
-          >
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("code"); }} className={toolBtn(activeFormats.code)}>
             <Code className="w-3.5 h-3.5" />
           </button>
-
-          {/* Link */}
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              executeCommand("link");
-            }}
-            title={t("create.editorLink") || "Havola (Ctrl+K)"}
-            aria-label={t("create.editorLinkAria") || "Havola kiritish"}
-            className={`p-1 rounded-md hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer ${
-              activeFormats.link
-                ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                : ""
-            }`}
-          >
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("link"); }} className={toolBtn(activeFormats.link)}>
             <Link2 className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
-      {/* 3. Link Modal */}
+      {/* Link Modal */}
       {isLinkModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-4 space-y-3">
-            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-1.5">
-                <div className="p-1.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
-                  <Link2 className="w-3.5 h-3.5" />
-                </div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                  {t("create.linkModalTitle") || "Havola (link) qo‘shish"}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsLinkModalOpen(false)}
-                className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="w-full max-w-sm bg-white dark:bg-[#101117] border border-slate-200 dark:border-[#24252f] rounded-2xl shadow-xl p-4 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#1c1e29]">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Link2 className="w-3.5 h-3.5 text-[#3995ff]" />
+                Havola qo‘shish (Ichki / Tashqi SEO)
+              </h3>
+              <button type="button" onClick={() => setIsLinkModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
+                <X className="w-4 h-4" />
               </button>
             </div>
-
-            <form onSubmit={handleApplyLink} className="space-y-2.5">
+            <form onSubmit={handleApplyLink} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5">
-                  {t("create.linkModalTextLabel") || "Matn (Nima deb ko‘rinsin)"}
+                <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                  Ankor matn (Anchor text)
                 </label>
                 <input
                   type="text"
                   value={linkModalText}
                   onChange={(e) => setLinkModalText(e.target.value)}
-                  placeholder={t("create.linkModalTextPlaceholder") || "Masalan: Maqola manbasi"}
-                  className="w-full h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  placeholder="Masalan: Next.js qo'llanmasi"
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
                 />
               </div>
-
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5">
-                  {t("create.linkModalUrlLabel") || "Havola manzili (URL) *"}
+                <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                  URL (/uz/hub/nextjs yoki https://...)
                 </label>
                 <div className="relative">
                   <Globe className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -885,466 +683,298 @@ export default function CreatePostPage() {
                     required
                     value={linkModalUrl}
                     onChange={(e) => setLinkModalUrl(e.target.value)}
-                    placeholder={t("create.linkModalUrlPlaceholder") || "https://example.com"}
-                    className="w-full h-8 pl-8 pr-2.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] pl-8 pr-3 py-1.5 text-xs text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
-
-              <div className="flex items-center justify-between pt-1">
-                {activeFormats.link ? (
-                  <button
-                    type="button"
-                    onClick={handleRemoveLink}
-                    className="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-[11px] font-semibold hover:bg-rose-100 transition-colors cursor-pointer"
-                  >
-                    {t("common.delete") || "O‘chirish"}
-                  </button>
-                ) : (
-                  <div />
-                )}
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setIsLinkModalOpen(false)}
-                    className="px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                  >
-                    {t("common.cancel") || "Bekor qilish"}
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
-                  >
-                    {t("common.save") || "Saqlash"}
-                  </button>
-                </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setIsLinkModalOpen(false)} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#24252f] text-xs cursor-pointer">
+                  Bekor qilish
+                </button>
+                <button type="submit" className="px-3.5 py-1.5 rounded-lg bg-[#3995ff] hover:bg-blue-600 text-white text-xs font-bold cursor-pointer">
+                  Saqlash
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* 4. Main Post Form */}
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Post Title Field */}
-        <div>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={t("create.postTitlePlaceholder") || "Post sarlavhasi (ixtiyoriy)..."}
-            className="w-full text-base sm:text-lg font-bold bg-transparent border-b border-slate-100 dark:border-slate-800/80 px-1 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none transition-all"
-          />
+      {isLoadingEdit ? (
+        <div className="py-16 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-[#3995ff]" />
         </div>
-
-        {/* Compact WYSIWYG Editor Container */}
-        <div className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-transparent overflow-hidden">
-          {/* Editor Top Toolbar */}
-          <div className="flex items-center flex-wrap gap-0.5 p-1 sm:p-1.5 bg-slate-50/90 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-800">
-            {/* Undo / Redo */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeUndo();
-              }}
-              title={t("create.editorUndo") || "Bekor qilish (Ctrl+Z)"}
-              aria-label={t("create.editorUndoAria") || "Orqaga qaytarish"}
-              className="p-1 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
-            >
-              <Undo2 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeRedo();
-              }}
-              title={t("create.editorRedo") || "Qaytarish (Ctrl+Y)"}
-              aria-label={t("create.editorRedoAria") || "Oldinga qaytarish"}
-              className="p-1 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
-            >
-              <Redo2 className="w-3.5 h-3.5" />
-            </button>
-
-            <span className="w-px h-3.5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
-
-            {/* Bold */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("bold");
-              }}
-              title={t("create.editorBold") || "Qalin matn (Ctrl+B)"}
-              aria-label={t("create.editorBoldAria") || "Qalin matn"}
-              className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
-                activeFormats.bold
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white font-bold"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <Bold className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Italic */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("italic");
-              }}
-              title={t("create.editorItalic") || "Kursiv matn (Ctrl+I)"}
-              aria-label={t("create.editorItalicAria") || "Kursiv matn"}
-              className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
-                activeFormats.italic
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <Italic className="w-3.5 h-3.5" />
-            </button>
-
-            <span className="w-px h-3.5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
-
-            {/* Headings */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("formatBlock", "<h2>");
-              }}
-              title={t("create.editorH2") || "Katta sarlavha (H2)"}
-              aria-label={t("create.editorH2Aria") || "Katta sarlavha"}
-              className={`px-1.5 py-0.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer text-[11px] font-bold flex items-center gap-0.5 ${
-                activeFormats.h2
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <Heading2 className="w-3.5 h-3.5" />
-              <span>H2</span>
-            </button>
-
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("formatBlock", "<h3>");
-              }}
-              title={t("create.editorH3") || "O‘rtacha sarlavha (H3)"}
-              aria-label={t("create.editorH3Aria") || "O‘rtacha sarlavha"}
-              className={`px-1.5 py-0.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer text-[11px] font-bold flex items-center gap-0.5 ${
-                activeFormats.h3
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <Heading3 className="w-3.5 h-3.5" />
-              <span>H3</span>
-            </button>
-
-            {/* Quote */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("formatBlock", "<blockquote>");
-              }}
-              title={t("create.editorQuote") || "Iqtibos bloki"}
-              aria-label={t("create.editorQuoteAria") || "Iqtibos bloki"}
-              className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
-                activeFormats.quote
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <Quote className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Lists */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("insertUnorderedList");
-              }}
-              title={t("create.editorBulletList") || "Nuqtali ro‘yxat"}
-              aria-label={t("create.editorBulletListAria") || "Nuqtali ro‘yxat"}
-              className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
-                activeFormats.ul
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <List className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("insertOrderedList");
-              }}
-              title={t("create.editorNumberedList") || "Raqamli ro‘yxat"}
-              aria-label={t("create.editorNumberedListAria") || "Raqamli ro‘yxat"}
-              className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
-                activeFormats.ol
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <ListOrdered className="w-3.5 h-3.5" />
-            </button>
-
-            <span className="w-px h-3.5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
-
-            {/* Highlight */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("highlight");
-              }}
-              title={t("create.editorHighlight") || "Matnni belgilash (Sariq fon)"}
-              aria-label={t("create.editorHighlightAria") || "Matnni belgilash"}
-              className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
-                activeFormats.highlight
-                  ? "bg-amber-400 text-slate-950 font-bold"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <Highlighter className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Code */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("code");
-              }}
-              title={t("create.editorCode") || "Kod formati"}
-              aria-label={t("create.editorCodeAria") || "Kod formati"}
-              className={`p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer font-mono ${
-                activeFormats.code
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                  : "text-slate-700 dark:text-slate-300"
-              }`}
-            >
-              <Code className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Link Modal Trigger Button */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("link");
-              }}
-              title={t("create.editorLink") || "Havola qo‘shish (Ctrl+K)"}
-              aria-label={t("create.editorLinkAria") || "Havola qo‘shish"}
-              className={`p-1 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
-                activeFormats.link
-                  ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white"
-                  : "text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50"
-              }`}
-            >
-              <Link2 className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-semibold hidden sm:inline">
-                {t("create.editorLinkText") || "Havola"}
-              </span>
-            </button>
-
-            {/* Clear Formatting */}
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                executeCommand("clearFormat");
-              }}
-              title={t("create.editorClearFormat") || "Formatni tozalash"}
-              aria-label={t("create.editorClearFormatAria") || "Formatni tozalash"}
-              className="p-1 rounded-md text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
-            >
-              <Eraser className="w-3.5 h-3.5" />
-            </button>
-
-            <span className="hidden md:inline-block ml-auto text-[11px] font-medium text-slate-400 dark:text-slate-500 pr-1 select-none">
-              {t("create.editorLinkShortcut") || "Ctrl+K havola"}
-            </span>
-          </div>
-
-          {/* In-Place WYSIWYG ContentEditable Surface */}
-          <div
-            ref={editorRef}
-            contentEditable
-            suppressContentEditableWarning
-            onFocus={() => {
-              try {
-                document.execCommand("defaultParagraphSeparator", false, "p");
-              } catch {
-                // Ignore
-              }
-            }}
-            onInput={() => {
-              updateEditorStats();
-              saveHistory();
-            }}
-            onKeyUp={checkSelection}
-            onMouseUp={checkSelection}
-            onPaste={handlePaste}
-            onKeyDown={(e) => {
-              if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-                e.preventDefault();
-                openLinkModal();
-              } else if (
-                (e.metaKey || e.ctrlKey) &&
-                e.key.toLowerCase() === "z"
-              ) {
-                e.preventDefault();
-                if (e.shiftKey) {
-                  executeRedo();
-                } else {
-                  executeUndo();
-                }
-              } else if (
-                (e.metaKey || e.ctrlKey) &&
-                e.key.toLowerCase() === "y"
-              ) {
-                e.preventDefault();
-                executeRedo();
-              } else if (
-                (e.metaKey || e.ctrlKey) &&
-                e.key.toLowerCase() === "b"
-              ) {
-                e.preventDefault();
-                executeCommand("bold");
-              } else if (
-                (e.metaKey || e.ctrlKey) &&
-                e.key.toLowerCase() === "i"
-              ) {
-                e.preventDefault();
-                executeCommand("italic");
-              }
-            }}
-            data-placeholder={t("create.editorPlaceholder") || "O‘z g‘oyangiz, maqsadingiz yoki tahlilingizni yozing..."}
-            className="gogetters-rich-editor p-3.5 sm:p-4 text-xs sm:text-sm text-slate-900 dark:text-slate-100 cursor-text min-h-[220px]"
-          />
-        </div>
-
-        {/* Image Attachments Section */}
-        <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/90 dark:border-slate-800 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
-              <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                {t("create.imagesLabel") || "Rasmlar (ko‘pi bilan 3 ta)"}
-              </label>
+      ) : (
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Main Authoring Column */}
+          <div className="lg:col-span-8 space-y-4">
+            {/* Content Type Selector */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {kindCards.map((kc) => {
+                const active = contentKind === kc.id;
+                return (
+                  <button
+                    key={kc.id}
+                    type="button"
+                    onClick={() => setContentKind(kc.id)}
+                    className={`p-3 rounded-[14px] border text-left transition-all cursor-pointer ${
+                      active
+                        ? "bg-blue-50 dark:bg-[#162038] border-[#3995ff] shadow-xs"
+                        : "bg-white dark:bg-[#101117] border-slate-200/90 dark:border-[#24252f] hover:border-[#3995ff]/40"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <kc.Icon className={`w-4 h-4 ${active ? "text-[#3995ff]" : "text-slate-400"}`} />
+                      <span className={`text-xs font-bold ${active ? "text-[#3995ff]" : "text-slate-900 dark:text-white"}`}>
+                        {kc.label}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{kc.desc}</p>
+                  </button>
+                );
+              })}
             </div>
-            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
-              {mediaUrls.length} / 3
-            </span>
-          </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            {mediaUrls.map((url, idx) => (
-              <div
-                key={url}
-                className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group bg-slate-950/5 dark:bg-slate-950/40"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={url}
-                  alt=""
-                  aria-hidden="true"
-                  className="absolute inset-0 w-full h-full object-cover blur-sm scale-110 opacity-35 pointer-events-none transform-gpu"
+            {/* Title (H1) & WYSIWYG Editor */}
+            <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] overflow-hidden shadow-xs">
+              <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-[#1c1e29]">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Asosiy Sarlavha (H1) — kalit so'z bilan aniq va jozibador yozing..."
+                  className="w-full text-lg sm:text-2xl font-extrabold bg-transparent text-slate-950 dark:text-white placeholder-slate-400 focus:outline-none"
                 />
+              </div>
 
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={url}
-                  alt={`${t("create.image") || "Rasm"} ${idx + 1}`}
-                  className="relative z-10 w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 transform-gpu"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(idx)}
-                  className="absolute z-20 top-1 right-1 p-0.5 rounded bg-slate-950/75 text-white hover:bg-rose-600 transition-colors cursor-pointer"
-                  title={t("common.delete") || "O‘chirish"}
-                >
-                  <X className="w-3 h-3" />
+              {/* Editor Toolbar */}
+              <div className="flex items-center flex-wrap gap-1 px-3 py-2 bg-slate-50 dark:bg-[#14151d] border-b border-slate-200 dark:border-[#24252f]">
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeUndo(); }} title="Bekor qilish" className={toolBtn(false)}>
+                  <Undo2 className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeRedo(); }} title="Qaytarish" className={toolBtn(false)}>
+                  <Redo2 className="w-3.5 h-3.5" />
+                </button>
+                <span className="w-px h-4 bg-slate-200 dark:bg-[#24252f] mx-1" />
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("bold"); }} title="Qalin" className={toolBtn(activeFormats.bold)}>
+                  <Bold className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("italic"); }} title="Kursiv" className={toolBtn(activeFormats.italic)}>
+                  <Italic className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} title="H2 Sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h2 ? "bg-[#3995ff] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e202b]"}`}>
+                  <Heading2 className="w-3.5 h-3.5" /> H2
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} title="H3 Kichik sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h3 ? "bg-[#3995ff] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e202b]"}`}>
+                  <Heading3 className="w-3.5 h-3.5" /> H3
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<blockquote>"); }} title="Iqtibos" className={toolBtn(activeFormats.quote)}>
+                  <Quote className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("insertUnorderedList"); }} title="Ro'yxat" className={toolBtn(activeFormats.ul)}>
+                  <List className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("insertOrderedList"); }} title="Raqamli ro'yxat" className={toolBtn(activeFormats.ol)}>
+                  <ListOrdered className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("highlight"); }} title="Ajratib ko'rsatish" className={toolBtn(activeFormats.highlight)}>
+                  <Highlighter className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("code"); }} title="Inline kod" className={toolBtn(activeFormats.code)}>
+                  <Code className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("codeblock"); }} title="Ko'p qatorli kod bloki (<pre>)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e202b] cursor-pointer">
+                  <FileCode2 className="w-3.5 h-3.5 text-[#3995ff]" />
+                  <span>Kod bloki</span>
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("link"); }} title="Havola (Ctrl+K)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-[#3995ff] hover:bg-[#3995ff]/10 cursor-pointer">
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>Havola</span>
+                </button>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("clearFormat"); }} title="Formatni tozalash" className={toolBtn(false)}>
+                  <Eraser className="w-3.5 h-3.5" />
                 </button>
               </div>
-            ))}
 
-            {mediaUrls.length < 3 && (
-              <button
-                type="button"
-                disabled={isUploadingImage}
-                onClick={() => imageInputRef.current?.click()}
-                className="aspect-video rounded-lg border border-dashed border-slate-200 dark:border-slate-700 hover:border-indigo-400 bg-white dark:bg-slate-800/40 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-indigo-600 transition-all cursor-pointer disabled:opacity-50"
+              {/* Editor Content Area */}
+              <div
+                ref={editorRef}
+                contentEditable
+                suppressContentEditableWarning
+                onFocus={() => {
+                  try {
+                    document.execCommand("defaultParagraphSeparator", false, "p");
+                  } catch {}
+                }}
+                onInput={() => {
+                  updateEditorStats();
+                  saveHistory();
+                }}
+                onKeyUp={checkSelection}
+                onMouseUp={checkSelection}
+                onPaste={handlePaste}
+                data-placeholder="Chuqur tahlil, darslik konspekti yoki IT yangilik matnini shu yerga yozing. H2/H3 sarlavhalardan foydalansangiz avtomatik Mundarija shakllanadi..."
+                className="gogetters-rich-editor p-4 sm:p-6 text-sm sm:text-base text-slate-900 dark:text-slate-100 cursor-text min-h-[340px] leading-relaxed"
+              />
+            </div>
+
+            {/* Video Tutorial Settings when contentKind === 'video' */}
+            {contentKind === "video" && (
+              <VideoTutorialBox
+                videoUrl={videoUrl}
+                onVideoUrlChange={setVideoUrl}
+                durationSeconds={videoDurationSeconds}
+                onDurationSecondsChange={setVideoDurationSeconds}
+                chapters={videoChapters}
+                onChaptersChange={setVideoChapters}
+                transcript={transcript}
+                onTranscriptChange={setTranscript}
+              />
+            )}
+
+            {/* Cover & Media Images */}
+            <div className="p-4 bg-white dark:bg-[#101117] rounded-[16px] border border-slate-200/90 dark:border-[#24252f] space-y-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-[#3995ff]" />
+                  <span className="text-xs font-bold text-slate-800 dark:text-white">
+                    Muqova &amp; Illyustratsiyalar (Birinchi rasm — OG muqova bo‘ladi)
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-slate-400">{mediaUrls.length} / 3</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                {mediaUrls.map((url, idx) => (
+                  <div
+                    key={url}
+                    className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-[#24252f] bg-slate-950/10"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt={coverImageAlt || `Rasm ${idx + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setMediaUrls((p) => p.filter((_, i) => i !== idx))}
+                      className="absolute top-1.5 right-1.5 p-1 rounded-lg bg-black/75 text-white hover:bg-rose-600 cursor-pointer"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+
+                {mediaUrls.length < 3 && (
+                  <button
+                    type="button"
+                    disabled={isUploadingImage}
+                    onClick={() => imageInputRef.current?.click()}
+                    className="aspect-video rounded-xl border border-dashed border-slate-300 dark:border-[#2c2f3e] hover:border-[#3995ff] bg-slate-50 dark:bg-[#14151d] flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-[#3995ff] transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {isUploadingImage ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-[#3995ff]" />
+                    ) : (
+                      <>
+                        <Paperclip className="w-4 h-4" />
+                        <span className="text-[11px] font-semibold">Rasm yuklash (WebP)</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+            </div>
+
+            {/* Submit Bar */}
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <Link
+                href={localePath("/dashboard")}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#24252f] text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#101117]"
               >
-                {isUploadingImage ? (
+                Bekor qilish
+              </Link>
+              <button
+                type="submit"
+                disabled={isSubmitting || wordCount === 0}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#3995ff] hover:bg-blue-600 text-white text-xs sm:text-sm font-bold shadow-sm disabled:opacity-40 cursor-pointer transition-colors"
+              >
+                {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-indigo-600 dark:text-indigo-400" />
-                    <span className="text-[10px] font-medium">
-                      {t("common.loading") || "Yuklanmoqda..."}
-                    </span>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Saqlanmoqda...</span>
                   </>
                 ) : (
                   <>
-                    <Paperclip className="w-4 h-4 text-slate-400" />
-                    <span className="text-[10px] font-semibold">
-                      {t("create.attachImage") || "Rasm biriktirish"}
+                    <Sparkles className="w-4 h-4" />
+                    <span>
+                      {editId
+                        ? "O‘zgarishlarni Saqlash"
+                        : status === "draft"
+                        ? "Qoralama Sifatida Saqlash"
+                        : "Chop Etish & Indekslash"}
                     </span>
                   </>
                 )}
               </button>
-            )}
+            </div>
           </div>
 
-          <input
-            ref={imageInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            multiple
-            className="hidden"
-            onChange={handleImageUpload}
-          />
-        </div>
-
-        {/* Bottom Action Bar */}
-        <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
-          <Link
-            href={localePath("/dashboard")}
-            className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 font-medium cursor-pointer transition-colors"
-          >
-            {t("common.cancel") || "Bekor qilish"}
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={isSubmitting || wordCount === 0}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-xs"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>{t("create.publishing") || "Chop etilmoqda..."}</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{t("create.publish") || "Chop etish"}</span>
-                </>
-              )}
-            </button>
+          {/* Right Live SEO Expert Assistant */}
+          <div className="lg:col-span-4 lg:sticky lg:top-20">
+            <SeoInspectorPanel
+              contentKind={contentKind}
+              locale={contentLocale}
+              onLocaleChange={setContentLocale}
+              category={category}
+              onCategoryChange={setCategory}
+              tagsInput={tagsInput}
+              onTagsInputChange={setTagsInput}
+              title={title}
+              slug={slug}
+              onSlugChange={(v) => {
+                setSlugManuallyEdited(true);
+                setSlug(generateSeoSlug(v));
+              }}
+              seoTitle={seoTitle}
+              onSeoTitleChange={setSeoTitle}
+              seoDescription={seoDescription}
+              onSeoDescriptionChange={setSeoDescription}
+              focusKeyword={focusKeyword}
+              onFocusKeywordChange={setFocusKeyword}
+              coverImageUrl={mediaUrls[0] || ""}
+              coverImageAlt={coverImageAlt}
+              onCoverImageAltChange={setCoverImageAlt}
+              isIndexable={isIndexable}
+              onIsIndexableChange={setIsIndexable}
+              status={status}
+              onStatusChange={setStatus}
+              htmlContent={htmlSnapshot}
+              videoUrl={videoUrl}
+              chaptersCount={videoChapters.length}
+            />
           </div>
-        </div>
-      </form>
+        </form>
+      )}
     </div>
+  );
+}
+
+export default function CreatePostPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-16 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-[#3995ff]" />
+        </div>
+      }
+    >
+      <StudioEditorWorkspace />
+    </Suspense>
   );
 }

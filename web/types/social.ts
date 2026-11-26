@@ -39,30 +39,57 @@ export type ContentCategory =
   | "experience";
 
 export type PostType = "thought" | "project";
+export type ContentKind = "article" | "video" | "news" | "thought";
+export type ContentStatus = "draft" | "published" | "archived";
 export type ProjectStage = "idea" | "mvp" | "launched" | "scaling";
 export type ProjectLookingFor = "cofounder" | "feedback" | "investment" | "team";
 
+export interface VideoChapterItem {
+  time: string;
+  seconds: number;
+  title: string;
+}
+
 export interface Post {
   id: string;
+  slug?: string | null;
   author: Author;
   title?: string;
   content: string;
   postType?: PostType;
+  contentKind?: ContentKind;
+  status?: ContentStatus;
+  isIndexable?: boolean;
+  locale?: string;
+  category?: ContentTopic;
+  tags?: string[];
+  coverImageUrl?: string | null;
+  coverImageAlt?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  focusKeyword?: string | null;
+  canonicalUrl?: string | null;
+  videoUrl?: string | null;
+  youtubeVideoId?: string | null;
+  bunnyVideoId?: string | null;
+  videoDurationSeconds?: number | null;
+  videoChapters?: VideoChapterItem[];
+  transcript?: string | null;
+  publishedAt?: string;
   projectUrl?: string;
   projectStage?: ProjectStage;
   lookingFor?: ProjectLookingFor;
   mediaUrls?: string[];
   topic?: ContentTopic;
-  category?: "discussion" | "analytical" | "quick_thought" | "experience";
   readingTimeMinutes?: number;
   createdAt: string;
+  updatedAt?: string;
   likesCount: number;
   commentsCount: number;
   sharesCount: number;
   viewsCount?: number;
   isLiked?: boolean;
   isSaved?: boolean;
-  tags?: string[];
 }
 
 export interface Comment {

@@ -37,14 +37,34 @@ CREATE UNIQUE INDEX IF NOT EXISTS "idx_users_google_id" ON "users" USING btree (
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_users_phone" ON "users" USING btree ("phone") WHERE "phone" IS NOT NULL;
 
 -- ==============================================================================
--- 2. POSTS JADVALI (Postlar, Tahliliy maqolalar & Startap loyihalar)
+-- 2. POSTS JADVALI (Maqolalar, Video darsliklar, Yangiliklar & Muhokamalar)
 -- ==============================================================================
 CREATE TABLE IF NOT EXISTS "posts" (
     "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     "author_id" UUID NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "slug" VARCHAR(340),
     "title" VARCHAR(300),
     "content" TEXT NOT NULL,
     "post_type" VARCHAR(30) NOT NULL DEFAULT 'thought', -- 'thought' | 'project'
+    "content_kind" VARCHAR(24) NOT NULL DEFAULT 'article', -- 'article' | 'video' | 'news' | 'thought'
+    "status" VARCHAR(20) NOT NULL DEFAULT 'published',     -- 'draft' | 'published' | 'archived'
+    "is_indexable" BOOLEAN NOT NULL DEFAULT false,
+    "locale" VARCHAR(8) NOT NULL DEFAULT 'uz',
+    "category" VARCHAR(64) NOT NULL DEFAULT 'umumiy',
+    "tags" JSONB NOT NULL DEFAULT '[]'::jsonb,
+    "cover_image_url" TEXT,
+    "cover_image_alt" VARCHAR(255),
+    "seo_title" VARCHAR(180),
+    "seo_description" VARCHAR(340),
+    "focus_keyword" VARCHAR(120),
+    "canonical_url" VARCHAR(500),
+    "video_url" TEXT,
+    "youtube_video_id" VARCHAR(64),
+    "bunny_video_id" VARCHAR(128),
+    "video_duration_seconds" INTEGER,
+    "video_chapters" JSONB NOT NULL DEFAULT '[]'::jsonb,
+    "transcript" TEXT,
+    "published_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
     "project_url" VARCHAR(500),
     "project_stage" VARCHAR(50),                         -- 'idea' | 'mvp' | 'launched' | 'scaling'
     "looking_for" VARCHAR(50),                           -- 'cofounder' | 'feedback' | 'investment' | 'team'
@@ -59,10 +79,22 @@ CREATE TABLE IF NOT EXISTS "posts" (
     "deleted_at" TIMESTAMPTZ                             -- Soft delete
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_posts_slug" ON "posts" USING btree ("slug") WHERE "slug" IS NOT NULL;
 CREATE INDEX IF NOT EXISTS "idx_posts_created_at" ON "posts" USING btree ("created_at" DESC);
 CREATE INDEX IF NOT EXISTS "idx_posts_author_created" ON "posts" USING btree ("author_id", "created_at" DESC);
 CREATE INDEX IF NOT EXISTS "idx_posts_post_type" ON "posts" USING btree ("post_type");
+CREATE INDEX IF NOT EXISTS "idx_posts_kind_status" ON "posts" USING btree ("content_kind", "status", "is_indexable", "published_at" DESC);
+CREATE INDEX IF NOT EXISTS "idx_posts_category" ON "posts" USING btree ("category");
 CREATE INDEX IF NOT EXISTS "idx_posts_deleted_at" ON "posts" USING btree ("deleted_at");
+
+CREATE TABLE IF NOT EXISTS "slug_redirects" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "old_slug" VARCHAR(340) NOT NULL,
+    "new_slug" VARCHAR(340) NOT NULL,
+    "content_kind" VARCHAR(24) NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_slug_redirects_old_kind" ON "slug_redirects" USING btree ("old_slug", "content_kind");
 
 -- ==============================================================================
 -- 3. POST_VIEWS JADVALI (Ko'rishlar sonini 1 soatlik deduplikatsiya bilan hisoblash)
@@ -281,4 +313,76 @@ CREATE TABLE IF NOT EXISTS "messages" (
 CREATE INDEX IF NOT EXISTS "idx_messages_conv_created" ON "messages"("conversation_id", "created_at" DESC);
 CREATE INDEX IF NOT EXISTS "idx_messages_sender" ON "messages"("sender_id");
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_messages_client_msg_id" ON "messages"("conversation_id", "sender_id", "client_message_id") WHERE client_message_id IS NOT NULL;
+
+-- 15. User Blocks Table
+CREATE TABLE IF NOT EXISTS "user_blocks" (
+    "blocker_id" UUID NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "blocked_id" UUID NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY ("blocker_id", "blocked_id")
+);
+CREATE INDEX IF NOT EXISTS "idx_user_blocks_blocker" ON "user_blocks"("blocker_id");
+
+-- 16. Active User Sessions Table
+CREATE TABLE IF NOT EXISTS "user_sessions" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "user_id" UUID NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "device_name" VARCHAR(100) NOT NULL,
+    "browser" VARCHAR(100) NOT NULL,
+    "ip_address" VARCHAR(50),
+    "location" VARCHAR(100),
+    "is_current" BOOLEAN NOT NULL DEFAULT FALSE,
+    "last_active_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "idx_user_sessions_user" ON "user_sessions"("user_id");
+
+-- 17. Bot Activities Table
+CREATE TABLE IF NOT EXISTS "bot_activities" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "activity_type" VARCHAR(50) NOT NULL,
+    "bot_id" UUID REFERENCES "users"("id") ON DELETE SET NULL,
+    "target_id" UUID,
+    "details" TEXT,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "idx_bot_activities_created" ON "bot_activities"("created_at");
+CREATE INDEX IF NOT EXISTS "idx_bot_activities_type" ON "bot_activities"("activity_type");
+
+-- 18. Bot Engine Global Settings Table
+CREATE TABLE IF NOT EXISTS "bot_engine_settings" (
+    "id" VARCHAR(50) PRIMARY KEY DEFAULT 'default',
+    "is_active" BOOLEAN NOT NULL DEFAULT TRUE,
+    "daily_limit" INTEGER NOT NULL DEFAULT 30,
+    "current_daily_count" INTEGER NOT NULL DEFAULT 0,
+    "last_activity_at" TIMESTAMPTZ,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 19. Media Library Table (Bunny Storage, Bunny Stream & YouTube)
+CREATE TABLE IF NOT EXISTS "media" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "title" VARCHAR(255) NOT NULL,
+    "media_type" VARCHAR(32) NOT NULL,
+    "url" TEXT NOT NULL,
+    "thumbnail_url" TEXT,
+    "storage_path" TEXT,
+    "mime_type" VARCHAR(128),
+    "file_extension" VARCHAR(32) NOT NULL DEFAULT '',
+    "file_size_bytes" BIGINT NOT NULL DEFAULT 0,
+    "duration_seconds" INTEGER,
+    "width" INTEGER,
+    "height" INTEGER,
+    "youtube_video_id" VARCHAR(64),
+    "bunny_video_id" VARCHAR(128),
+    "collection_name" VARCHAR(128),
+    "uploaded_by" UUID REFERENCES "users"("id") ON DELETE SET NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "idx_media_type" ON "media"("media_type");
+CREATE INDEX IF NOT EXISTS "idx_media_created_at" ON "media"("created_at");
+CREATE INDEX IF NOT EXISTS "idx_media_uploaded_by" ON "media"("uploaded_by");
+CREATE INDEX IF NOT EXISTS "idx_media_collection" ON "media"("collection_name");
+
 

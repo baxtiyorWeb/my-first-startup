@@ -24,14 +24,18 @@ export function parseYouTubeVideoId(url: string): string | null {
 }
 
 export class MediaService {
-  private readonly libraryId = process.env.BUNNY_VIDEO_LIBRARY_ID || "813790";
-  private readonly videoApiKey = process.env.BUNNY_VIDEO_API_KEY || "fcc8ad16-9312-40e7-b84c4d8b3f17-08ac-4aaf";
-  private readonly streamCdn = (process.env.BUNNY_CDN_HOSTNAME || "vz-32ab535c-e02.b-cdn.net").replace(/\/$/, "");
+  private readonly libraryId = process.env.BUNNY_VIDEO_LIBRARY_ID || "";
+  private readonly videoApiKey = process.env.BUNNY_VIDEO_API_KEY || "";
+  private readonly streamCdn = (process.env.BUNNY_CDN_HOSTNAME || "").replace(/\/$/, "");
 
   /**
    * Fetch real collections from Bunny Stream
    */
   async getBunnyCollections(): Promise<Array<{ id: string; name: string; videoCount: number; totalSize: number }>> {
+    if (!this.libraryId || !this.videoApiKey) {
+      return [];
+    }
+
     try {
       const res = await fetch(`https://video.bunnycdn.com/library/${this.libraryId}/collections`, {
         headers: {
@@ -41,14 +45,11 @@ export class MediaService {
       });
 
       if (!res.ok) {
-        return [
-          { id: "a8596778-7f58-4be5-ba80-f617a5d2574d", name: "tutorials", videoCount: 0, totalSize: 0 },
-          { id: "d8912b3e-24ee-4ddb-8468-321fc4debae8", name: "shorts", videoCount: 0, totalSize: 0 },
-        ];
+        return [];
       }
 
       const data = await res.json();
-      return (data.items || []).map((c: any) => ({
+      return (data.items || []).map((c: { guid: string; name: string; videoCount?: number; totalSize?: number }) => ({
         id: c.guid,
         name: c.name,
         videoCount: c.videoCount || 0,
@@ -56,10 +57,7 @@ export class MediaService {
       }));
     } catch (err) {
       console.warn("[BUNNY STREAM] Could not fetch collections:", err);
-      return [
-        { id: "a8596778-7f58-4be5-ba80-f617a5d2574d", name: "tutorials", videoCount: 0, totalSize: 0 },
-        { id: "d8912b3e-24ee-4ddb-8468-321fc4debae8", name: "shorts", videoCount: 0, totalSize: 0 },
-      ];
+      return [];
     }
   }
 
@@ -457,7 +455,6 @@ export class MediaService {
 
     // 4. Build Stream URLs
     const streamEmbedUrl = `https://iframe.mediadelivery.net/embed/${this.libraryId}/${videoGuid}`;
-    const hlsUrl = `https://${this.streamCdn}/${videoGuid}/playlist.m3u8`;
     const thumbnailUrl = `https://${this.streamCdn}/${videoGuid}/thumbnail.jpg`;
 
     // 5. Save to database
@@ -613,9 +610,9 @@ export class MediaService {
     totalFiles: number;
     collections: any[];
   }> {
-    const storageKey = process.env.BUNNY_STORAGE_API_KEY || "174ef310-cc7e-4bd1-9b5d83555048-288c-41da";
+    const storageKey = process.env.BUNNY_STORAGE_API_KEY || "";
     const zone = process.env.BUNNY_STORAGE_ZONE || "local-network";
-    const cdnUrl = (process.env.BUNNY_CDN_URL || "https://local-network.b-cdn.net").replace(/\/$/, "");
+    const cdnUrl = (process.env.BUNNY_CDN_URL || "").replace(/\/$/, "");
 
     // 1. Recursive listing from Bunny Storage
     async function listBunnyStorageDir(dir = ""): Promise<Array<{ path: string; name: string; size: number; updated: string }>> {

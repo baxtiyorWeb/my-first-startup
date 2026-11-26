@@ -1,0 +1,389 @@
+import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_controller.dart';
+import '../../../core/widgets/confirm_dialog.dart';
+import '../../auth/data/auth_controller.dart';
+
+class SettingsScreen extends StatefulWidget {
+  final ThemeController themeController;
+  final AuthController authController;
+
+  const SettingsScreen({
+    super.key,
+    required this.themeController,
+    required this.authController,
+  });
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  static const String _kLikesKey = 'geters_push_likes_v1';
+  static const String _kCommentsKey = 'geters_push_comments_v1';
+  static const String _kFollowsKey = 'geters_push_follows_v1';
+
+  bool _pushLikes = true;
+  bool _pushComments = true;
+  bool _pushFollows = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPushPrefs();
+  }
+
+  Future<void> _loadPushPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      setState(() {
+        _pushLikes = prefs.getBool(_kLikesKey) ?? true;
+        _pushComments = prefs.getBool(_kCommentsKey) ?? true;
+        _pushFollows = prefs.getBool(_kFollowsKey) ?? true;
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _setPushPref(String key, bool val) async {
+    setState(() {
+      if (key == _kLikesKey) _pushLikes = val;
+      if (key == _kCommentsKey) _pushComments = val;
+      if (key == _kFollowsKey) _pushFollows = val;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(key, val);
+    } catch (_) {}
+  }
+
+  Future<void> _updatePrivacy({
+    bool? isPrivate,
+    bool? showOnlineStatus,
+    bool? twoFactorEnabled,
+  }) async {
+    try {
+      await widget.authController.updateProfile(
+        isPrivate: isPrivate,
+        showOnlineStatus: showOnlineStatus,
+        twoFactorEnabled: twoFactorEnabled,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Sozlamani saqlashda xatolik yuz berdi'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.danger,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sozlamalar')),
+      body: ListenableBuilder(
+        listenable:
+            Listenable.merge([widget.themeController, widget.authController]),
+        builder: (context, _) {
+          final user = widget.authController.currentUser;
+          final currentMode = widget.themeController.themeMode;
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            physics: const BouncingScrollPhysics(),
+            children: [
+              _buildSectionTitle('Ko\'rinish va Mavzu', isDark),
+              const SizedBox(height: 8),
+              _buildCard(
+                isDark,
+                child: Row(
+                  children: [
+                    _ThemeOptionTile(
+                      icon: Icons.light_mode_outlined,
+                      label: 'Yorug\'',
+                      isSelected: currentMode == ThemeMode.light,
+                      onTap: () => widget.themeController.setThemeMode(ThemeMode.light),
+                      isDark: isDark,
+                    ),
+                    const SizedBox(width: 8),
+                    _ThemeOptionTile(
+                      icon: Icons.dark_mode_outlined,
+                      label: 'Qorong\'i',
+                      isSelected: currentMode == ThemeMode.dark,
+                      onTap: () => widget.themeController.setThemeMode(ThemeMode.dark),
+                      isDark: isDark,
+                    ),
+                    const SizedBox(width: 8),
+                    _ThemeOptionTile(
+                      icon: Icons.brightness_auto_outlined,
+                      label: 'Tizim',
+                      isSelected: currentMode == ThemeMode.system,
+                      onTap: () => widget.themeController.setThemeMode(ThemeMode.system),
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildSectionTitle('Interfeys tili', isDark),
+              const SizedBox(height: 8),
+              _buildDividedCard(isDark, [
+                _buildLanguageTile('uz', 'O\'zbekcha (Lotin)', '🇺🇿', isDark),
+                _buildLanguageTile('ru', 'Русский', '🇷🇺', isDark),
+                _buildLanguageTile('en', 'English', '🇬🇧', isDark),
+              ]),
+              const SizedBox(height: 20),
+              _buildSectionTitle('Maxfiylik va Xavfsizlik', isDark),
+              const SizedBox(height: 8),
+              _buildDividedCard(isDark, [
+                _switchTile(
+                  value: user.isPrivate,
+                  title: 'Yopiq profil (Private)',
+                  subtitle: 'Postlaringiz faqat obunachilarga ko\'rinadi',
+                  onChanged: (v) => _updatePrivacy(isPrivate: v),
+                ),
+                _switchTile(
+                  value: user.showOnlineStatus,
+                  title: 'Onlayn holatni ko\'rsatish',
+                  subtitle: 'Xabarlarda faollik nuqtasi ko\'rinadi',
+                  onChanged: (v) => _updatePrivacy(showOnlineStatus: v),
+                ),
+                _switchTile(
+                  value: user.twoFactorEnabled,
+                  title: 'Ikki bosqichli himoya (2FA)',
+                  subtitle: 'Kirishda qo\'shimcha xavfsizlik tekshiruvi',
+                  onChanged: (v) => _updatePrivacy(twoFactorEnabled: v),
+                ),
+              ]),
+              const SizedBox(height: 20),
+              _buildSectionTitle('Bildirishnomalar', isDark),
+              const SizedBox(height: 8),
+              _buildDividedCard(isDark, [
+                _switchTile(
+                  value: _pushLikes,
+                  title: 'Likelar va reaksiyalar',
+                  onChanged: (v) => _setPushPref(_kLikesKey, v),
+                ),
+                _switchTile(
+                  value: _pushComments,
+                  title: 'Izohlar va munozaralar',
+                  onChanged: (v) => _setPushPref(_kCommentsKey, v),
+                ),
+                _switchTile(
+                  value: _pushFollows,
+                  title: 'Yangi obunachilar',
+                  onChanged: (v) => _setPushPref(_kFollowsKey, v),
+                ),
+              ]),
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final ok = await AppConfirmDialog.show(
+                    context,
+                    title: 'Hisobdan chiqish',
+                    message: 'Haqiqatan ham hisobingizdan chiqmoqchimisiz?',
+                    confirmLabel: 'Chiqish',
+                    isDanger: true,
+                  );
+                  if (ok && context.mounted) {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    widget.authController.logout();
+                  }
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: const BorderSide(color: AppColors.danger),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  ),
+                ),
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: const Text(
+                  'Hisobdan chiqish',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Text(
+                  'Geters Mobile v1.0.0 · Bilim. Yangilik. Imkoniyat.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDividedCard(bool isDark, List<Widget> items) {
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
+    final children = <Widget>[];
+    for (var i = 0; i < items.length; i++) {
+      if (i > 0) children.add(Divider(color: borderColor, height: 1));
+      children.add(items[i]);
+    }
+    return _buildCard(isDark, padding: EdgeInsets.zero, child: Column(children: children));
+  }
+
+  Widget _switchTile({
+    required bool value,
+    required String title,
+    String? subtitle,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      value: value,
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+      ),
+      subtitle: subtitle != null
+          ? Text(subtitle, style: const TextStyle(fontSize: 11.5))
+          : null,
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildSectionTitle(String title, bool isDark) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 12.5,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.3,
+        color: isDark ? AppColors.textMutedDark : AppColors.textSecondaryLight,
+      ),
+    );
+  }
+
+  Widget _buildCard(
+    bool isDark, {
+    required Widget child,
+    EdgeInsetsGeometry padding = const EdgeInsets.all(12),
+  }) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildLanguageTile(String code, String name, String flag, bool isDark) {
+    final isSelected = widget.authController.locale == code;
+    return ListTile(
+      dense: true,
+      onTap: () {
+        widget.authController.setLocale(code);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text('Til tanlandi: $name'), duration: const Duration(seconds: 1)),
+          );
+      },
+      leading: Text(flag, style: const TextStyle(fontSize: 20)),
+      title: Text(
+        name,
+        style: TextStyle(
+          fontSize: 13.5,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          color: isSelected
+              ? AppColors.primary
+              : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+        ),
+      ),
+      trailing: isSelected
+          ? const Icon(Icons.check_circle, size: 18, color: AppColors.primary)
+          : null,
+    );
+  }
+}
+
+class _ThemeOptionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isDark;
+
+  const _ThemeOptionTile({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      side: BorderSide(
+        color: isSelected
+            ? AppColors.primary
+            : (isDark ? AppColors.borderDark : AppColors.borderLight),
+        width: isSelected ? 1.5 : 1,
+      ),
+    );
+
+    return Expanded(
+      child: Material(
+        color: isSelected
+            ? (isDark ? AppColors.primarySurfaceDark : AppColors.primarySurface)
+            : (isDark ? AppColors.surfaceDarkElevated : AppColors.surfaceLightElevated),
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: shape,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              children: [
+                Icon(
+                  icon,
+                  size: 20,
+                  color: isSelected
+                      ? AppColors.primary
+                      : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

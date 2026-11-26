@@ -20,7 +20,7 @@ function ProfileContent() {
   const { session, isLoaded } = useAuth();
   const { t } = useI18n();
 
-  const rawHandle = searchParams.get("user");
+  const rawHandle = searchParams.get("handle") || searchParams.get("user");
   const currentHandle = rawHandle
     ? rawHandle.startsWith("@")
       ? rawHandle
@@ -267,16 +267,16 @@ function ProfileContent() {
       )}
 
       {/* 3. Clean Content Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-t-lg px-2 pt-1 shadow-2xs">
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+      <div className="flex items-center justify-between border-b border-slate-200/90 dark:border-[#24252f] bg-white dark:bg-[#101117] rounded-t-[16px] px-3 pt-1 shadow-2xs">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
           {/* All Posts */}
           <button
             type="button"
             onClick={() => setActiveTab("posts")}
-            className={`px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === "posts"
-                ? "border-slate-950 dark:border-white text-slate-950 dark:text-white"
-                : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-300"
+                ? "border-[#3995ff] text-[#3995ff] font-bold"
+                : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-[#f4f4fa]"
             }`}
           >
             {t("profile.tabs.thoughts")} ({userPosts.length})
@@ -286,10 +286,10 @@ function ProfileContent() {
           <button
             type="button"
             onClick={() => setActiveTab("discussions")}
-            className={`px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === "discussions"
-                ? "border-slate-950 dark:border-white text-slate-950 dark:text-white"
-                : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-300"
+                ? "border-[#3995ff] text-[#3995ff] font-bold"
+                : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-[#f4f4fa]"
             }`}
           >
             {t("profile.tabs.discussions")} ({activeDiscussions.length})

@@ -104,6 +104,14 @@ export async function GET(req: NextRequest) {
       email: googleProfile.email,
       name: googleProfile.name || googleProfile.email.split("@")[0],
       avatarUrl: googleProfile.picture || null,
+      meta: {
+        ipAddress:
+          req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+          req.headers.get("x-real-ip") ||
+          null,
+        userAgent: req.headers.get("user-agent"),
+        platform: "web",
+      },
     });
 
     // 4. Set session cookie

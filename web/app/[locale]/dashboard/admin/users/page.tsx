@@ -15,6 +15,9 @@ import {
   Bot,
   UserCheck,
   RefreshCw,
+  CheckCircle2,
+  Check,
+  Ban,
 } from "lucide-react";
 import { useAdmin } from "@/components/admin/admin-shell";
 import { AdminHeader } from "@/components/admin/admin-header";
@@ -33,6 +36,8 @@ interface AdminUser {
   avatarUrl: string | null;
   isBot: boolean;
   botPersona: string | null;
+  verified?: boolean;
+  isDeactivated?: boolean;
   createdAt: string;
   postsCount: number;
 }
@@ -191,6 +196,56 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleToggleVerified = async (userId: string, newVerified: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verified: newVerified }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(
+          newVerified
+            ? "Muallifga tasdiqlanganlik nishoni berildi!"
+            : "Tasdiqlanganlik nishoni olib tashlandi"
+        );
+        setUsersList((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, verified: newVerified } : u))
+        );
+      } else {
+        toast.error(json.error || "Xatolik yuz berdi");
+      }
+    } catch {
+      toast.error("Server bilan aloqa uzildi");
+    }
+  };
+
+  const handleToggleDeactivated = async (userId: string, newDeactivated: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isDeactivated: newDeactivated }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(
+          newDeactivated
+            ? "Foydalanuvchi bloklandi (deaktiv qilindi)"
+            : "Foydalanuvchi blokdan chiqarildi"
+        );
+        setUsersList((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, isDeactivated: newDeactivated } : u))
+        );
+      } else {
+        toast.error(json.error || "Xatolik yuz berdi");
+      }
+    } catch {
+      toast.error("Server bilan aloqa uzildi");
+    }
+  };
+
   const pageTitle =
     locale === "uz"
       ? "Foydalanuvchilar va Botlar"
@@ -343,9 +398,27 @@ export default function AdminUsersPage() {
                             size="sm"
                           />
                           <div className="min-w-0">
-                            <p className="font-bold text-slate-900 dark:text-white truncate">
-                              {u.name}
-                            </p>
+                            <div className="flex items-center gap-1.5 truncate">
+                              <p className="font-bold text-slate-900 dark:text-white truncate">
+                                {u.name}
+                              </p>
+                              {u.verified && (
+                                <span
+                                  title="Tasdiqlangan muallif"
+                                  className="bg-[#3995ff] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
+                                >
+                                  <Check size={9} className="text-white stroke-[2.5]" />
+                                </span>
+                              )}
+                              {u.isDeactivated && (
+                                <span
+                                  title="Bloklangan profil"
+                                  className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-[9px] font-bold px-1.5 py-0.2 rounded-md uppercase shrink-0"
+                                >
+                                  Bloklangan
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[11px] text-slate-400 font-mono truncate">
                               @{u.handle?.replace(/^@+/, "")}
                             </p>
@@ -391,6 +464,42 @@ export default function AdminUsersPage() {
                       {/* Action buttons */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Toggle Verified Badge Action */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleVerified(u.id, !u.verified)}
+                            className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                              u.verified
+                                ? "bg-[#3995ff]/15 text-[#3995ff] border-[#3995ff]/40 hover:bg-[#3995ff]/25"
+                                : "border-slate-200/80 dark:border-white/10 text-slate-400 hover:text-[#3995ff] hover:border-[#3995ff]/50"
+                            }`}
+                            title={
+                              u.verified
+                                ? "Tasdiqlanganlik nishonini olib tashlash"
+                                : "Tasdiqlanganlik nishoni (Verified) berish"
+                            }
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Toggle Ban/Active Action */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleDeactivated(u.id, !u.isDeactivated)}
+                            className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                              u.isDeactivated
+                                ? "bg-rose-500/15 text-rose-600 border-rose-500/40 hover:bg-rose-500/25"
+                                : "border-slate-200/80 dark:border-white/10 text-slate-400 hover:text-rose-500 hover:border-rose-500/50"
+                            }`}
+                            title={
+                              u.isDeactivated
+                                ? "Blokdan chiqarish"
+                                : "Foydalanuvchini bloklash"
+                            }
+                          >
+                            <Ban className="w-3.5 h-3.5" />
+                          </button>
+
                           {u.isBot && (
                             <button
                               type="button"

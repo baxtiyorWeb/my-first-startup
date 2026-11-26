@@ -1,0 +1,12 @@
+# Nusxa oling va to'ldiring:
+#   cp android/key.properties.example android/key.properties
+# Yoki skript orqali avtomatik yarating:
+#   ./scripts/generate_keystore.sh
+#
+# Bu fayl hech qachon git'ga qo'shilmaydi (android/.gitignore).
+
+storePassword=<keystore paroli>
+keyPassword=<kalit paroli>
+keyAlias=upload
+# storeFile android/app/ papkasiga nisbatan hisoblanadi.
+storeFile=upload-keystore.jks

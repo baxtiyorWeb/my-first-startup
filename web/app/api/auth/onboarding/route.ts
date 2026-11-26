@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { requireAuth, signSessionToken, getSessionCookieOptions } from "@/server/common/auth-guard";
+import { enforceRateLimit } from "@/server/common/rate-limiter";
 import { completeOnboarding } from "@/server/modules/auth/auth.service";
 import { successResponse, errorResponse } from "@/server/common/response";
 import { AppError } from "@/server/common/errors";
@@ -15,6 +16,8 @@ const OnboardingSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const authUser = await requireAuth(req);
+    enforceRateLimit(`onboarding:${authUser.userId}`, 5, 600);
+
     const body = await req.json().catch(() => ({}));
     const parseResult = OnboardingSchema.safeParse(body);
 

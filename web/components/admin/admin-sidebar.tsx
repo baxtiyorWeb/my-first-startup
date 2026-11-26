@@ -16,6 +16,7 @@ import {
   LogOut,
   ExternalLink,
   Image as ImageIcon,
+  ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
 import { useI18n } from "@/lib/i18n/context";
@@ -54,6 +55,11 @@ export function AdminSidebar({
       title: locale === "uz" ? "Postlar Moderatsiyasi" : locale === "ru" ? "Модерация постов" : "Posts Moderation",
       href: "/dashboard/admin/posts",
       icon: FileText,
+    },
+    {
+      title: locale === "uz" ? "Shikoyatlar" : locale === "ru" ? "Жалобы" : "Reports",
+      href: "/dashboard/admin/reports",
+      icon: ShieldAlert,
     },
     {
       title: locale === "uz" ? "AI Bot Dvigateli" : locale === "ru" ? "AI Bot Движок" : "AI Bot Engine",

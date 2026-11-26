@@ -18,6 +18,7 @@ import { RichContent } from "@/components/feed/rich-content";
 import { api, ApiError } from "@/lib/api";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { useContentFormat } from "@/components/format";
 
 interface DiscussionDrawerProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export function DiscussionDrawer({
 }: DiscussionDrawerProps) {
   const { session } = useAuth();
   const { t, localePath, formatRelativeTime } = useI18n();
+  const { getExcerpt } = useContentFormat();
 
   const [commentText, setCommentText] = useState("");
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function DiscussionDrawer({
       let isMounted = true;
 
       // Record view (1-hour deduplication handled by server)
-      api.posts.recordPostView(postId).catch(() => {});
+      api.posts.recordPostView(postId).catch(() => { });
 
       api.comments
         .getComments(postId)
@@ -162,10 +164,10 @@ export function DiscussionDrawer({
             replies: c.replies?.map((r) =>
               r.id === commentId
                 ? {
-                    ...r,
-                    isLiked: !r.isLiked,
-                    likesCount: r.isLiked ? r.likesCount - 1 : r.likesCount + 1,
-                  }
+                  ...r,
+                  isLiked: !r.isLiked,
+                  likesCount: r.isLiked ? r.likesCount - 1 : r.likesCount + 1,
+                }
                 : r
             ),
           };
@@ -336,7 +338,7 @@ export function DiscussionDrawer({
                             onReportClick(
                               item.id,
                               item.author.name,
-                              item.content.slice(0, 80)
+                              getExcerpt(item.content, 80)
                             )
                           }
                           title={t("post.report")}
@@ -356,11 +358,10 @@ export function DiscussionDrawer({
                       <button
                         type="button"
                         onClick={() => toggleCommentLike(item.id)}
-                        className={`inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors ${
-                          item.isLiked
-                            ? "text-red-600 dark:text-red-400 font-semibold"
-                            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors ${item.isLiked
+                          ? "text-red-600 dark:text-red-400 font-semibold"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                          }`}
                       >
                         <Heart
                           className={`w-3.5 h-3.5 ${item.isLiked ? "fill-current" : ""}`}
@@ -452,7 +453,7 @@ export function DiscussionDrawer({
                                   onReportClick(
                                     reply.id,
                                     reply.author.name,
-                                    reply.content.slice(0, 60)
+                                    getExcerpt(reply.content, 60)
                                   )
                                 }
                                 title={t("post.report")}
@@ -471,11 +472,10 @@ export function DiscussionDrawer({
                             <button
                               type="button"
                               onClick={() => toggleCommentLike(reply.id, true, item.id)}
-                              className={`inline-flex items-center gap-1 text-[11px] font-medium cursor-pointer ${
-                                reply.isLiked
-                                  ? "text-red-600 dark:text-red-400"
-                                  : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                              }`}
+                              className={`inline-flex items-center gap-1 text-[11px] font-medium cursor-pointer ${reply.isLiked
+                                ? "text-red-600 dark:text-red-400"
+                                : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                                }`}
                             >
                               <Heart
                                 className={`w-3 h-3 ${reply.isLiked ? "fill-current" : ""}`}

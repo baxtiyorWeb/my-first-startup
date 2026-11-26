@@ -132,19 +132,16 @@ export async function POST(req: NextRequest) {
 
       case "simulate_bot_view": {
         const { botId, postId: viewPostId } = body;
-        let targetId = viewPostId;
-        if (!targetId) {
-          const recent = await botService.getRealUsers(); // or recent posts
-        }
+        const targetId = viewPostId;
         let bId = botId;
         if (!bId) {
           const bots = await botService.getBotUsers();
           if (bots.length > 0) bId = bots[Math.floor(Math.random() * bots.length)].id;
         }
-        if (!bId || !viewPostId) {
+        if (!bId || !targetId) {
           return NextResponse.json({ success: false, error: "bId yoki postId topilmadi" }, { status: 400 });
         }
-        const viewResult = await botService.simulateBotPostView(bId, viewPostId);
+        const viewResult = await botService.simulateBotPostView(bId, targetId);
         return NextResponse.json({
           success: true,
           message: `Post bot tomonidan ko'rildi (Ko'rishlar soni: ${viewResult.viewsCount})`,

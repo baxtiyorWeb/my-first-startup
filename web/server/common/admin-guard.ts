@@ -43,7 +43,8 @@ export async function enforceAdminGuard(
 
   const isRoleAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
   const isEmailAdmin = adminEmails.length > 0 && adminEmails.includes(userEmail);
-  const isDevAllowed = !isProduction; // in local development, allow authenticated user
+  // Never grant admin implicitly: local/staging access requires an explicit opt-in.
+  const isDevAllowed = !isProduction && process.env.ALLOW_DEV_ADMIN === "true";
 
   if (!isRoleAdmin && !isEmailAdmin && !isDevAllowed) {
     return NextResponse.json(

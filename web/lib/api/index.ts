@@ -7,6 +7,8 @@ import * as search from "./search";
 import * as reports from "./reports";
 import * as upload from "./upload";
 import * as notifications from "./notifications";
+import { shortsApi } from "./shorts";
+import { pricingApi } from "./pricing";
 
 export { ApiError } from "./client";
 
@@ -20,6 +22,8 @@ export const api = {
   reports,
   upload,
   notifications,
+  shorts: shortsApi,
+  pricing: pricingApi,
 };
 
 export default api;

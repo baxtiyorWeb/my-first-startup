@@ -15,7 +15,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 
 import { useAuth } from "@/components/auth/auth-context";
 import { isSameUser } from "@/lib/user-utils";
-import { Menu, Camera, Loader2, Trash2 } from "lucide-react";
+import { Menu, Camera, Loader2, Trash2, Check } from "lucide-react";
 import { ProfileMenuModal } from "./profile-menu-modal";
 import { api } from "@/lib/api";
 
@@ -204,10 +204,12 @@ export function ProfileHeader({
             />
             {profile.verified && (
               <span
-                className="absolute bottom-0 right-0 p-0.5 rounded-full bg-white dark:bg-slate-900"
+                className="absolute bottom-0 right-0 p-0.5 rounded-full bg-white dark:bg-[#101117] shadow-sm"
                 title={t("common.verifiedAuthor")}
               >
-                <VerifiedBadgeIcon size={20} className="text-slate-900 dark:text-slate-100" />
+                <div className="bg-[#3995ff] rounded-[5px] size-[18px] flex items-center justify-center">
+                  <Check size={12} className="text-white stroke-[2.5]" />
+                </div>
               </span>
             )}
           </div>
@@ -261,8 +263,8 @@ export function ProfileHeader({
                   onClick={handleFollow}
                   className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
                     isFollowing
-                      ? "border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                      : "bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 shadow-xs"
+                      ? "border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-[#1a1b26] text-slate-700 dark:text-[#c4c8dc] hover:bg-slate-200"
+                      : "bg-[#3995ff] hover:bg-[#2884ee] text-white shadow-xs"
                   }`}
                 >
                   {isFollowing ? (

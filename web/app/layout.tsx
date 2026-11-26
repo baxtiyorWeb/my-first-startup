@@ -4,6 +4,7 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/components/auth/auth-context";
 import { ThemeProvider } from "@/components/theme/theme-context";
+import { ContentFormatProvider } from "@/components/format";
 import { OneSignalInitializer } from "@/components/notifications/onesignal-initializer";
 import { AuthedPushModal } from "@/components/notifications/authed-push-modal";
 import {
@@ -76,6 +77,9 @@ export const metadata: Metadata = {
   },
 };
 
+const ONESIGNAL_APP_ID = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "";
+const ONESIGNAL_SAFARI_WEB_ID = process.env.NEXT_PUBLIC_ONESIGNAL_SAFARI_WEB_ID || "";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -88,40 +92,52 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
           defer
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.OneSignalDeferred = window.OneSignalDeferred || [];
-              OneSignalDeferred.push(async function(OneSignal) {
-                await OneSignal.init({
-                  appId: "b0efd544-a3b8-4042-af7a-8174027858c8",
-                  safari_web_id: "web.onesignal.auto.48cecb45-b9e1-42c4-afaa-e45f7f034833",
-                  allowLocalhostAsSecureOrigin: true,
-                  notifyButton: {
-                    enable: true,
-                    position: 'bottom-right',
-                    size: 'medium',
-                  },
-                  promptOptions: {
-                    slidedown: {
-                      prompts: [
-                        {
-                          type: "push",
-                          autoPrompt: true,
-                          text: {
-                            actionMessage: "Yangi postlar va muhim yangiliklardan xabardor bo'lishni xohlaysizmi?",
-                            acceptButton: "Ruxsat berish",
-                            cancelButton: "Keyinroq"
+        {ONESIGNAL_APP_ID && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.OneSignalDeferred = window.OneSignalDeferred || [];
+                window.__onesignal_initialized = false;
+                window.__onesignal_ready_promise = new Promise(function(resolve) {
+                  window.OneSignalDeferred.push(async function(OneSignal) {
+                    try {
+                      await OneSignal.init({
+                        appId: ${JSON.stringify(ONESIGNAL_APP_ID)},
+                        safari_web_id: ${JSON.stringify(ONESIGNAL_SAFARI_WEB_ID)},
+                        allowLocalhostAsSecureOrigin: true,
+                        notifyButton: {
+                          enable: true,
+                          position: 'bottom-right',
+                          size: 'medium',
+                        },
+                        promptOptions: {
+                          slidedown: {
+                            prompts: [
+                              {
+                                type: "push",
+                                autoPrompt: true,
+                                text: {
+                                  actionMessage: "Yangi postlar va muhim yangiliklardan xabardor bo'lishni xohlaysizmi?",
+                                  acceptButton: "Ruxsat berish",
+                                  cancelButton: "Keyinroq"
+                                }
+                              }
+                            ]
                           }
                         }
-                      ]
+                      });
+                      window.__onesignal_initialized = true;
+                      resolve(OneSignal);
+                    } catch (err) {
+                      window.__onesignal_initialized = false;
+                      resolve(null);
                     }
-                  }
+                  });
                 });
-              });
-            `,
-          }}
-        />
+              `,
+            }}
+          />
+        )}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('gogetters_theme');if(t==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');document.documentElement.style.colorScheme='light';}else{document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');document.documentElement.style.colorScheme='dark';}}catch(e){document.documentElement.classList.add('dark');}})();`,
@@ -132,11 +148,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <AuthProvider>
             <PwaInstallProvider>
-              <OneSignalInitializer />
-              <ToastProvider>{children}</ToastProvider>
-              <AuthedPushModal />
-              <InstallModal />
-              <MobileInstallBanner />
+              <ContentFormatProvider>
+                <OneSignalInitializer />
+                <ToastProvider>{children}</ToastProvider>
+                <AuthedPushModal />
+                <InstallModal />
+                <MobileInstallBanner />
+              </ContentFormatProvider>
             </PwaInstallProvider>
           </AuthProvider>
         </ThemeProvider>

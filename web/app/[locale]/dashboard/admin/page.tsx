@@ -19,6 +19,7 @@ import {
   Activity,
   Sliders,
   ExternalLink,
+  HardDrive,
 } from "lucide-react";
 import { useAdmin } from "@/components/admin/admin-shell";
 import { AdminHeader } from "@/components/admin/admin-header";
@@ -29,6 +30,7 @@ interface OverviewStats {
   users: { total: number; real: number; bots: number };
   posts: { total: number; real: number; bots: number };
   comments: { total: number };
+  reports?: { total: number };
   engine: {
     isActive: boolean;
     dailyLimit: number;
@@ -121,8 +123,8 @@ export default function AdminOverviewPage() {
       />
 
       <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
-        {/* Top 4 KPI Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Top 5 KPI Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {/* 1. Users KPI */}
           <Link
             href={localePath("/dashboard/admin/users")}
@@ -193,7 +195,7 @@ export default function AdminOverviewPage() {
               <span className="text-xs font-semibold uppercase tracking-wider">
                 {locale === "uz" ? "Izohlar" : "Комментарии"}
               </span>
-              <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
+              <div className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400">
                 <MessageSquare className="h-4 w-4" />
               </div>
             </div>
@@ -205,7 +207,32 @@ export default function AdminOverviewPage() {
             </p>
           </div>
 
-          {/* 4. Engine KPI */}
+          {/* 4. Reports KPI */}
+          <Link
+            href={localePath("/dashboard/admin/reports")}
+            className="group block p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10 hover:border-rose-500/50 dark:hover:border-rose-500/50 shadow-xs hover:shadow-md transition-all"
+          >
+            <div className="flex items-center justify-between text-slate-500 dark:text-zinc-400 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                {locale === "uz" ? "Shikoyatlar" : "Жалобы"}
+              </span>
+              <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
+                <Shield className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+              {isStatsLoading ? "..." : (stats?.reports?.total ?? 0).toLocaleString()}
+            </div>
+            <div className="mt-3 flex items-center justify-between text-xs text-slate-600 dark:text-zinc-400 border-t border-slate-100 dark:border-white/5 pt-2">
+              <span className="truncate">{locale === "uz" ? "Ko'rib chiqish" : "Проверка"}</span>
+              <span className="text-rose-600 dark:text-rose-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1 text-[11px] font-semibold shrink-0">
+                <span>Lenta</span>
+                <ArrowRight className="h-3 w-3" />
+              </span>
+            </div>
+          </Link>
+
+          {/* 5. Engine KPI */}
           <Link
             href={localePath("/dashboard/admin/engine")}
             className="group block p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10 hover:border-amber-500/50 dark:hover:border-amber-500/50 shadow-xs hover:shadow-md transition-all"
@@ -385,13 +412,13 @@ export default function AdminOverviewPage() {
               type="button"
               onClick={() => handleBotAction("create_deep_comment")}
               disabled={actionLoading !== null}
-              className="p-4 rounded-xl border border-purple-200/80 dark:border-purple-900/50 bg-purple-50/15 hover:border-purple-500 hover:bg-purple-50/35 dark:hover:bg-purple-950/30 text-left transition-all cursor-pointer group disabled:opacity-50"
+              className="p-4 rounded-xl border border-indigo-200/80 dark:border-indigo-900/50 bg-indigo-50/15 hover:border-indigo-500 hover:bg-indigo-50/35 dark:hover:bg-indigo-950/30 text-left transition-all cursor-pointer group disabled:opacity-50"
             >
               <div className="flex items-center justify-between mb-2">
-                <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
+                <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300">
                   <Brain className="h-4 w-4" />
                 </div>
-                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/80 text-purple-700 dark:text-purple-300">
+                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300">
                   Smart
                 </span>
               </div>
@@ -517,6 +544,42 @@ export default function AdminOverviewPage() {
                   </div>
                 </div>
                 <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-amber-600 transition-all" />
+              </Link>
+
+              <Link
+                href={localePath("/dashboard/admin/reports")}
+                className="flex items-center justify-between p-3 rounded-xl border border-slate-200/60 dark:border-white/5 hover:border-rose-500/50 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+                    <Shield className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">
+                      Shikoyatlar (Reports)
+                    </p>
+                    <p className="text-[11px] text-slate-400">Moderatsiya va kontent filtri</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-rose-600 transition-all" />
+              </Link>
+
+              <Link
+                href={localePath("/dashboard/admin/media")}
+                className="flex items-center justify-between p-3 rounded-xl border border-slate-200/60 dark:border-white/5 hover:border-sky-500/50 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400">
+                    <HardDrive className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">
+                      Media & CDN Xotirasi
+                    </p>
+                    <p className="text-[11px] text-slate-400">10 GB server kvotasi & fayllar</p>
+                  </div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 group-hover:text-sky-600 transition-all" />
               </Link>
             </div>
           </div>

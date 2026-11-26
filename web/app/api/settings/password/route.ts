@@ -11,7 +11,10 @@ import { enforceRateLimit } from "@/server/common/rate-limiter";
 
 const PasswordSchema = z.object({
   currentPassword: z.string().optional(),
-  newPassword: z.string().min(6, "Yangi parol kamida 6 ta belgidan iborat bo‘lishi kerak"),
+  newPassword: z
+    .string()
+    .min(8, "Yangi parol kamida 8 ta belgidan iborat bo‘lishi kerak")
+    .max(128, "Parol 128 ta belgidan oshmasligi kerak"),
 });
 
 export async function GET(req: NextRequest) {

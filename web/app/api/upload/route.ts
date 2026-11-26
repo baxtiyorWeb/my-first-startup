@@ -5,6 +5,9 @@ import { uploadToBunny } from "@/server/common/storage";
 import { successResponse, errorResponse } from "@/server/common/response";
 import { AppError } from "@/server/common/errors";
 import { enforceRateLimit } from "@/server/common/rate-limiter";
+import { extractVideoDurationSeconds, isShortVideoDuration } from "@/server/common/video-metadata";
+import { db } from "@/server/db";
+import { media } from "@/server/db/schema";
 
 const ALLOWED_MIME_TYPES = new Map<string, string>([
   ["image/jpeg", "jpg"],
@@ -17,9 +20,14 @@ const ALLOWED_MIME_TYPES = new Map<string, string>([
   ["audio/wav", "wav"],
   ["audio/webm", "webm"],
   ["audio/ogg", "ogg"],
+  ["video/mp4", "mp4"],
+  ["video/quicktime", "mov"],
+  ["video/webm", "webm"],
 ]);
 
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const VIDEO_MIME_TYPES = new Set(["video/mp4", "video/quicktime", "video/webm"]);
+const MAX_IMAGE_AUDIO_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50MB
 
 function validateMagicBytes(buffer: Buffer, mime: string): boolean {
   if (buffer.length < 12) return false;
@@ -60,8 +68,11 @@ function validateMagicBytes(buffer: Buffer, mime: string): boolean {
     case "audio/ogg":
       return buffer.toString("ascii", 0, 4) === "OggS";
     case "audio/mp4":
+    case "video/mp4":
+    case "video/quicktime":
       return buffer.toString("ascii", 4, 8) === "ftyp";
     case "audio/webm":
+    case "video/webm":
       return (
         buffer[0] === 0x1a &&
         buffer[1] === 0x45 &&
@@ -80,7 +91,14 @@ export async function POST(req: NextRequest) {
     // Rate limiting: max 30 uploads per 10 minutes per user
     enforceRateLimit(`upload:${authUser.userId}`, 30, 600);
 
-    const formData = await req.formData();
+    let formData: FormData;
+    try {
+      formData = await req.formData();
+    } catch {
+      throw AppError.badRequest(
+        "Yuklanayotgan fayl hajmi ruxsat etilgan chegaradan oshdi yoki format noto'g'ri"
+      );
+    }
     const file = formData.get("file") as File | null;
     const requestedFolder = (formData.get("folder") as string) || "uploads";
 
@@ -88,14 +106,18 @@ export async function POST(req: NextRequest) {
       throw AppError.badRequest("Yuklash uchun fayl tanlanmagan");
     }
 
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      throw AppError.badRequest("Fayl hajmi 10MB dan oshmasligi kerak");
-    }
-
     const safeExtension = ALLOWED_MIME_TYPES.get(file.type);
     if (!safeExtension) {
       throw AppError.badRequest(
-        "Faqat xavfsiz rasm (JPEG, PNG, WebP, GIF) yoki audio formatdagi fayllar qabul qilinadi"
+        "Faqat rasm (JPEG, PNG, WebP, GIF), audio yoki video (MP4, MOV, WebM) fayllari qabul qilinadi"
+      );
+    }
+
+    const isVideo = VIDEO_MIME_TYPES.has(file.type);
+    const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_AUDIO_BYTES;
+    if (file.size > maxBytes) {
+      throw AppError.badRequest(
+        isVideo ? "Video hajmi 50MB dan oshmasligi kerak" : "Fayl hajmi 10MB dan oshmasligi kerak"
       );
     }
 
@@ -107,15 +129,42 @@ export async function POST(req: NextRequest) {
       throw AppError.badRequest("Fayl tarkibi ko'rsatilgan formatga mos kelmadi");
     }
 
-    // Generate unique safe filename with server-controlled extension
+    let durationSeconds: number | null = null;
+    if (isVideo) {
+      durationSeconds = extractVideoDurationSeconds(buffer, file.type);
+      if (durationSeconds === null || durationSeconds <= 0) {
+        throw AppError.badRequest("Video davomiyligini aniqlab bo'lmadi. Yaroqli MP4/MOV/WebM fayl yuklang");
+      }
+    }
+
+    const isShort = isVideo ? isShortVideoDuration(durationSeconds) : false;
+
     const uniqueId = crypto.randomUUID().slice(0, 8);
     const safeTimestamp = Date.now();
     const safeFileName = `${safeTimestamp}-${uniqueId}.${safeExtension}`;
-
-    // Clean folder (only allow alphanumeric and dashes, e.g. avatars, posts, audio)
-    const cleanFolder = requestedFolder.replace(/[^a-zA-Z0-9_-]/g, "") || "uploads";
+    const defaultFolder = isVideo ? (isShort ? "shorts" : "videos") : "uploads";
+    const cleanFolder = requestedFolder.replace(/[^a-zA-Z0-9_-]/g, "") || defaultFolder;
 
     const result = await uploadToBunny(buffer, safeFileName, file.type, cleanFolder);
+
+    const mediaType = isVideo ? "video" : file.type.startsWith("image/") ? "image" : "file";
+    await db
+      .insert(media)
+      .values({
+        title: file.name ? file.name.slice(0, 255) : safeFileName,
+        mediaType,
+        url: result.url,
+        storagePath: result.path,
+        mimeType: file.type,
+        fileExtension: safeExtension.toUpperCase(),
+        fileSizeBytes: file.size,
+        durationSeconds,
+        collectionName: isVideo ? (isShort ? "shorts" : "videos") : cleanFolder,
+        uploadedBy: authUser.userId,
+      })
+      .catch((err) => {
+        console.warn("[UPLOAD] Could not persist media metadata row:", err);
+      });
 
     return successResponse(
       {
@@ -124,6 +173,9 @@ export async function POST(req: NextRequest) {
         fileName: safeFileName,
         size: file.size,
         mimeType: file.type,
+        mediaType,
+        durationSeconds,
+        isShort,
       },
       undefined,
       201

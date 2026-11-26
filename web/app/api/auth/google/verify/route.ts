@@ -4,6 +4,7 @@ import { handleGoogleAuth } from "@/server/modules/auth/auth.service";
 import { getSessionCookieOptions } from "@/server/common/auth-guard";
 import { successResponse, errorResponse } from "@/server/common/response";
 import { AppError } from "@/server/common/errors";
+import { enforceRateLimit } from "@/server/common/rate-limiter";
 
 const GoogleVerifySchema = z.object({
   idToken: z.string().min(1, "Google ID tokeni kiritilishi shart"),
@@ -20,6 +21,13 @@ const GoogleVerifySchema = z.object({
  */
 export async function POST(req: NextRequest) {
   try {
+    const clientIp =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
+    // Throttle unauthenticated token verification to protect the Google API quota.
+    enforceRateLimit(`google_verify:${clientIp}`, 20, 600);
+
     const body = await req.json().catch(() => ({}));
     const parseResult = GoogleVerifySchema.safeParse(body);
 
@@ -68,11 +76,18 @@ export async function POST(req: NextRequest) {
       // Check audience (client ID)
       const allowedClientIds = [
         process.env.GOOGLE_AUTH_CLIENT_ID,
+        process.env.GOOGLE_AUTH_MOBILE_CLIENT_ID,
+        process.env.GOOGLE_AUTH_MOBILE_WEB_CLIENT_ID,
         process.env.GOOGLE_CLIENT_ID,
       ].filter(Boolean);
 
-      if (allowedClientIds.length > 0 && !allowedClientIds.includes(tokenPayload.aud)) {
-        console.warn("[AUTH GOOGLE VERIFY] Token audience does not match GOOGLE_AUTH_CLIENT_ID");
+      if (allowedClientIds.length === 0) {
+        console.error("[AUTH GOOGLE VERIFY] No GOOGLE_AUTH_* client ID configured");
+        throw AppError.internal("Google autentifikatsiyasi sozlanmagan");
+      }
+
+      if (!allowedClientIds.includes(tokenPayload.aud)) {
+        throw AppError.unauthorized("Google token auditoriyasi mos kelmadi");
       }
 
       if (!tokenPayload.sub || !tokenPayload.email) {
@@ -93,6 +108,12 @@ export async function POST(req: NextRequest) {
       email: googleProfile.email,
       name: googleProfile.name,
       avatarUrl: googleProfile.picture || null,
+      meta: {
+        ipAddress: clientIp,
+        userAgent: req.headers.get("user-agent"),
+        deviceName: parseResult.data.deviceName,
+        platform: parseResult.data.platform,
+      },
     });
 
     const response = successResponse({

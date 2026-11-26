@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
         isBot: users.isBot,
         botPersona: users.botPersona,
         verified: users.verified,
+        isDeactivated: users.isDeactivated,
         createdAt: users.createdAt,
         postsCount: sql<number>`(SELECT count(*)::int FROM posts WHERE posts.author_id = users.id AND posts.deleted_at IS NULL)`,
       })

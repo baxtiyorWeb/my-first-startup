@@ -5,12 +5,14 @@ import { db } from "@/server/db";
 import { userSessions } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { realtimeHub } from "@/server/modules/messages/realtime-hub";
+import { invalidateAuthCache } from "@/server/common/server-cache";
 
 export async function POST(req: NextRequest) {
   try {
     const authUser = await getOptionalAuth(req);
     if (authUser?.userId) {
       realtimeHub.forceUserOffline(authUser.userId);
+      invalidateAuthCache(authUser.userId);
     }
     if (authUser?.sessionId) {
       await db.delete(userSessions).where(eq(userSessions.id, authUser.sessionId));

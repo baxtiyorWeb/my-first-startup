@@ -2,6 +2,7 @@ import { eq, and, or, sql, desc, isNull } from "drizzle-orm";
 import { db } from "@/server/db";
 import { users, posts, comments, follows, postLikes, bookmarks, userBlocks } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
+import { isShortVideoDuration } from "@/server/common/video-metadata";
 import { triggerNotification } from "@/server/modules/notifications/notifications.service";
 import type { PostResponse } from "@/server/modules/posts/posts.service";
 
@@ -40,13 +41,142 @@ export interface UserProfileResponse {
   discussions: PostResponse[];
 }
 
+export type UserProfileSummaryResponse = Omit<UserProfileResponse, "posts" | "discussions">;
+
+/** Row shape shared by the profile post and discussion queries. */
+type ProfilePostRow = {
+  id: string;
+  title: string | null;
+  content: string;
+  postType: string;
+  contentKind: string;
+  slug: string | null;
+  category: string;
+  tags: string[];
+  coverImageUrl: string | null;
+  videoUrl: string | null;
+  videoDurationSeconds: number | null;
+  publishedAt: Date;
+  updatedAt: Date;
+  projectUrl: string | null;
+  projectStage: string | null;
+  lookingFor: string | null;
+  mediaUrls: string[];
+  readingTimeMinutes: number;
+  likesCount: number;
+  commentsCount: number;
+  sharesCount: number;
+  viewsCount: number;
+  createdAt: Date;
+  authorId: string;
+  authorName: string;
+  authorHandle: string;
+  authorRole: string;
+  authorAvatarUrl: string | null;
+  authorVerified: boolean;
+  authorIntent: string;
+  isLiked: boolean;
+  isSaved: boolean;
+};
+
 /**
- * Get full author profile by handle with consolidated live aggregated statistics and posts
+ * Single source of truth for the post fields a profile returns. Both the
+ * authored-posts and participated-discussions queries select through this so
+ * the two payloads can never drift apart again.
+ */
+function buildProfilePostFields(currentUserId?: string) {
+  return {
+    id: posts.id,
+    title: posts.title,
+    content: posts.content,
+    postType: posts.postType,
+    contentKind: posts.contentKind,
+    slug: posts.slug,
+    category: posts.category,
+    tags: posts.tags,
+    coverImageUrl: posts.coverImageUrl,
+    videoUrl: posts.videoUrl,
+    videoDurationSeconds: posts.videoDurationSeconds,
+    publishedAt: posts.publishedAt,
+    updatedAt: posts.updatedAt,
+    projectUrl: posts.projectUrl,
+    projectStage: posts.projectStage,
+    lookingFor: posts.lookingFor,
+    mediaUrls: posts.mediaUrls,
+    readingTimeMinutes: posts.readingTimeMinutes,
+    likesCount: posts.likesCount,
+    commentsCount: posts.commentsCount,
+    sharesCount: posts.sharesCount,
+    viewsCount: posts.viewsCount,
+    createdAt: posts.createdAt,
+    authorId: users.id,
+    authorName: users.name,
+    authorHandle: users.handle,
+    authorRole: users.role,
+    authorAvatarUrl: users.avatarUrl,
+    authorVerified: users.verified,
+    authorIntent: users.intent,
+    isLiked: currentUserId
+      ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
+      : sql<boolean>`false`,
+    isSaved: currentUserId
+      ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
+      : sql<boolean>`false`,
+  };
+}
+
+/** Maps a profile post row to the API post contract. */
+function mapProfilePostRow(p: ProfilePostRow): PostResponse {
+  return {
+    id: p.id,
+    title: p.title,
+    content: p.content,
+    postType: p.postType || "thought",
+    contentKind: p.contentKind || "thought",
+    slug: p.slug,
+    category: p.category,
+    tags: p.tags ?? [],
+    coverImageUrl: p.coverImageUrl,
+    videoUrl: p.videoUrl,
+    videoDurationSeconds: p.videoDurationSeconds,
+    isShort: Boolean(p.videoUrl) && isShortVideoDuration(p.videoDurationSeconds),
+    publishedAt: p.publishedAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+    projectUrl: p.projectUrl || null,
+    projectStage: p.projectStage || null,
+    lookingFor: p.lookingFor || null,
+    mediaUrls: p.mediaUrls ?? [],
+    readingTimeMinutes: p.readingTimeMinutes,
+    likesCount: p.likesCount,
+    commentsCount: p.commentsCount,
+    sharesCount: p.sharesCount,
+    viewsCount: p.viewsCount,
+    createdAt: p.createdAt.toISOString(),
+    isLiked: Boolean(p.isLiked),
+    isSaved: Boolean(p.isSaved),
+    author: {
+      id: p.authorId,
+      name: p.authorName,
+      handle: p.authorHandle,
+      role: p.authorRole,
+      avatarUrl: p.authorAvatarUrl,
+      verified: p.authorVerified,
+      intent: p.authorIntent || "none",
+    },
+  };
+}
+
+/**
+ * Get full author profile by handle with consolidated live aggregated statistics and posts.
+ * Pass `{ includePosts: false }` for callers that only need identity + counters
+ * (e.g. the session endpoint), which skips the two post queries entirely.
  */
 export async function getProfileByHandle(
   rawHandle: string,
-  currentUserId?: string
+  currentUserId?: string,
+  options: { includePosts?: boolean } = {}
 ): Promise<UserProfileResponse> {
+  const includePosts = options.includePosts !== false;
   const cleanHandle = rawHandle.startsWith("@") ? rawHandle : `@${rawHandle.trim()}`;
   const unadornedHandle = rawHandle.replace(/^@/, "").trim();
 
@@ -123,103 +253,31 @@ export async function getProfileByHandle(
 
     // 1. Fetch user's own published posts (only if not restricted private account)
     let formattedPosts: PostResponse[] = [];
-    if (!isRestrictedPrivate) {
+    if (!isRestrictedPrivate && includePosts) {
       const userPostsRows = await db
         .select({
-          id: posts.id,
-          title: posts.title,
-          content: posts.content,
-          postType: posts.postType,
-          projectUrl: posts.projectUrl,
-          projectStage: posts.projectStage,
-          lookingFor: posts.lookingFor,
-          mediaUrls: posts.mediaUrls,
-          readingTimeMinutes: posts.readingTimeMinutes,
-          likesCount: posts.likesCount,
-          commentsCount: posts.commentsCount,
-          sharesCount: posts.sharesCount,
-          viewsCount: posts.viewsCount,
-          createdAt: posts.createdAt,
-          authorId: users.id,
-          authorName: users.name,
-          authorHandle: users.handle,
-          authorRole: users.role,
-          authorAvatarUrl: users.avatarUrl,
-          authorVerified: users.verified,
-          authorIntent: users.intent,
-          isLiked: currentUserId
-            ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
-            : sql<boolean>`false`,
-          isSaved: currentUserId
-            ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
-            : sql<boolean>`false`,
+          ...buildProfilePostFields(currentUserId),
         })
         .from(posts)
         .innerJoin(users, eq(posts.authorId, users.id))
-        .where(and(eq(posts.authorId, row.id), isNull(posts.deletedAt)))
+        .where(
+          and(
+            eq(posts.authorId, row.id),
+            eq(posts.status, "published"),
+            isNull(posts.deletedAt)
+          )
+        )
         .orderBy(desc(posts.createdAt));
 
-      formattedPosts = userPostsRows.map((p) => ({
-        id: p.id,
-        title: p.title,
-        content: p.content,
-        postType: (p.postType as any) || "thought",
-        projectUrl: p.projectUrl || null,
-        projectStage: (p.projectStage as any) || null,
-        lookingFor: (p.lookingFor as any) || null,
-        mediaUrls: (p.mediaUrls as string[]) || [],
-        readingTimeMinutes: p.readingTimeMinutes,
-        likesCount: p.likesCount,
-        commentsCount: p.commentsCount,
-        sharesCount: p.sharesCount,
-        viewsCount: p.viewsCount,
-        createdAt: p.createdAt.toISOString(),
-        isLiked: Boolean(p.isLiked),
-        isSaved: Boolean(p.isSaved),
-        author: {
-          id: p.authorId,
-          name: p.authorName,
-          handle: p.authorHandle,
-          role: p.authorRole,
-          avatarUrl: p.authorAvatarUrl,
-          verified: p.authorVerified,
-          intent: (p.authorIntent as any) || "none",
-        },
-      }));
+      formattedPosts = userPostsRows.map(mapProfilePostRow);
     }
 
     // 2. Fetch posts with active discussions that user authored or participated in (only if not restricted private)
     let formattedDiscussions: PostResponse[] = [];
-    if (!isRestrictedPrivate) {
+    if (!isRestrictedPrivate && includePosts) {
       const discussionRows = await db
         .selectDistinctOn([posts.id], {
-          id: posts.id,
-          title: posts.title,
-          content: posts.content,
-          postType: posts.postType,
-          projectUrl: posts.projectUrl,
-          projectStage: posts.projectStage,
-          lookingFor: posts.lookingFor,
-          mediaUrls: posts.mediaUrls,
-          readingTimeMinutes: posts.readingTimeMinutes,
-          likesCount: posts.likesCount,
-          commentsCount: posts.commentsCount,
-          sharesCount: posts.sharesCount,
-          viewsCount: posts.viewsCount,
-          createdAt: posts.createdAt,
-          authorId: users.id,
-          authorName: users.name,
-          authorHandle: users.handle,
-          authorRole: users.role,
-          authorAvatarUrl: users.avatarUrl,
-          authorVerified: users.verified,
-          authorIntent: users.intent,
-          isLiked: currentUserId
-            ? sql<boolean>`EXISTS(SELECT 1 FROM ${postLikes} WHERE ${postLikes.postId} = ${posts.id} AND ${postLikes.userId} = ${currentUserId}::uuid)`
-            : sql<boolean>`false`,
-          isSaved: currentUserId
-            ? sql<boolean>`EXISTS(SELECT 1 FROM ${bookmarks} WHERE ${bookmarks.postId} = ${posts.id} AND ${bookmarks.userId} = ${currentUserId}::uuid)`
-            : sql<boolean>`false`,
+          ...buildProfilePostFields(currentUserId),
         })
         .from(posts)
         .innerJoin(users, eq(posts.authorId, users.id))
@@ -231,38 +289,13 @@ export async function getProfileByHandle(
               eq(comments.authorId, row.id)
             ),
             sql`${posts.commentsCount} >= 1`,
+            eq(posts.status, "published"),
             isNull(posts.deletedAt)
           )
         )
         .orderBy(posts.id, desc(posts.createdAt));
 
-      formattedDiscussions = discussionRows.map((p) => ({
-        id: p.id,
-        title: p.title,
-        content: p.content,
-        postType: (p.postType as any) || "thought",
-        projectUrl: p.projectUrl || null,
-        projectStage: (p.projectStage as any) || null,
-        lookingFor: (p.lookingFor as any) || null,
-        mediaUrls: (p.mediaUrls as string[]) || [],
-        readingTimeMinutes: p.readingTimeMinutes,
-        likesCount: p.likesCount,
-        commentsCount: p.commentsCount,
-        sharesCount: p.sharesCount,
-        viewsCount: p.viewsCount,
-        createdAt: p.createdAt.toISOString(),
-        isLiked: Boolean(p.isLiked),
-        isSaved: Boolean(p.isSaved),
-        author: {
-          id: p.authorId,
-          name: p.authorName,
-          handle: p.authorHandle,
-          role: p.authorRole,
-          avatarUrl: p.authorAvatarUrl,
-          verified: p.authorVerified,
-          intent: (p.authorIntent as any) || "none",
-        },
-      }));
+      formattedDiscussions = discussionRows.map(mapProfilePostRow);
     }
 
     const totalDiscussionsCount = Math.max(
@@ -285,9 +318,9 @@ export async function getProfileByHandle(
       isPrivate: Boolean(row.isPrivate),
       dmPermission: row.dmPermission || "everyone",
       showOnlineStatus: Boolean(row.showOnlineStatus),
-      twoFactorEnabled: Boolean(row.twoFactorEnabled),
-      twoFactorType: row.twoFactorType || "authenticator",
-      theme: row.theme || "system",
+      twoFactorEnabled: isSelf ? Boolean(row.twoFactorEnabled) : undefined,
+      twoFactorType: isSelf ? (row.twoFactorType || "authenticator") : undefined,
+      theme: isSelf ? (row.theme || "system") : undefined,
       intent: row.intent || "none",
       verified: row.verified,
       isOnboarded: Boolean(row.isOnboarded),
@@ -310,6 +343,22 @@ export async function getProfileByHandle(
     console.error("[USERS] Error fetching profile by handle:", err);
     throw AppError.internal("Foydalanuvchi profilini yuklashda xatolik yuz berdi");
   }
+}
+
+/**
+ * Identity and counters only, without the post/discussion payloads.
+ * Used on the hot `/api/auth/session` path; `discussionsCount` for this shape
+ * is derived from aggregates because the discussion list is not fetched.
+ */
+export async function getProfileSummaryByHandle(
+  rawHandle: string,
+  currentUserId?: string
+): Promise<UserProfileSummaryResponse> {
+  const profile = await getProfileByHandle(rawHandle, currentUserId, {
+    includePosts: false,
+  });
+  const { posts: _posts, discussions: _discussions, ...summary } = profile;
+  return summary;
 }
 
 /**
@@ -469,32 +518,21 @@ export interface RecommendedThinker {
   role: string;
   avatarUrl?: string | null;
   bio?: string | null;
+  verified?: boolean;
+  isFollowing?: boolean;
   postsCount: number;
 }
 
 /**
- * Get recommended thinkers for onboarding.
- * Strict quality criteria:
- * - Platform must have at least 500 total registered users
- * - Authors must have at least 100 verified posts/thoughts
- * If these conditions are not met, returns empty array (skip recommendation step).
+ * Get recommended thinkers and creators for suggested authors widget and onboarding.
  */
 export async function getRecommendedThinkers(currentUserId?: string): Promise<{
   eligible: boolean;
   thinkers: RecommendedThinker[];
 }> {
   try {
-    // 1. Check total users count: must be > 500
-    const [countRow] = await db
-      .select({ total: sql<number>`count(*)::int` })
-      .from(users);
+    const postsCountExpr = sql<number>`(SELECT count(*)::int FROM posts WHERE posts.author_id = ${users.id} AND posts.deleted_at IS NULL)`;
 
-    const totalUsers = countRow?.total ?? 0;
-    if (totalUsers < 500) {
-      return { eligible: false, thinkers: [] };
-    }
-
-    // 2. Only real authors with at least 100 posts
     const rows = await db
       .select({
         id: users.id,
@@ -503,15 +541,20 @@ export async function getRecommendedThinkers(currentUserId?: string): Promise<{
         role: users.role,
         avatarUrl: users.avatarUrl,
         bio: users.bio,
-        postsCount: sql<number>`count(${posts.id})::int`,
+        verified: users.verified,
+        postsCount: postsCountExpr,
+        isFollowing: currentUserId
+          ? sql<boolean>`EXISTS (SELECT 1 FROM follows WHERE follows.follower_id = ${currentUserId}::uuid AND follows.following_id = ${users.id})`
+          : sql<boolean>`false`,
       })
       .from(users)
-      .innerJoin(posts, and(eq(posts.authorId, users.id), isNull(posts.deletedAt)))
-      .where(currentUserId ? sql`${users.id} != ${currentUserId}::uuid` : sql`true`)
-      .groupBy(users.id)
-      .having(sql`count(${posts.id}) >= 100`)
-      .orderBy(desc(sql`count(${posts.id})`))
-      .limit(10);
+      .where(
+        currentUserId
+          ? sql`${users.id} != ${currentUserId}::uuid AND ${users.isDeactivated} = false`
+          : sql`${users.isDeactivated} = false`
+      )
+      .orderBy(desc(users.verified), desc(postsCountExpr), desc(users.createdAt))
+      .limit(8);
 
     return {
       eligible: rows.length > 0,
@@ -522,7 +565,9 @@ export async function getRecommendedThinkers(currentUserId?: string): Promise<{
         role: r.role,
         avatarUrl: r.avatarUrl,
         bio: r.bio || "",
-        postsCount: r.postsCount,
+        verified: Boolean(r.verified),
+        isFollowing: Boolean(r.isFollowing),
+        postsCount: r.postsCount || 0,
       })),
     };
   } catch (err) {

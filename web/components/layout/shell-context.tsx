@@ -8,10 +8,10 @@ import React, {
   useSyncExternalStore,
 } from "react";
 
-export const SIDEBAR_EXPANDED_WIDTH = 240;
+export const SIDEBAR_EXPANDED_WIDTH = 244;
 export const SIDEBAR_COLLAPSED_WIDTH = 68;
-export const HEADER_HEIGHT = 56;
-export const CONTENT_MAX_WIDTH = 940; // Central max-width in pixels across the whole dashboard
+export const HEADER_HEIGHT = 68;
+export const CONTENT_MAX_WIDTH = 1320; // Symmetrical max-width supporting two-column dashboard & widgets
 
 const STORAGE_KEY = "gogetters_sidebar_collapsed";
 

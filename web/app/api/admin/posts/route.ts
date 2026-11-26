@@ -39,9 +39,14 @@ export async function GET(req: NextRequest) {
     const postList = await db
       .select({
         id: posts.id,
+        slug: posts.slug,
         title: posts.title,
         content: posts.content,
         postType: posts.postType,
+        contentKind: posts.contentKind,
+        status: posts.status,
+        isIndexable: posts.isIndexable,
+        locale: posts.locale,
         likesCount: posts.likesCount,
         commentsCount: posts.commentsCount,
         viewsCount: posts.viewsCount,

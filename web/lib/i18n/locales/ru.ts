@@ -350,7 +350,7 @@ export const ru: typeof uz = {
         setPasswordBtn: "Установить пароль",
         passwordChangedSuccess: "Пароль успешно обновлён",
         passwordMismatch: "Новые пароли не совпадают",
-        passwordMinLength: "Пароль должен содержать не менее 6 символов",
+        passwordMinLength: "Пароль должен содержать не менее 8 символов",
         twoFactorHeading: "Двухфакторная аутентификация (2FA)",
         twoFactorPlanned: "Запланировано",
         twoFactorDesc: "Дополнительный уровень безопасности через Google Authenticator или SMS",

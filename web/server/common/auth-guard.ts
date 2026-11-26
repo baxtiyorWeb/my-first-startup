@@ -1,12 +1,16 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { type NextRequest } from "next/server";
+import { eq, sql } from "drizzle-orm";
 import { AppError } from "./errors";
 import { db } from "@/server/db";
 import { userSessions, users } from "@/server/db/schema";
-import { eq, and } from "drizzle-orm";
+import { authSessionCache } from "./server-cache";
 
 export const SESSION_COOKIE_NAME = "gogetters_session";
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
@@ -90,7 +94,49 @@ export async function getTokenFromRequest(req?: NextRequest): Promise<string | n
 /**
  * Guard that enforces authenticated session.
  * Throws AppError.unauthorized() if not logged in.
+ * Verifies user deactivation and active session status using short-lived LRU cache
+ * and a single consolidated SQL query on cache miss (down from 2 sequential queries).
  */
+async function verifyActiveUserAndSession(
+  userId: string,
+  sessionId?: string
+): Promise<{ userExists: boolean; isDeactivated: boolean; sessionExists: boolean }> {
+  if (!UUID_REGEX.test(userId)) {
+    return { userExists: false, isDeactivated: false, sessionExists: false };
+  }
+  if (sessionId && !UUID_REGEX.test(sessionId)) {
+    return { userExists: false, isDeactivated: false, sessionExists: false };
+  }
+
+  const cacheKey = `${userId}:${sessionId ?? "none"}`;
+  const cached = authSessionCache.get(cacheKey);
+  if (cached) return cached;
+
+  const [row] = await db
+    .select({
+      isDeactivated: users.isDeactivated,
+      sessionExists: sessionId
+        ? sql<boolean>`EXISTS(
+            SELECT 1 FROM ${userSessions}
+            WHERE ${userSessions.id} = ${sessionId}::uuid
+              AND ${userSessions.userId} = ${userId}::uuid
+          )`
+        : sql<boolean>`true`,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  const state = {
+    userExists: Boolean(row),
+    isDeactivated: Boolean(row?.isDeactivated),
+    sessionExists: Boolean(row?.sessionExists),
+  };
+
+  authSessionCache.set(cacheKey, state, 15_000);
+  return state;
+}
+
 export async function requireAuth(req?: NextRequest): Promise<AuthUserPayload> {
   const token = await getTokenFromRequest(req);
   if (!token) {
@@ -102,28 +148,17 @@ export async function requireAuth(req?: NextRequest): Promise<AuthUserPayload> {
     throw AppError.unauthorized("Sessiya eskirgan yoki yaroqsiz. Qaytadan kiring");
   }
 
-  // 1. If sessionId is present, verify session has not been revoked in database
-  if (user.sessionId) {
-    const [activeSession] = await db
-      .select({ id: userSessions.id })
-      .from(userSessions)
-      .where(and(eq(userSessions.id, user.sessionId), eq(userSessions.userId, user.userId)))
-      .limit(1);
-
-    if (!activeSession) {
-      throw AppError.unauthorized("Ushbu seans boshqa qurilmadan yakunlangan. Qaytadan kiring");
-    }
+  const state = await verifyActiveUserAndSession(user.userId, user.sessionId);
+  if (user.sessionId && !state.sessionExists) {
+    throw AppError.unauthorized("Ushbu seans boshqa qurilmadan yakunlangan. Qaytadan kiring");
   }
-
-  // 2. Verify account is not deactivated
-  const [userRow] = await db
-    .select({ isDeactivated: users.isDeactivated })
-    .from(users)
-    .where(eq(users.id, user.userId))
-    .limit(1);
-
-  if (userRow?.isDeactivated) {
-    throw AppError.forbidden("Hisobingiz vaqtincha muzlatilgan. Qayta faollashtirish uchun tizimga kiring.");
+  if (!state.userExists) {
+    throw AppError.unauthorized("Foydalanuvchi hisobi topilmadi");
+  }
+  if (state.isDeactivated) {
+    throw AppError.forbidden(
+      "Hisobingiz vaqtincha muzlatilgan. Qayta faollashtirish uchun tizimga kiring."
+    );
   }
 
   return user;
@@ -135,26 +170,13 @@ export async function requireAuth(req?: NextRequest): Promise<AuthUserPayload> {
 export async function getOptionalAuth(req?: NextRequest): Promise<AuthUserPayload | null> {
   const token = await getTokenFromRequest(req);
   if (!token) return null;
+
   const user = await verifySessionToken(token);
   if (!user) return null;
 
-  if (user.sessionId) {
-    const [activeSession] = await db
-      .select({ id: userSessions.id })
-      .from(userSessions)
-      .where(and(eq(userSessions.id, user.sessionId), eq(userSessions.userId, user.userId)))
-      .limit(1);
-
-    if (!activeSession) return null;
-  }
-
-  const [userRow] = await db
-    .select({ isDeactivated: users.isDeactivated })
-    .from(users)
-    .where(eq(users.id, user.userId))
-    .limit(1);
-
-  if (userRow?.isDeactivated) return null;
+  const state = await verifyActiveUserAndSession(user.userId, user.sessionId);
+  if (!state.userExists || state.isDeactivated) return null;
+  if (user.sessionId && !state.sessionExists) return null;
 
   return user;
 }

@@ -56,7 +56,13 @@ export const users = pgTable(
   ]
 );
 
-// 2. Posts Table
+export interface VideoChapter {
+  time: string;
+  seconds: number;
+  title: string;
+}
+
+// 2. Posts / Editorial Content Table (Articles, Video Tutorials, News, Thoughts)
 export const posts = pgTable(
   "posts",
   {
@@ -64,9 +70,29 @@ export const posts = pgTable(
     authorId: uuid("author_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    slug: varchar("slug", { length: 340 }),
     title: varchar("title", { length: 300 }),
     content: text("content").notNull(),
     postType: varchar("post_type", { length: 30 }).default("thought").notNull(),
+    contentKind: varchar("content_kind", { length: 24 }).default("article").notNull(), // 'article' | 'video' | 'news' | 'thought'
+    status: varchar("status", { length: 20 }).default("published").notNull(), // 'draft' | 'published' | 'archived'
+    isIndexable: boolean("is_indexable").default(false).notNull(),
+    locale: varchar("locale", { length: 8 }).default("uz").notNull(),
+    category: varchar("category", { length: 64 }).default("umumiy").notNull(),
+    tags: jsonb("tags").$type<string[]>().default([]).notNull(),
+    coverImageUrl: text("cover_image_url"),
+    coverImageAlt: varchar("cover_image_alt", { length: 255 }),
+    seoTitle: varchar("seo_title", { length: 180 }),
+    seoDescription: varchar("seo_description", { length: 340 }),
+    focusKeyword: varchar("focus_keyword", { length: 120 }),
+    canonicalUrl: varchar("canonical_url", { length: 500 }),
+    videoUrl: text("video_url"),
+    youtubeVideoId: varchar("youtube_video_id", { length: 64 }),
+    bunnyVideoId: varchar("bunny_video_id", { length: 128 }),
+    videoDurationSeconds: integer("video_duration_seconds"),
+    videoChapters: jsonb("video_chapters").$type<VideoChapter[]>().default([]).notNull(),
+    transcript: text("transcript"),
+    publishedAt: timestamp("published_at", { withTimezone: true }).defaultNow().notNull(),
     projectUrl: varchar("project_url", { length: 500 }),
     projectStage: varchar("project_stage", { length: 50 }),
     lookingFor: varchar("looking_for", { length: 50 }),
@@ -81,9 +107,27 @@ export const posts = pgTable(
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
+    uniqueIndex("idx_posts_slug").on(table.slug),
     index("idx_posts_created_at").on(table.createdAt),
     index("idx_posts_author_created").on(table.authorId, table.createdAt),
     index("idx_posts_post_type").on(table.postType),
+    index("idx_posts_kind_status").on(table.contentKind, table.status, table.isIndexable, table.publishedAt),
+    index("idx_posts_category").on(table.category),
+  ]
+);
+
+// 2.0 Slug Redirects Table (301 Permanent Redirects for SEO Link Equity preservation)
+export const slugRedirects = pgTable(
+  "slug_redirects",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    oldSlug: varchar("old_slug", { length: 340 }).notNull(),
+    newSlug: varchar("new_slug", { length: 340 }).notNull(),
+    contentKind: varchar("content_kind", { length: 24 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_slug_redirects_old_kind").on(table.oldSlug, table.contentKind),
   ]
 );
 
@@ -336,6 +380,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
   comments: many(comments),
   likes: many(postLikes),
   bookmarks: many(bookmarks),
+  postTags: many(postTags),
 }));
 
 export const commentsRelations = relations(comments, ({ one, many }) => ({
@@ -523,6 +568,161 @@ export const mediaRelations = relations(media, ({ one }) => ({
   uploader: one(users, {
     fields: [media.uploadedBy],
     references: [users.id],
+  }),
+}));
+
+// 21. Subscription Plans Table
+export const subscriptionPlans = pgTable(
+  "subscription_plans",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    slug: varchar("slug", { length: 40 }).notNull(), // 'free' | 'pro' | 'team'
+    name: varchar("name", { length: 100 }).notNull(),
+    description: text("description").default("").notNull(),
+    priceMonthlyUzs: integer("price_monthly_uzs").default(0).notNull(),
+    priceYearlyUzs: integer("price_yearly_uzs").default(0).notNull(),
+    currency: varchar("currency", { length: 10 }).default("UZS").notNull(),
+    features: jsonb("features").$type<string[]>().default([]).notNull(),
+    limits: jsonb("limits")
+      .$type<{ maxMediaSizeMb: number; maxDailyPosts: number; hdShorts: boolean; verifiedBadge: boolean; analytics: boolean }>()
+      .default({ maxMediaSizeMb: 10, maxDailyPosts: 10, hdShorts: false, verifiedBadge: false, analytics: false })
+      .notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_subscription_plans_slug").on(table.slug),
+  ]
+);
+
+// 22. User Subscriptions Table (Server-authoritative entitlement state)
+export const userSubscriptions = pgTable(
+  "user_subscriptions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => subscriptionPlans.id, { onDelete: "restrict" }),
+    status: varchar("status", { length: 24 }).default("active").notNull(), // 'active' | 'pending' | 'cancelled' | 'expired' | 'past_due'
+    billingCycle: varchar("billing_cycle", { length: 16 }).default("monthly").notNull(), // 'monthly' | 'yearly'
+    currentPeriodStart: timestamp("current_period_start", { withTimezone: true }).defaultNow().notNull(),
+    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }).notNull(),
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(),
+    autoRenew: boolean("auto_renew").default(true).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_user_subscriptions_user").on(table.userId, table.status),
+  ]
+);
+
+// 23. Payment Transactions Table (Idempotent provider verification audit log)
+export const paymentTransactions = pgTable(
+  "payment_transactions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    subscriptionId: uuid("subscription_id").references(() => userSubscriptions.id, { onDelete: "set null" }),
+    planId: uuid("plan_id")
+      .notNull()
+      .references(() => subscriptionPlans.id, { onDelete: "restrict" }),
+    provider: varchar("provider", { length: 24 }).notNull(), // 'click' | 'payme' | 'stripe'
+    providerTransactionId: varchar("provider_transaction_id", { length: 160 }),
+    idempotencyKey: varchar("idempotency_key", { length: 120 }).notNull(),
+    amount: integer("amount").notNull(),
+    currency: varchar("currency", { length: 10 }).default("UZS").notNull(),
+    status: varchar("status", { length: 24 }).default("pending").notNull(), // 'pending' | 'succeeded' | 'failed' | 'refunded'
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_payment_transactions_idempotency").on(table.idempotencyKey),
+    index("idx_payment_transactions_user").on(table.userId, table.createdAt),
+    index("idx_payment_transactions_provider_tx").on(table.provider, table.providerTransactionId),
+  ]
+);
+
+// 24. Dynamic Tags Table (Canonical, normalized, moderated platform taxonomy)
+export const tags = pgTable(
+  "tags",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name", { length: 64 }).notNull(),
+    slug: varchar("slug", { length: 72 }).notNull(),
+    normalizedName: varchar("normalized_name", { length: 80 }).notNull(),
+    description: text("description"),
+    status: varchar("status", { length: 20 }).default("active").notNull(), // 'active' | 'pending' | 'restricted' | 'hidden' | 'merged'
+    isOfficial: boolean("is_official").default(false).notNull(),
+    mergedIntoId: uuid("merged_into_id"),
+    usageCount: integer("usage_count").default(0).notNull(),
+    recentUsageCount: integer("recent_usage_count").default(0).notNull(),
+    engagementScore: integer("engagement_score").default(0).notNull(),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_tags_slug").on(table.slug),
+    uniqueIndex("idx_tags_normalized_name").on(table.normalizedName),
+    index("idx_tags_status_trending").on(
+      table.status,
+      table.recentUsageCount,
+      table.engagementScore,
+      table.usageCount
+    ),
+    index("idx_tags_created_by_at").on(table.createdBy, table.createdAt),
+    check(
+      "tags_counts_non_negative",
+      sql`${table.usageCount} >= 0 AND ${table.recentUsageCount} >= 0 AND ${table.engagementScore} >= 0`
+    ),
+  ]
+);
+
+// 25. Post <-> Tag Relational Join Table
+export const postTags = pgTable(
+  "post_tags",
+  {
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+    position: integer("position").default(0).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.postId, table.tagId] }),
+    index("idx_post_tags_tag_created").on(table.tagId, table.createdAt),
+    index("idx_post_tags_post_pos").on(table.postId, table.position),
+  ]
+);
+
+export const tagsRelations = relations(tags, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [tags.createdBy],
+    references: [users.id],
+  }),
+  postTags: many(postTags),
+}));
+
+export const postTagsRelations = relations(postTags, ({ one }) => ({
+  post: one(posts, {
+    fields: [postTags.postId],
+    references: [posts.id],
+  }),
+  tag: one(tags, {
+    fields: [postTags.tagId],
+    references: [tags.id],
   }),
 }));
 

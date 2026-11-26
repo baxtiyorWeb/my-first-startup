@@ -637,7 +637,7 @@ Ushbu mavzuni o'zingizning shaxsiyatingiz, insoniy tajribangiz va dunyoqarashing
       botRole,
       botPersona,
       writingStyle = "Aniq, samimiy va fikrlovchi",
-      thoughtAngle = "Amaliy tajriba",
+      thoughtAngle: _thoughtAngle = "Amaliy tajriba",
       postTitle,
       postContent,
       existingComments = [],
@@ -735,7 +735,7 @@ Post matni:
       botRole,
       botPersona,
       writingStyle = "Aniq, samimiy va fikrlovchi",
-      thoughtAngle = "Amaliy tajriba",
+      thoughtAngle: _thoughtAngle = "Amaliy tajriba",
       postTitle,
       postContent,
       parentCommentAuthor,
@@ -841,7 +841,7 @@ QAT'IY JSON FORMATIDA QAYTARING:
 
   // ── Offline Fallbacks ────────────────────────────────────────────────────────
 
-  private getOfflineFallbackPost(role?: string, topic?: string): {
+  private getOfflineFallbackPost(role?: string, _topic?: string): {
     title: string;
     content: string;
     postType: "thought";
@@ -936,7 +936,7 @@ QAT'IY JSON FORMATIDA QAYTARING:
     };
   }
 
-  private getOfflineFallbackComment(postTitle?: string | null, _postContent?: string): string {
+  private getOfflineFallbackComment(_postTitle?: string | null, _postContent?: string): string {
     const comments = [
       "Juda to'g'ri nuqta, ayniqsa amaliyotda buni ta'siri darhol seziladi.",
       "Qiziq yondashuv. Jamoa kattalashgan sari bu qoidani qo'llash yanada muhim bo'lib qoladi.",
@@ -950,7 +950,7 @@ QAT'IY JSON FORMATIDA QAYTARING:
     return comments[Math.floor(Math.random() * comments.length)];
   }
 
-  private getOfflineFallbackReply(parentCommentContent?: string): string {
+  private getOfflineFallbackReply(_parentCommentContent?: string): string {
     const replies = [
       "To'g'ri ta'kidladingiz, amalda bu ko'pincha sezilarli ijobiy ta'sir ko'rsatadi.",
       "O'rinli nuqta. Siz aytgan variant jamoaviy muhitda eng maqbuli bo'lsa kerak.",

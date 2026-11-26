@@ -5,6 +5,10 @@ import { LOCALES, DEFAULT_LOCALE, isValidLocale } from "./lib/i18n/config";
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  if (pathname === "/og" || pathname.startsWith("/og/")) {
+    return NextResponse.next();
+  }
+
   // Block admin panel and admin APIs in production unless explicitly enabled
   const isProduction = process.env.NODE_ENV === "production";
   const isExplicitlyAllowed = process.env.ENABLE_ADMIN_PANEL === "true";
@@ -42,6 +46,23 @@ export function proxy(request: NextRequest) {
           // ignore
         }
       }
+    }
+
+    // Defense-in-depth CSRF guard for cookie-authenticated API calls.
+    // Native mobile clients authenticate with a Bearer token and send no Origin.
+    const isStateChanging = !["GET", "HEAD", "OPTIONS"].includes(request.method);
+    const isPaymentWebhook = pathname.startsWith("/api/subscriptions/webhook");
+    if (isStateChanging && origin && !isAllowed && !isPaymentWebhook) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN_ORIGIN",
+            message: "So‘rov manbasi ruxsat etilmagan",
+          },
+        },
+        { status: 403 }
+      );
     }
 
     // Handle OPTIONS preflight requests
@@ -138,7 +159,7 @@ export const config = {
   matcher: [
     // 1. All API routes for CORS & OPTIONS preflights
     "/api/:path*",
-    // 2. All pages except internal assets, images, and static files
-    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
+    // 2. All pages except internal assets, OG images, and static files
+    "/((?!_next/static|_next/image|favicon.ico|og(?:/|$)|.*\\..*).*)",
   ],
 };

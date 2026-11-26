@@ -5,57 +5,79 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/context";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
-import { BookOpen, Code2, Layers, Terminal } from "lucide-react";
+import { BookOpen, PlayCircle, Newspaper, Layers, PenTool } from "lucide-react";
 
 export function PublicNavbar() {
   const { locale, localePath } = useI18n();
   const pathname = usePathname();
 
   const navLinks = [
-    { href: localePath("/hub"), label: locale === "uz" ? "Texnologiyalar" : locale === "ru" ? "Технологии" : "Technologies", icon: Layers },
-    { href: localePath("/glossary"), label: locale === "uz" ? "IT Lug'at" : locale === "ru" ? "Глоссарий" : "Glossary", icon: BookOpen },
-    { href: localePath("/cheatsheets"), label: locale === "uz" ? "Cheat Sheets" : locale === "ru" ? "Шпаргалки" : "Cheat Sheets", icon: Terminal },
-    { href: localePath("/interview-prep"), label: locale === "uz" ? "Intervyu" : locale === "ru" ? "Собеседование" : "Interviews", icon: Code2 },
+    {
+      href: localePath("/articles"),
+      label: locale === "uz" ? "Maqolalar" : locale === "ru" ? "Статьи" : "Articles",
+      icon: BookOpen,
+    },
+    {
+      href: localePath("/videos"),
+      label: locale === "uz" ? "Video darsliklar" : locale === "ru" ? "Видеоуроки" : "Videos",
+      icon: PlayCircle,
+    },
+    {
+      href: localePath("/news"),
+      label: locale === "uz" ? "Yangiliklar" : locale === "ru" ? "Новости" : "News",
+      icon: Newspaper,
+    },
+    {
+      href: localePath("/hub"),
+      label: locale === "uz" ? "Bilimlar Hubi" : locale === "ru" ? "База знаний" : "Knowledge Hub",
+      icon: Layers,
+    },
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-white/10 bg-white/85 dark:bg-black/85 backdrop-blur-md transition-colors">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-[#24252f] bg-white/90 dark:bg-[#0b0c13]/90 backdrop-blur-md transition-colors">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-3">
         {/* Logo */}
-        <Link href={localePath("/")} className="flex items-center gap-2.5 group">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden border border-slate-200/80 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-xs transition-transform group-hover:scale-105 shrink-0">
+        <Link href={localePath("/")} className="flex items-center gap-2.5 group shrink-0">
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden border border-slate-200/80 dark:border-[#24252f] bg-slate-950 shadow-xs transition-transform group-hover:scale-105 shrink-0">
             <Image
               src="/logo.png"
               alt="Geters Logo"
               width={36}
               height={36}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               priority
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-[#3995ff] transition-colors leading-tight">
               Geters
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-zinc-400 uppercase tracking-widest font-semibold">
-              Developer Hub
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-semibold">
+              IT Media &amp; SEO Hub
             </span>
           </div>
         </Link>
 
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Primary Media Navigation */}
+        <nav className="hidden lg:flex items-center gap-1">
           {navLinks.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
+            const isActive =
+              pathname === item.href ||
+              pathname.startsWith(`${item.href}/`) ||
+              (item.href.endsWith("/hub") &&
+                (pathname.includes("/glossary") ||
+                  pathname.includes("/cheatsheets") ||
+                  pathname.includes("/interview-prep")));
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
                   isActive
-                    ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-semibold"
-                    : "text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800/60"
+                    ? "bg-blue-50 dark:bg-[#162038] text-blue-600 dark:text-[#3995ff] border border-blue-200/80 dark:border-[#23355d]"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#14151d]"
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -65,24 +87,47 @@ export function PublicNavbar() {
           })}
         </nav>
 
-        {/* Actions & Language Switcher */}
-        <div className="flex items-center gap-2.5">
+        {/* Actions */}
+        <div className="flex items-center gap-2">
           <LanguageSwitcher />
 
           <Link
-            href={localePath("/auth/login")}
-            className="hidden sm:inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+            href={localePath("/dashboard")}
+            className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#14151d] transition-colors"
           >
-            {locale === "uz" ? "Kirish" : locale === "ru" ? "Войти" : "Sign In"}
+            {locale === "uz" ? "Lenta" : locale === "ru" ? "Лента" : "Feed"}
           </Link>
 
           <Link
-            href={localePath("/dashboard")}
-            className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors"
+            href={localePath("/dashboard/create")}
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg bg-[#3995ff] hover:bg-blue-600 text-white shadow-xs transition-colors"
           >
-            {locale === "uz" ? "Hamjamiyatga o'tish" : locale === "ru" ? "В сообщество" : "Join Platform"}
+            <PenTool className="h-3.5 w-3.5" />
+            <span>{locale === "uz" ? "Kontent yozish" : locale === "ru" ? "Написать" : "Publish"}</span>
           </Link>
         </div>
+      </div>
+
+      {/* Mobile horizontal scroll sub-nav for crawlability and UX */}
+      <div className="lg:hidden border-t border-slate-100 dark:border-[#1c1e29] px-4 py-2 flex items-center gap-2 overflow-x-auto scrollbar-none">
+        {navLinks.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                isActive
+                  ? "bg-[#3995ff] text-white"
+                  : "bg-slate-100 dark:bg-[#14151d] text-slate-600 dark:text-slate-300"
+              }`}
+            >
+              <Icon className="h-3 w-3" />
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
     </header>
   );

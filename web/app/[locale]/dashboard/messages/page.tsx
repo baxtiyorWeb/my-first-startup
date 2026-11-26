@@ -24,6 +24,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useMessages, type ClientMessage, type ConversationItem } from "@/components/messages/messages-context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { apiClient } from "@/lib/api/client";
+import { contentFormat } from "@/components/format";
 
 export default function MessagesPage() {
   const searchParams = useSearchParams();
@@ -427,7 +428,7 @@ export default function MessagesPage() {
                             {conv.lastMessage.isFromMe && (
                               <span className="text-slate-400 font-normal">Siz: </span>
                             )}
-                            {conv.lastMessage.content}
+                            {contentFormat.getExcerpt(conv.lastMessage.content, 60)}
                           </>
                         ) : (
                           <span className="italic text-slate-400">Yangi suhbat</span>

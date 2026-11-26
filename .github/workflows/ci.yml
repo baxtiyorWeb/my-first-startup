@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.18.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --filter my-first-startup exec tsc --noEmit
+
+      - name: Lint
+        run: pnpm --filter my-first-startup run lint
+
+      - name: Build
+        env:
+          # Placeholder values only — the build must not need real production secrets.
+          JWT_SECRET: ci-build-only-secret-min-32-characters
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+        run: pnpm --filter my-first-startup run build
+
+      - name: Unit tests
+        working-directory: web
+        run: node --test server/__tests__/*.test.mjs
+
+      - name: Dependency audit
+        run: pnpm audit --prod
+
+  mobile:
+    name: Mobile (Flutter)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: mobile
+        run: flutter analyze
+
+      - name: Tests
+        working-directory: mobile
+        run: flutter test

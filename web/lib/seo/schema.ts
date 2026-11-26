@@ -84,11 +84,15 @@ export interface TechArticleOptions {
   headline: string;
   description: string;
   url: string;
+  imageUrl?: string;
   datePublished?: string;
   dateModified?: string;
   authorName?: string;
+  authorUrl?: string;
   keywords?: string[];
   articleBody?: string;
+  wordCount?: number;
+  articleSection?: string;
   locale: Locale;
 }
 
@@ -104,11 +108,18 @@ export function generateTechArticleSchema(options: TechArticleOptions) {
       "@type": "WebPage",
       "@id": options.url,
     },
-    author: {
-      "@type": "Organization",
-      name: options.authorName || SITE_CONFIG.name,
-      url: SITE_CONFIG.url,
-    },
+    ...(options.imageUrl ? { image: [options.imageUrl] } : {}),
+    author: options.authorUrl
+      ? {
+          "@type": "Person",
+          name: options.authorName || SITE_CONFIG.name,
+          url: options.authorUrl,
+        }
+      : {
+          "@type": "Organization",
+          name: options.authorName || SITE_CONFIG.name,
+          url: SITE_CONFIG.url,
+        },
     publisher: {
       "@type": "Organization",
       name: SITE_CONFIG.name,
@@ -119,8 +130,170 @@ export function generateTechArticleSchema(options: TechArticleOptions) {
     },
     datePublished: options.datePublished || "2026-01-01T00:00:00Z",
     dateModified: options.dateModified || new Date().toISOString(),
+    ...(options.articleSection ? { articleSection: options.articleSection } : {}),
+    ...(options.wordCount ? { wordCount: options.wordCount } : {}),
     keywords: options.keywords?.join(", "),
     ...(options.articleBody ? { articleBody: options.articleBody } : {}),
+  };
+}
+
+export function generateNewsArticleSchema(options: TechArticleOptions) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: options.headline,
+    description: options.description,
+    url: options.url,
+    inLanguage: options.locale,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": options.url,
+    },
+    image: [options.imageUrl || `${SITE_CONFIG.url}/logo.png`],
+    author: options.authorUrl
+      ? {
+          "@type": "Person",
+          name: options.authorName || SITE_CONFIG.name,
+          url: options.authorUrl,
+        }
+      : {
+          "@type": "Organization",
+          name: options.authorName || SITE_CONFIG.name,
+          url: SITE_CONFIG.url,
+        },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_CONFIG.name,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_CONFIG.url}/logo.png`,
+      },
+    },
+    datePublished: options.datePublished || new Date().toISOString(),
+    dateModified: options.dateModified || new Date().toISOString(),
+    ...(options.articleSection ? { articleSection: options.articleSection } : {}),
+    keywords: options.keywords?.join(", "),
+  };
+}
+
+export interface VideoChapterClip {
+  title: string;
+  startOffset: number;
+  endOffset?: number;
+  url?: string;
+}
+
+export interface VideoObjectOptions {
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  uploadDate: string;
+  durationIso?: string;
+  embedUrl?: string;
+  contentUrl?: string;
+  pageUrl: string;
+  authorName?: string;
+  authorUrl?: string;
+  interactionCount?: number;
+  clips?: VideoChapterClip[];
+  locale: Locale;
+}
+
+export function generateVideoObjectSchema(options: VideoObjectOptions) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: options.name,
+    description: options.description,
+    thumbnailUrl: [options.thumbnailUrl],
+    uploadDate: options.uploadDate,
+    inLanguage: options.locale,
+    ...(options.durationIso ? { duration: options.durationIso } : {}),
+    ...(options.embedUrl ? { embedUrl: options.embedUrl } : {}),
+    ...(options.contentUrl ? { contentUrl: options.contentUrl } : {}),
+    url: options.pageUrl,
+    publisher: {
+      "@type": "Organization",
+      name: SITE_CONFIG.name,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_CONFIG.url}/logo.png`,
+      },
+    },
+    ...(options.authorName
+      ? {
+          author: {
+            "@type": "Person",
+            name: options.authorName,
+            ...(options.authorUrl ? { url: options.authorUrl } : {}),
+          },
+        }
+      : {}),
+    ...(typeof options.interactionCount === "number"
+      ? {
+          interactionStatistic: {
+            "@type": "InteractionCounter",
+            interactionType: { "@type": "WatchAction" },
+            userInteractionCount: options.interactionCount,
+          },
+        }
+      : {}),
+    ...(options.clips && options.clips.length > 0
+      ? {
+          hasPart: options.clips.map((clip) => ({
+            "@type": "Clip",
+            name: clip.title,
+            startOffset: clip.startOffset,
+            ...(typeof clip.endOffset === "number" ? { endOffset: clip.endOffset } : {}),
+            url: clip.url || `${options.pageUrl}?t=${clip.startOffset}`,
+          })),
+        }
+      : {}),
+  };
+}
+
+export function generatePersonSchema(options: {
+  name: string;
+  handle: string;
+  description: string;
+  url: string;
+  imageUrl?: string;
+  jobTitle?: string;
+  sameAs?: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    mainEntity: {
+      "@type": "Person",
+      name: options.name,
+      alternateName: options.handle,
+      description: options.description,
+      url: options.url,
+      ...(options.imageUrl ? { image: options.imageUrl } : {}),
+      ...(options.jobTitle ? { jobTitle: options.jobTitle } : {}),
+      ...(options.sameAs && options.sameAs.length > 0 ? { sameAs: options.sameAs } : {}),
+    },
+  };
+}
+
+export function generateItemListSchema(options: {
+  name: string;
+  url: string;
+  items: Array<{ name: string; url: string }>;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: options.name,
+    url: options.url,
+    numberOfItems: options.items.length,
+    itemListElement: options.items.map((item, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      name: item.name,
+      url: item.url,
+    })),
   };
 }
 

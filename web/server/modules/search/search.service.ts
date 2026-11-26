@@ -1,6 +1,6 @@
-import { ilike, or, and, eq, isNull, desc } from "drizzle-orm";
+import { ilike, or, and, eq, inArray, isNull, desc } from "drizzle-orm";
 import { db } from "@/server/db";
-import { users, posts } from "@/server/db/schema";
+import { users, posts, tags, postTags } from "@/server/db/schema";
 import type { SearchItem, SearchCategory, SearchResponse } from "@/types/social";
 import { stripHtmlToPlainText } from "@/server/common/sanitizer";
 
@@ -102,12 +102,25 @@ export async function searchContent(
       }
     }
 
-    // 2. Search Posts
+    // 2. Search Posts (including posts linked to matching active tags)
     if (category === "all" || category === "post") {
-      const postConditions = searchPatterns.flatMap((pat) => [
-        ilike(posts.title, pat),
-        ilike(posts.content, pat),
+      const tagConditions = searchPatterns.flatMap((pat) => [
+        ilike(tags.normalizedName, pat),
+        ilike(tags.name, pat),
       ]);
+      const matchingPostIdsByTag = db
+        .select({ postId: postTags.postId })
+        .from(postTags)
+        .innerJoin(tags, eq(postTags.tagId, tags.id))
+        .where(and(eq(tags.status, "active"), or(...tagConditions)));
+
+      const postConditions = [
+        ...searchPatterns.flatMap((pat) => [
+          ilike(posts.title, pat),
+          ilike(posts.content, pat),
+        ]),
+        inArray(posts.id, matchingPostIdsByTag),
+      ];
 
       const matchedPosts = await db
         .select({

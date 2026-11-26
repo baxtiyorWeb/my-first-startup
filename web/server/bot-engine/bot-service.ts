@@ -4,6 +4,7 @@ import {
   users,
   posts,
   comments,
+  reports,
   postLikes,
   follows,
   botActivities,
@@ -253,7 +254,7 @@ export class BotService {
       ];
     const lengthTier = options?.lengthTier || getRandomLengthTier();
 
-    let generated = await gemini.generatePost({
+    const generated = await gemini.generatePost({
       name: bot.name,
       role: bot.role,
       persona: bot.botPersona || archetype?.persona || "Samimiy va o'ylantiruvchi postlar yozuvchi",
@@ -860,7 +861,7 @@ export class BotService {
     // Pick one of the active sections
     const chosenSection = availableSections[Math.floor(Math.random() * availableSections.length)];
 
-    let actionType = chosenSection;
+    const actionType = chosenSection;
     let description = "";
     let data: any = null;
 
@@ -1101,8 +1102,8 @@ export class BotService {
 
     for (const p of botPosts) {
       let needsUpdate = false;
-      let newTitle = p.title ? gemini.sanitizeAuthorIdentity(p.title, p.authorName) : p.title;
-      let newContent = gemini.sanitizeAuthorIdentity(p.content, p.authorName);
+      const newTitle = p.title ? gemini.sanitizeAuthorIdentity(p.title, p.authorName) : p.title;
+      const newContent = gemini.sanitizeAuthorIdentity(p.content, p.authorName);
       let mediaList = (p.mediaUrls as string[]) || [];
 
       if (newContent !== p.content || newTitle !== p.title) {
@@ -1226,6 +1227,9 @@ export class BotService {
     const [totalCommentsRes] = await db.select({ count: sql<number>`count(*)::int` }).from(comments);
     const totalComments = totalCommentsRes?.count || 0;
 
+    const [reportsCountRes] = await db.select({ count: sql<number>`count(*)::int` }).from(reports);
+    const totalReports = reportsCountRes?.count || 0;
+
     const todayActivities = await this.getTodayActivityCount();
     const settings = await this.getSettings();
 
@@ -1253,6 +1257,9 @@ export class BotService {
       },
       comments: {
         total: totalComments,
+      },
+      reports: {
+        total: totalReports,
       },
       engine: {
         isActive: settings.isActive,

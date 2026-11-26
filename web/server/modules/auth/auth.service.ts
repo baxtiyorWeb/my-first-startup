@@ -78,8 +78,22 @@ export async function handleGoogleAuth(googleUser: {
   email: string;
   name: string;
   avatarUrl?: string | null;
+  meta?: {
+    ipAddress?: string | null;
+    userAgent?: string | null;
+    deviceName?: string | null;
+    platform?: string | null;
+  };
 }): Promise<{ token: string; user: AuthUserPayload }> {
-  const { googleId, email, name, avatarUrl } = googleUser;
+  const { googleId, email, name, avatarUrl, meta } = googleUser;
+  const userAgent = (meta?.userAgent || "").slice(0, 100);
+  const deviceName =
+    meta?.deviceName?.trim() ||
+    (meta?.platform === "android"
+      ? "Android qurilmasi"
+      : meta?.platform === "ios"
+      ? "iOS qurilmasi"
+      : "Brauzer seansi");
 
   // 1. Look for existing user with this googleId
   let existingUsers = await db
@@ -173,15 +187,15 @@ export async function handleGoogleAuth(googleUser: {
     };
   }
 
-  // Create an active session in userSessions
+  // Create an active session in userSessions using the real request metadata
   const [createdSession] = await db
     .insert(userSessions)
     .values({
       userId: userRecord.userId,
-      deviceName: "Brauzer seansi",
-      browser: "Google Chrome / Web",
-      ipAddress: "127.0.0.1",
-      location: "Toshkent, O‘zbekiston",
+      deviceName: deviceName.slice(0, 100),
+      browser: userAgent || "Noma’lum qurilma",
+      ipAddress: meta?.ipAddress?.slice(0, 50) || null,
+      location: null,
       isCurrent: true,
       lastActiveAt: new Date(),
     })

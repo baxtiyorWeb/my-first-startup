@@ -2,9 +2,12 @@ import sanitizeHtml from "sanitize-html";
 
 const ALLOWED_TAGS = [
   "h2",
+  "h3",
+  "h4",
   "p",
   "div",
   "blockquote",
+  "pre",
   "code",
   "mark",
   "strong",
@@ -17,11 +20,25 @@ const ALLOWED_TAGS = [
   "a",
   "br",
   "span",
+  "img",
+  "table",
+  "thead",
+  "tbody",
+  "tr",
+  "th",
+  "td",
+  "hr",
 ];
 
 const ALLOWED_ATTRIBUTES = {
   a: ["href", "title", "target", "rel"],
   mark: ["class"],
+  pre: ["class"],
+  code: ["class"],
+  img: ["src", "alt", "title", "width", "height", "loading"],
+  h2: ["id"],
+  h3: ["id"],
+  h4: ["id"],
 };
 
 /**
@@ -42,7 +59,22 @@ export function sanitizeRichContent(rawHtml: string): string {
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
       div: "p",
-      a: (tagName, attribs) => {
+      a: (_tagName, attribs) => {
+        const href = (attribs.href || "").trim();
+        const isInternal =
+          href.startsWith("/") ||
+          href.startsWith("#") ||
+          href.includes("geters.uz");
+
+        if (isInternal) {
+          return {
+            tagName: "a",
+            attribs: {
+              ...attribs,
+            },
+          };
+        }
+
         return {
           tagName: "a",
           attribs: {
