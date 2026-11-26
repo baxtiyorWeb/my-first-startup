@@ -352,7 +352,7 @@ class _DrawerTile extends StatelessWidget {
                 child: Text(
                   '$badgeCount',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w700,
                   ),

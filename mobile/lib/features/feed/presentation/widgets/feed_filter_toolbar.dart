@@ -77,7 +77,7 @@ class FeedFilterToolbar extends StatelessWidget {
                         tab['icon'] as IconData,
                         size: 15,
                         color: isSelected
-                            ? Colors.white
+                            ? (isDark ? AppColors.onPrimary : Colors.white)
                             : (isDark ? AppColors.textSecondaryDark : AppColors.textPrimaryLight),
                       ),
                       const SizedBox(width: 6),
@@ -87,7 +87,7 @@ class FeedFilterToolbar extends StatelessWidget {
                           fontSize: 12.5,
                           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                           color: isSelected
-                              ? Colors.white
+                              ? (isDark ? AppColors.onPrimary : Colors.white)
                               : (isDark ? AppColors.textSecondaryDark : AppColors.textPrimaryLight),
                         ),
                       ),
@@ -118,11 +118,11 @@ class FeedFilterToolbar extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AppColors.onPrimary,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.close, size: 13, color: Colors.white),
+                      const Icon(Icons.close, size: 13, color: AppColors.onPrimary),
                     ],
                   ),
                 )

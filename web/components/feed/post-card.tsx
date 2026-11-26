@@ -309,8 +309,8 @@ export function PostCard({
         aria-label={`${post.author.name} posti`}
         className={`relative w-full rounded-[17px] border transition-all duration-200 p-4 sm:p-[19px] mb-4 ${
           highlightActive
-            ? "animate-highlight-pulse bg-slate-100/70 dark:bg-[#151722] border-blue-500/50"
-            : "bg-white dark:bg-[#101117] border-slate-200/90 dark:border-[#24252f] hover:border-slate-300 dark:hover:border-[#383a48] shadow-xs"
+            ? "animate-highlight-pulse bg-slate-100/70 dark:bg-[#16181c] border-blue-500/50"
+            : "bg-white dark:bg-[#000000] border-slate-200/90 dark:border-[#2f3336] hover:border-slate-300 dark:hover:border-[#3e4144] shadow-xs"
         }`}
       >
         {/* 1. Header: Author Identity & Metadata */}
@@ -327,10 +327,10 @@ export function PostCard({
                   name={post.author.name}
                   avatarUrl={post.author.avatarUrl}
                   size="md"
-                  className="size-[38px] rounded-full border border-slate-200 dark:border-[#24252f]"
+                  className="size-[38px] rounded-full border border-slate-200 dark:border-[#2f3336]"
                 />
               ) : (
-                <div className="size-[38px] rounded-full flex items-center justify-center bg-gradient-to-b from-slate-700 to-slate-900 dark:from-[#262838] dark:to-[#171822] text-white border border-slate-300 dark:border-[#34374a] shadow-xs">
+                <div className="size-[38px] rounded-full flex items-center justify-center bg-gradient-to-b from-slate-700 to-slate-900 dark:from-[#2f3336] dark:to-[#16181c] text-white border border-slate-300 dark:border-[#3e4144] shadow-xs">
                   <span className="font-semibold text-[14px] tracking-wide">
                     {authorInitials}
                   </span>
@@ -342,7 +342,7 @@ export function PostCard({
             <div className="flex items-center gap-2 flex-wrap min-w-0">
               <Link
                 href={authorProfileHref}
-                className="font-semibold text-[13px] sm:text-[14px] text-slate-900 dark:text-[#f6f6fa] hover:underline truncate"
+                className="font-semibold text-[13px] sm:text-[14px] text-slate-900 dark:text-[#e7e9ea] hover:underline truncate"
               >
                 {post.author.name}
               </Link>
@@ -350,7 +350,7 @@ export function PostCard({
               {/* Verified Badge */}
               {post.author.verified && (
                 <div
-                  className="bg-[#3995ff] rounded-[6px] size-[16px] flex items-center justify-center shrink-0"
+                  className="bg-[#1d9bf0] rounded-[6px] size-[16px] flex items-center justify-center shrink-0"
                   title={t("common.verifiedAuthor")}
                 >
                   <Check size={11} className="text-white stroke-[2.5]" />
@@ -358,7 +358,7 @@ export function PostCard({
               )}
 
               {/* Metadata: @handle · time */}
-              <span className="text-[12px] text-slate-500 dark:text-[#a0a5b8] flex items-center gap-1.5 whitespace-nowrap">
+              <span className="text-[12px] text-slate-500 dark:text-[#8b98a5] flex items-center gap-1.5 whitespace-nowrap">
                 <span className="font-normal">{authorHandle}</span>
                 <span>·</span>
                 <span>{formatRelativeTime(post.createdAt)}</span>
@@ -366,7 +366,7 @@ export function PostCard({
 
               {/* Optional Intent Badge */}
               {post.author.intent && post.author.intent !== "none" && (
-                <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#181920] text-slate-600 dark:text-[#a0a5b8] border border-slate-200 dark:border-[#262836]">
+                <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-[#8b98a5] border border-slate-200 dark:border-[#2f3336]">
                   {post.author.intent === "looking_for_cofounder" &&
                     t("intents.badge_cofounder")}
                   {post.author.intent === "open_to_work" &&
@@ -388,18 +388,18 @@ export function PostCard({
                 e.stopPropagation();
                 setIsMenuOpen((prev) => !prev);
               }}
-              className="p-1.5 rounded-md text-slate-400 dark:text-[#a0a5b8] hover:text-slate-700 dark:hover:text-[#f6f6fa] hover:bg-slate-100 dark:hover:bg-[#1c1e28] transition-colors cursor-pointer"
+              className="p-1.5 rounded-md text-slate-400 dark:text-[#8b98a5] hover:text-slate-700 dark:hover:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#202327] transition-colors cursor-pointer"
               aria-label={t("post.options")}
             >
               <MoreHorizontal size={18} />
             </button>
 
             {isMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-[#151722] rounded-xl border border-slate-200 dark:border-[#24252f] shadow-lg py-1 z-20 text-xs animate-in fade-in zoom-in-95">
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-[#16181c] rounded-xl border border-slate-200 dark:border-[#2f3336] shadow-lg py-1 z-20 text-xs animate-in fade-in zoom-in-95">
                 <button
                   type="button"
                   onClick={handleShare}
-                  className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2 cursor-pointer"
+                  className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#cfd9de] hover:bg-slate-50 dark:hover:bg-[#202327] flex items-center gap-2 cursor-pointer"
                 >
                   <LinkIcon className="w-3.5 h-3.5" />
                   <span>{t("common.share")}</span>
@@ -409,7 +409,7 @@ export function PostCard({
                   <button
                     type="button"
                     onClick={handleToggleFollow}
-                    className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2 cursor-pointer"
+                    className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#cfd9de] hover:bg-slate-50 dark:hover:bg-[#202327] flex items-center gap-2 cursor-pointer"
                   >
                     {isFollowingAuthor ? (
                       <>
@@ -440,7 +440,7 @@ export function PostCard({
                     });
                     setIsReportOpen(true);
                   }}
-                  className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2 cursor-pointer"
+                  className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#cfd9de] hover:bg-slate-50 dark:hover:bg-[#202327] flex items-center gap-2 cursor-pointer"
                 >
                   <Flag className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                   <span>{t("post.report")}</span>
@@ -454,7 +454,7 @@ export function PostCard({
                         setIsMenuOpen(false);
                         setIsEditModalOpen(true);
                       }}
-                      className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-[#24252f]"
+                      className="w-full px-3 py-2 text-left text-slate-700 dark:text-[#cfd9de] hover:bg-slate-50 dark:hover:bg-[#202327] flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-[#2f3336]"
                     >
                       <Edit2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                       <span>Tahrirlash</span>
@@ -466,7 +466,7 @@ export function PostCard({
                         setIsMenuOpen(false);
                         setIsConfirmDeleteOpen(true);
                       }}
-                      className="w-full px-3 py-2 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-[#24252f]"
+                      className="w-full px-3 py-2 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-[#2f3336]"
                     >
                       <Trash2 className="w-3.5 h-3.5 text-red-500" />
                       <span>{t("post.deleteConfirm")}</span>
@@ -485,7 +485,7 @@ export function PostCard({
               {/* Title */}
               {currentTitle && (
                 <Link href={postDetailHref}>
-                  <h2 className="text-[14px] sm:text-[15px] font-bold text-slate-900 dark:text-[#f6f6fa] hover:underline cursor-pointer leading-[20px] line-clamp-2 mb-1.5">
+                  <h2 className="text-[14px] sm:text-[15px] font-bold text-slate-900 dark:text-[#e7e9ea] hover:underline cursor-pointer leading-[20px] line-clamp-2 mb-1.5">
                     <HighlightText
                       text={currentTitle}
                       query={activeSearchQuery}
@@ -508,7 +508,7 @@ export function PostCard({
                     <RichContent
                       content={currentContent}
                       searchQuery={activeSearchQuery}
-                      className="text-[12px] sm:text-[13px] leading-[20px] text-slate-600 dark:text-[#c4c7d9] group-hover:text-slate-900 dark:group-hover:text-[#f6f6fa] transition-colors"
+                      className="text-[12px] sm:text-[13px] leading-[20px] text-slate-600 dark:text-[#cfd9de] group-hover:text-slate-900 dark:group-hover:text-[#e7e9ea] transition-colors"
                     />
                   </Link>
                 </div>
@@ -523,7 +523,7 @@ export function PostCard({
                       e.stopPropagation();
                       setIsContentExpanded((prev) => !prev);
                     }}
-                    className="mt-1 text-xs font-semibold text-blue-600 dark:text-[#3995ff] hover:underline cursor-pointer inline-flex items-center gap-0.5"
+                    className="mt-1 text-xs font-semibold text-blue-600 dark:text-[#1d9bf0] hover:underline cursor-pointer inline-flex items-center gap-0.5"
                   >
                     {isContentExpanded ? "Yashirish" : "Ko'proq o'qish"}
                   </button>
@@ -537,7 +537,7 @@ export function PostCard({
                 {extractedTags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center px-2 py-0.5 rounded-[12px] bg-slate-100 dark:bg-[#181920] border border-slate-200/90 dark:border-[#262836] text-[11px] sm:text-[12px] font-medium text-slate-600 dark:text-[#a0a5b8]"
+                    className="inline-flex items-center px-2 py-0.5 rounded-[12px] bg-slate-100 dark:bg-[#16181c] border border-slate-200/90 dark:border-[#2f3336] text-[11px] sm:text-[12px] font-medium text-slate-600 dark:text-[#8b98a5]"
                   >
                     {tag}
                   </span>
@@ -553,7 +553,7 @@ export function PostCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#181920] text-blue-600 dark:text-[#3995ff] border border-slate-200/90 dark:border-[#262836] hover:border-slate-300 dark:hover:border-[#383a48] transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#16181c] text-blue-600 dark:text-[#1d9bf0] border border-slate-200/90 dark:border-[#2f3336] hover:border-slate-300 dark:hover:border-[#3e4144] transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span>
@@ -576,7 +576,7 @@ export function PostCard({
                 e.stopPropagation();
                 setLightboxIndex(0);
               }}
-              className="group/media relative w-full sm:w-[220px] md:w-[240px] h-[140px] sm:h-[154px] shrink-0 rounded-[12px] border border-slate-200 dark:border-[#24252f] bg-slate-100 dark:bg-[#181920] cursor-zoom-in overflow-hidden"
+              className="group/media relative w-full sm:w-[220px] md:w-[240px] h-[140px] sm:h-[154px] shrink-0 rounded-[12px] border border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-[#16181c] cursor-zoom-in overflow-hidden"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -616,7 +616,7 @@ export function PostCard({
         )}
 
         {/* 3. Footer Action Bar */}
-        <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-[#24252f] flex items-center justify-between">
+        <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-[#2f3336] flex items-center justify-between">
           <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
             {/* Like Action */}
             <button
@@ -627,7 +627,7 @@ export function PostCard({
               className={`flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1 -ml-1 ${
                 isLiked
                   ? "text-red-500 font-semibold"
-                  : "text-slate-500 dark:text-[#fafaff] hover:text-slate-900 dark:hover:text-white"
+                  : "text-slate-500 dark:text-[#e7e9ea] hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <HeartIcon
@@ -646,7 +646,7 @@ export function PostCard({
               type="button"
               onClick={handleOpenDiscussion}
               aria-label={`${t("post.comment")} (${commentsCount})`}
-              className="flex items-center gap-1.5 text-[12px] font-medium cursor-pointer text-slate-500 dark:text-[#fafaff] hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1"
+              className="flex items-center gap-1.5 text-[12px] font-medium cursor-pointer text-slate-500 dark:text-[#e7e9ea] hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1"
             >
               <MessageIcon size={17} />
               <span className="tabular-nums">{commentsCount}</span>
@@ -655,7 +655,7 @@ export function PostCard({
             {/* Views Count */}
             <div
               title={`${viewsCount} ${t("common.views")}`}
-              className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 dark:text-[#fafaff] px-1 select-none"
+              className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 dark:text-[#e7e9ea] px-1 select-none"
             >
               <Eye size={17} className="stroke-[1.8]" />
               <span className="tabular-nums">{formattedViews}</span>
@@ -666,7 +666,7 @@ export function PostCard({
               type="button"
               onClick={handleShare}
               aria-label={t("common.share")}
-              className={`flex items-center gap-1.5 text-[12px] font-medium cursor-pointer text-slate-500 dark:text-[#f5f5fa] hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1 ${
+              className={`flex items-center gap-1.5 text-[12px] font-medium cursor-pointer text-slate-500 dark:text-[#e7e9ea] hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-1 ${
                 isShareActive ? "scale-95 text-slate-900 dark:text-white" : ""
               }`}
             >
@@ -683,8 +683,8 @@ export function PostCard({
             aria-label={isSaved ? t("post.saved") : t("post.save")}
             className={`flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-2 py-1 ${
               isSaved
-                ? "text-blue-600 dark:text-[#3995ff] font-semibold"
-                : "text-slate-500 dark:text-[#f5f5fa] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#181920]"
+                ? "text-blue-600 dark:text-[#1d9bf0] font-semibold"
+                : "text-slate-500 dark:text-[#e7e9ea] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#16181c]"
             }`}
           >
             <BookmarkIcon

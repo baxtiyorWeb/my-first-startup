@@ -58,7 +58,7 @@ export const pricingApi = {
   async checkout(payload: {
     planSlug: string;
     billingCycle: "monthly" | "yearly";
-    provider?: "click" | "payme" | "stripe";
+    provider?: "inpay" | "click" | "payme" | "stripe";
     idempotencyKey?: string;
   }): Promise<CheckoutResponse> {
     const res = await apiClient<CheckoutResponse>("/api/subscriptions/checkout", {

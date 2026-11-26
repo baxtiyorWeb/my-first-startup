@@ -9,7 +9,7 @@ import { enforceRateLimit } from "@/server/common/rate-limiter";
 const CheckoutSchema = z.object({
   planSlug: z.string().min(1).max(40),
   billingCycle: z.enum(["monthly", "yearly"]).default("monthly"),
-  provider: z.enum(["click", "payme", "stripe"]).default("payme"),
+  provider: z.enum(["inpay", "click", "payme", "stripe"]).default("inpay"),
   idempotencyKey: z.string().max(120).optional(),
 });
 

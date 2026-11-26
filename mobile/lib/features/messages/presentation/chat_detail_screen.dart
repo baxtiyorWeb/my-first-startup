@@ -460,7 +460,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                         Icons.send_rounded,
                         size: 18,
                         color: hasText
-                            ? Colors.white
+                            ? AppColors.onPrimary
                             : (isDark
                                 ? AppColors.textMutedDark
                                 : AppColors.textMutedLight),
@@ -527,10 +527,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
         ? Colors.transparent
         : (isDark ? AppColors.borderDark : AppColors.borderLight);
     final textColor = isMe
-        ? Colors.white
+        ? AppColors.onPrimary
         : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight);
     final metaColor = isMe
-        ? Colors.white70
+        ? AppColors.onPrimary.withAlpha(170)
         : (isDark ? AppColors.textMutedDark : AppColors.textMutedLight);
 
     final showMeta = item.isLastInRun || msg.isFailed;
@@ -580,7 +580,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                         const Icon(
                           Icons.error_outline_rounded,
                           size: 12,
-                          color: Colors.white,
+                          color: AppColors.onPrimary,
                         ),
                         const SizedBox(width: 3),
                         const Text(
@@ -588,7 +588,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.onPrimary,
                           ),
                         ),
                         const SizedBox(width: 6),

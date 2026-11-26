@@ -143,7 +143,7 @@ class ShortsTopHeader extends StatelessWidget {
                       filter,
                       style: TextStyle(
                         color: isSelected
-                            ? const Color(0xFF0F172A)
+                            ? const Color(0xFF0F1419)
                             : Colors.white,
                         fontSize: 12.5,
                         fontWeight:

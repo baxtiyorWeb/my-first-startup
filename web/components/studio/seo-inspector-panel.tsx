@@ -125,10 +125,10 @@ export function SeoInspectorPanel({
   return (
     <aside className="space-y-4">
       {/* 1. SEO Score & Live Google SERP Preview */}
-      <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-4 sm:p-5 space-y-4 shadow-xs">
+      <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-4 sm:p-5 space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Search className="w-4 h-4 text-[#3995ff]" />
+            <Search className="w-4 h-4 text-[#1d9bf0]" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
               SEO Expert Auditi
             </h2>
@@ -141,14 +141,14 @@ export function SeoInspectorPanel({
         </div>
 
         {/* Google SERP Preview */}
-        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0b0c13] border border-slate-200/80 dark:border-[#1e202c] space-y-1">
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#000000] border border-slate-200/80 dark:border-[#202327] space-y-1">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-            <Globe className="w-3 h-3 text-[#3995ff] shrink-0" />
+            <Globe className="w-3 h-3 text-[#1d9bf0] shrink-0" />
             <span className="truncate">
               geters.uz › {locale} › {routeSeg} › {slug || "..."}
             </span>
           </div>
-          <div className="text-sm font-semibold text-blue-700 dark:text-[#76b7ff] leading-snug line-clamp-2">
+          <div className="text-sm font-semibold text-blue-700 dark:text-[#4db5f0] leading-snug line-clamp-2">
             {previewTitle}
           </div>
           <div className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
@@ -184,9 +184,9 @@ export function SeoInspectorPanel({
       </div>
 
       {/* 2. Taxonomy, URL Slug & Publishing Controls */}
-      <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-4 sm:p-5 space-y-3.5 shadow-xs">
+      <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-4 sm:p-5 space-y-3.5 shadow-xs">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-          <Sparkles className="w-3.5 h-3.5 text-[#3995ff]" />
+          <Sparkles className="w-3.5 h-3.5 text-[#1d9bf0]" />
           <span>Nashr va SEO Sozlamalari</span>
         </div>
 
@@ -199,7 +199,7 @@ export function SeoInspectorPanel({
             <select
               value={status}
               onChange={(e) => onStatusChange(e.target.value as "draft" | "published")}
-              className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+              className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
             >
               <option value="published">Nashr qilish</option>
               <option value="draft">Qoralama (Draft)</option>
@@ -212,7 +212,7 @@ export function SeoInspectorPanel({
             <select
               value={locale}
               onChange={(e) => onLocaleChange(e.target.value as "uz" | "ru" | "en")}
-              className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+              className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
             >
               <option value="uz">O‘zbekcha (uz)</option>
               <option value="ru">Русский (ru)</option>
@@ -229,7 +229,7 @@ export function SeoInspectorPanel({
           <select
             value={category}
             onChange={(e) => onCategoryChange(e.target.value)}
-            className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           >
             {CONTENT_CATEGORIES.map((c) => (
               <option key={c.slug} value={c.slug}>
@@ -249,7 +249,7 @@ export function SeoInspectorPanel({
             value={focusKeyword}
             onChange={(e) => onFocusKeywordChange(e.target.value)}
             placeholder="Masalan: nextjs app router darslik"
-            className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
         </div>
 
@@ -263,7 +263,7 @@ export function SeoInspectorPanel({
             value={slug}
             onChange={(e) => onSlugChange(e.target.value)}
             placeholder="avtomatik-yaratiladi"
-            className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
         </div>
 
@@ -280,7 +280,7 @@ export function SeoInspectorPanel({
             value={seoTitle}
             onChange={(e) => onSeoTitleChange(e.target.value)}
             placeholder={title || "Google sarlavhasi..."}
-            className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
         </div>
 
@@ -297,7 +297,7 @@ export function SeoInspectorPanel({
             value={seoDescription}
             onChange={(e) => onSeoDescriptionChange(e.target.value)}
             placeholder="Google qidiruv natijasida ko'rinadigan 120-160 belgili jozibador ta'rif..."
-            className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff] resize-none"
+            className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] resize-none"
           />
         </div>
 
@@ -312,7 +312,7 @@ export function SeoInspectorPanel({
             value={coverImageAlt}
             onChange={(e) => onCoverImageAltChange(e.target.value)}
             placeholder="Muqova rasmida nima tasvirlangan?"
-            className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
         </div>
 
@@ -327,12 +327,12 @@ export function SeoInspectorPanel({
             value={tagsInput}
             onChange={(e) => onTagsInputChange(e.target.value)}
             placeholder="nextjs, react, seo, typescript"
-            className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
         </div>
 
         {/* Google Index Toggle */}
-        <label className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200/80 dark:border-[#24252f] cursor-pointer">
+        <label className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] cursor-pointer">
           <div>
             <div className="text-xs font-bold text-slate-900 dark:text-white">
               Google &amp; Yandex Indeksi
@@ -345,7 +345,7 @@ export function SeoInspectorPanel({
             type="checkbox"
             checked={isIndexable}
             onChange={(e) => onIsIndexableChange(e.target.checked)}
-            className="h-4 w-4 accent-[#3995ff] cursor-pointer"
+            className="h-4 w-4 accent-[#1d9bf0] cursor-pointer"
           />
         </label>
       </div>

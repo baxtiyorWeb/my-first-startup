@@ -62,7 +62,7 @@ class VideoFrameShell extends StatelessWidget {
       width: double.infinity,
       height: height ?? 220,
       decoration: BoxDecoration(
-        color: const Color(0xFF0B1220),
+        color: const Color(0xFF000000),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       clipBehavior: Clip.antiAlias,
@@ -117,9 +117,9 @@ class VideoPosterBackdrop extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF0F172A),
-            Color(0xFF1E293B),
-            Color(0xFF0B1220),
+            Color(0xFF0F1419),
+            Color(0xFF2F3336),
+            Color(0xFF000000),
           ],
         ),
       ),
@@ -220,7 +220,7 @@ class VideoHeartBurst extends StatelessWidget {
             duration: const Duration(milliseconds: 180),
             child: const Icon(
               Icons.favorite_rounded,
-              color: AppColors.danger,
+              color: AppColors.like,
               size: 86,
               shadows: [Shadow(color: Colors.black45, blurRadius: 16)],
             ),

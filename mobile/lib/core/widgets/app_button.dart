@@ -40,7 +40,7 @@ class AppButton extends StatelessWidget {
     switch (variant) {
       case ButtonVariant.primary:
         tintColor = AppColors.primary;
-        fg = Colors.white;
+        fg = AppColors.onPrimary;
         break;
       case ButtonVariant.secondary:
         tintColor = null;
@@ -52,7 +52,7 @@ class AppButton extends StatelessWidget {
         borderColor = isDark ? AppColors.borderDarkElevated : AppColors.borderLight;
         break;
       case ButtonVariant.danger:
-        tintColor = AppColors.danger;
+        tintColor = AppColors.dangerSurface;
         fg = Colors.white;
         break;
       case ButtonVariant.ghost:

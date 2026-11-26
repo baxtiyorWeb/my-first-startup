@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
@@ -58,13 +59,20 @@ class _PricingScreenState extends State<PricingScreen> {
     if (widget.comingSoonMode) return;
     setState(() => _busySlug = plan.slug);
     try {
-      final message = await widget.repository.checkout(
+      final result = await widget.repository.checkout(
         planSlug: plan.slug,
         billingCycle: _billingCycle,
       );
       if (!mounted) return;
+
+      final checkoutUrl = result.checkoutUrl;
+      if (result.requiresPayment && checkoutUrl != null && checkoutUrl.isNotEmpty) {
+        await _showPaymentLink(checkoutUrl);
+        return;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(result.message), behavior: SnackBarBehavior.floating),
       );
       await _load();
     } catch (e) {
@@ -75,6 +83,50 @@ class _PricingScreenState extends State<PricingScreen> {
     } finally {
       if (mounted) setState(() => _busySlug = null);
     }
+  }
+
+  Future<void> _showPaymentLink(String url) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('To\'lov sahifasi'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('To\'lovni yakunlash uchun havolani brauzerda oching:'),
+            const SizedBox(height: 10),
+            SelectableText(url, style: const TextStyle(fontSize: 12.5)),
+            const SizedBox(height: 10),
+            const Text(
+              'To\'lov tasdiqlangach obuna avtomatik faollashadi.',
+              style: TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: url));
+              if (!dialogContext.mounted) return;
+              Navigator.of(dialogContext).pop();
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Havola nusxalandi'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            child: const Text('Nusxalash'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Yopish'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _cancelSub() async {
@@ -190,7 +242,7 @@ class _PricingScreenState extends State<PricingScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: isPro
-            ? (isDark ? AppColors.surfaceDarkElevated : const Color(0xFF0F172A))
+            ? (isDark ? AppColors.surfaceDarkElevated : const Color(0xFF0F1419))
             : (isDark ? AppColors.surfaceDark : AppColors.surfaceLightElevated),
         borderRadius: BorderRadius.circular(AppTheme.radiusCard),
       ),
@@ -215,10 +267,12 @@ class _PricingScreenState extends State<PricingScreen> {
                     color: AppColors.success.withAlpha(35),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Faol',
                     style: TextStyle(
-                      color: AppColors.success,
+                      color: isDark
+                          ? AppColors.success
+                          : AppColors.successTextLight,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),

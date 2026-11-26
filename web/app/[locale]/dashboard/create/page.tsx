@@ -585,18 +585,18 @@ function StudioEditorWorkspace() {
   const toolBtn = (active: boolean) =>
     `p-1.5 rounded-lg transition-colors cursor-pointer ${
       active
-        ? "bg-[#3995ff] text-white font-bold"
-        : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e202b]"
+        ? "bg-[#1d9bf0] text-white font-bold"
+        : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"
     }`;
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-5 pb-12 text-slate-800 dark:text-slate-200">
       {/* Top Studio Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-[#24252f]">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-[#2f3336]">
         <div className="flex items-center gap-3">
           <Link
             href={localePath("/dashboard")}
-            className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white flex items-center gap-1.5 rounded-xl px-3 py-1.5 bg-white dark:bg-[#101117] border border-slate-200 dark:border-[#24252f]"
+            className="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white flex items-center gap-1.5 rounded-xl px-3 py-1.5 bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336]"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Orqaga</span>
@@ -611,7 +611,7 @@ function StudioEditorWorkspace() {
           </div>
         </div>
 
-        <div className="text-xs font-mono font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#101117] border border-slate-200 dark:border-[#24252f] px-3 py-1.5 rounded-xl">
+        <div className="text-xs font-mono font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] px-3 py-1.5 rounded-xl">
           {wordCount} {t("create.words") || "so‘z"} • ~{readingTime} min
         </div>
       </div>
@@ -620,7 +620,7 @@ function StudioEditorWorkspace() {
       {floatingToolbar.visible && (
         <div
           style={{ position: "fixed", top: `${floatingToolbar.top}px`, left: `${floatingToolbar.left}px`, zIndex: 60 }}
-          className="flex items-center gap-0.5 p-1 rounded-xl bg-[#0b0c13] text-white shadow-xl border border-[#24252f]"
+          className="flex items-center gap-0.5 p-1 rounded-xl bg-[#000000] text-white shadow-xl border border-[#2f3336]"
         >
           <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("bold"); }} className={toolBtn(activeFormats.bold)}>
             <Bold className="w-3.5 h-3.5" />
@@ -628,10 +628,10 @@ function StudioEditorWorkspace() {
           <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("italic"); }} className={toolBtn(activeFormats.italic)}>
             <Italic className="w-3.5 h-3.5" />
           </button>
-          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h2 ? "bg-[#3995ff] text-white" : "text-slate-200 hover:bg-[#1e202b]"}`}>
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h2 ? "bg-[#1d9bf0] text-white" : "text-slate-200 hover:bg-[#202327]"}`}>
             H2
           </button>
-          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h3 ? "bg-[#3995ff] text-white" : "text-slate-200 hover:bg-[#1e202b]"}`}>
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h3 ? "bg-[#1d9bf0] text-white" : "text-slate-200 hover:bg-[#202327]"}`}>
             H3
           </button>
           <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("highlight"); }} className={toolBtn(activeFormats.highlight)}>
@@ -649,10 +649,10 @@ function StudioEditorWorkspace() {
       {/* Link Modal */}
       {isLinkModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-sm bg-white dark:bg-[#101117] border border-slate-200 dark:border-[#24252f] rounded-2xl shadow-xl p-4 space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#1c1e29]">
+          <div className="w-full max-w-sm bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] rounded-2xl shadow-xl p-4 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#202327]">
               <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                <Link2 className="w-3.5 h-3.5 text-[#3995ff]" />
+                <Link2 className="w-3.5 h-3.5 text-[#1d9bf0]" />
                 Havola qo‘shish (Ichki / Tashqi SEO)
               </h3>
               <button type="button" onClick={() => setIsLinkModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
@@ -669,7 +669,7 @@ function StudioEditorWorkspace() {
                   value={linkModalText}
                   onChange={(e) => setLinkModalText(e.target.value)}
                   placeholder="Masalan: Next.js qo'llanmasi"
-                  className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
                 />
               </div>
               <div>
@@ -683,15 +683,15 @@ function StudioEditorWorkspace() {
                     required
                     value={linkModalUrl}
                     onChange={(e) => setLinkModalUrl(e.target.value)}
-                    className="w-full rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] pl-8 pr-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                    className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] pl-8 pr-3 py-1.5 text-xs text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <button type="button" onClick={() => setIsLinkModalOpen(false)} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#24252f] text-xs cursor-pointer">
+                <button type="button" onClick={() => setIsLinkModalOpen(false)} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#2f3336] text-xs cursor-pointer">
                   Bekor qilish
                 </button>
-                <button type="submit" className="px-3.5 py-1.5 rounded-lg bg-[#3995ff] hover:bg-blue-600 text-white text-xs font-bold cursor-pointer">
+                <button type="submit" className="px-3.5 py-1.5 rounded-lg bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold cursor-pointer">
                   Saqlash
                 </button>
               </div>
@@ -702,7 +702,7 @@ function StudioEditorWorkspace() {
 
       {isLoadingEdit ? (
         <div className="py-16 flex justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-[#3995ff]" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#1d9bf0]" />
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -719,13 +719,13 @@ function StudioEditorWorkspace() {
                     onClick={() => setContentKind(kc.id)}
                     className={`p-3 rounded-[14px] border text-left transition-all cursor-pointer ${
                       active
-                        ? "bg-blue-50 dark:bg-[#162038] border-[#3995ff] shadow-xs"
-                        : "bg-white dark:bg-[#101117] border-slate-200/90 dark:border-[#24252f] hover:border-[#3995ff]/40"
+                        ? "bg-blue-50 dark:bg-[#0e2c3f] border-[#1d9bf0] shadow-xs"
+                        : "bg-white dark:bg-[#000000] border-slate-200/90 dark:border-[#2f3336] hover:border-[#1d9bf0]/40"
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <kc.Icon className={`w-4 h-4 ${active ? "text-[#3995ff]" : "text-slate-400"}`} />
-                      <span className={`text-xs font-bold ${active ? "text-[#3995ff]" : "text-slate-900 dark:text-white"}`}>
+                      <kc.Icon className={`w-4 h-4 ${active ? "text-[#1d9bf0]" : "text-slate-400"}`} />
+                      <span className={`text-xs font-bold ${active ? "text-[#1d9bf0]" : "text-slate-900 dark:text-white"}`}>
                         {kc.label}
                       </span>
                     </div>
@@ -736,8 +736,8 @@ function StudioEditorWorkspace() {
             </div>
 
             {/* Title (H1) & WYSIWYG Editor */}
-            <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] overflow-hidden shadow-xs">
-              <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-[#1c1e29]">
+            <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] overflow-hidden shadow-xs">
+              <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-[#202327]">
                 <input
                   type="text"
                   value={title}
@@ -748,24 +748,24 @@ function StudioEditorWorkspace() {
               </div>
 
               {/* Editor Toolbar */}
-              <div className="flex items-center flex-wrap gap-1 px-3 py-2 bg-slate-50 dark:bg-[#14151d] border-b border-slate-200 dark:border-[#24252f]">
+              <div className="flex items-center flex-wrap gap-1 px-3 py-2 bg-slate-50 dark:bg-[#16181c] border-b border-slate-200 dark:border-[#2f3336]">
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeUndo(); }} title="Bekor qilish" className={toolBtn(false)}>
                   <Undo2 className="w-3.5 h-3.5" />
                 </button>
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeRedo(); }} title="Qaytarish" className={toolBtn(false)}>
                   <Redo2 className="w-3.5 h-3.5" />
                 </button>
-                <span className="w-px h-4 bg-slate-200 dark:bg-[#24252f] mx-1" />
+                <span className="w-px h-4 bg-slate-200 dark:bg-[#2f3336] mx-1" />
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("bold"); }} title="Qalin" className={toolBtn(activeFormats.bold)}>
                   <Bold className="w-3.5 h-3.5" />
                 </button>
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("italic"); }} title="Kursiv" className={toolBtn(activeFormats.italic)}>
                   <Italic className="w-3.5 h-3.5" />
                 </button>
-                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} title="H2 Sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h2 ? "bg-[#3995ff] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e202b]"}`}>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} title="H2 Sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h2 ? "bg-[#1d9bf0] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"}`}>
                   <Heading2 className="w-3.5 h-3.5" /> H2
                 </button>
-                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} title="H3 Kichik sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h3 ? "bg-[#3995ff] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e202b]"}`}>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} title="H3 Kichik sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h3 ? "bg-[#1d9bf0] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"}`}>
                   <Heading3 className="w-3.5 h-3.5" /> H3
                 </button>
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<blockquote>"); }} title="Iqtibos" className={toolBtn(activeFormats.quote)}>
@@ -783,11 +783,11 @@ function StudioEditorWorkspace() {
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("code"); }} title="Inline kod" className={toolBtn(activeFormats.code)}>
                   <Code className="w-3.5 h-3.5" />
                 </button>
-                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("codeblock"); }} title="Ko'p qatorli kod bloki (<pre>)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1e202b] cursor-pointer">
-                  <FileCode2 className="w-3.5 h-3.5 text-[#3995ff]" />
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("codeblock"); }} title="Ko'p qatorli kod bloki (<pre>)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327] cursor-pointer">
+                  <FileCode2 className="w-3.5 h-3.5 text-[#1d9bf0]" />
                   <span>Kod bloki</span>
                 </button>
-                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("link"); }} title="Havola (Ctrl+K)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-[#3995ff] hover:bg-[#3995ff]/10 cursor-pointer">
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("link"); }} title="Havola (Ctrl+K)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 cursor-pointer">
                   <Link2 className="w-3.5 h-3.5" />
                   <span>Havola</span>
                 </button>
@@ -833,10 +833,10 @@ function StudioEditorWorkspace() {
             )}
 
             {/* Cover & Media Images */}
-            <div className="p-4 bg-white dark:bg-[#101117] rounded-[16px] border border-slate-200/90 dark:border-[#24252f] space-y-3 shadow-xs">
+            <div className="p-4 bg-white dark:bg-[#000000] rounded-[16px] border border-slate-200/90 dark:border-[#2f3336] space-y-3 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-[#3995ff]" />
+                  <ImageIcon className="w-4 h-4 text-[#1d9bf0]" />
                   <span className="text-xs font-bold text-slate-800 dark:text-white">
                     Muqova &amp; Illyustratsiyalar (Birinchi rasm — OG muqova bo‘ladi)
                   </span>
@@ -848,7 +848,7 @@ function StudioEditorWorkspace() {
                 {mediaUrls.map((url, idx) => (
                   <div
                     key={url}
-                    className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-[#24252f] bg-slate-950/10"
+                    className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-[#2f3336] bg-slate-950/10"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={url} alt={coverImageAlt || `Rasm ${idx + 1}`} className="w-full h-full object-cover" />
@@ -867,10 +867,10 @@ function StudioEditorWorkspace() {
                     type="button"
                     disabled={isUploadingImage}
                     onClick={() => imageInputRef.current?.click()}
-                    className="aspect-video rounded-xl border border-dashed border-slate-300 dark:border-[#2c2f3e] hover:border-[#3995ff] bg-slate-50 dark:bg-[#14151d] flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-[#3995ff] transition-colors cursor-pointer disabled:opacity-50"
+                    className="aspect-video rounded-xl border border-dashed border-slate-300 dark:border-[#3e4144] hover:border-[#1d9bf0] bg-slate-50 dark:bg-[#16181c] flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-[#1d9bf0] transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {isUploadingImage ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-[#3995ff]" />
+                      <Loader2 className="w-5 h-5 animate-spin text-[#1d9bf0]" />
                     ) : (
                       <>
                         <Paperclip className="w-4 h-4" />
@@ -895,14 +895,14 @@ function StudioEditorWorkspace() {
             <div className="flex items-center justify-between gap-3 pt-2">
               <Link
                 href={localePath("/dashboard")}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#24252f] text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#101117]"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-[#2f3336] text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-[#000000]"
               >
                 Bekor qilish
               </Link>
               <button
                 type="submit"
                 disabled={isSubmitting || wordCount === 0}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#3995ff] hover:bg-blue-600 text-white text-xs sm:text-sm font-bold shadow-sm disabled:opacity-40 cursor-pointer transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs sm:text-sm font-bold shadow-sm disabled:opacity-40 cursor-pointer transition-colors"
               >
                 {isSubmitting ? (
                   <>
@@ -970,7 +970,7 @@ export default function CreatePostPage() {
     <Suspense
       fallback={
         <div className="py-16 flex justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-[#3995ff]" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#1d9bf0]" />
         </div>
       }
     >

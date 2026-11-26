@@ -96,7 +96,7 @@ class ShortActionRail extends StatelessWidget {
                       resolved.author.isFollowing
                           ? Icons.check_rounded
                           : Icons.add_rounded,
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       size: 14,
                     ),
                   ),
@@ -109,7 +109,7 @@ class ShortActionRail extends StatelessWidget {
           icon: resolved.isLiked
               ? Icons.favorite_rounded
               : Icons.favorite_border_rounded,
-          iconColor: resolved.isLiked ? AppColors.danger : Colors.white,
+          iconColor: resolved.isLiked ? AppColors.like : Colors.white,
           label: NumberFormatter.compact(resolved.likesCount),
           onTap: () => feedController.toggleLike(resolved.id),
         ),

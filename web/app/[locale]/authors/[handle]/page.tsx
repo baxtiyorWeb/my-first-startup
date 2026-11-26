@@ -93,7 +93,7 @@ export default async function PublicAuthorPage({
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0c13] text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#000000] text-slate-900 dark:text-slate-100">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
@@ -107,7 +107,7 @@ export default async function PublicAuthorPage({
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
         {/* Author Header Card */}
-        <section className="rounded-[20px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <section className="rounded-[20px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-start gap-4 sm:gap-5">
             <UserAvatar
               name={author.name}
@@ -121,7 +121,7 @@ export default async function PublicAuthorPage({
                 </h1>
                 {author.verified && (
                   <span
-                    className="size-5 rounded-full bg-[#3995ff] text-white flex items-center justify-center"
+                    className="size-5 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center"
                     title="Tasdiqlangan muallif"
                   >
                     <Check size={11} strokeWidth={3} />
@@ -132,7 +132,7 @@ export default async function PublicAuthorPage({
                 </span>
               </div>
 
-              <p className="text-sm font-semibold text-[#3995ff]">{author.role}</p>
+              <p className="text-sm font-semibold text-[#1d9bf0]">{author.role}</p>
 
               {author.bio && (
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
@@ -152,7 +152,7 @@ export default async function PublicAuthorPage({
                     href={author.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 hover:text-[#3995ff]"
+                    className="inline-flex items-center gap-1 hover:text-[#1d9bf0]"
                   >
                     <Globe className="w-3.5 h-3.5" />
                     {author.website.replace(/^https?:\/\//, "")}
@@ -168,7 +168,7 @@ export default async function PublicAuthorPage({
 
           <Link
             href={`/${typedLocale}/dashboard/profile?handle=${encodeURIComponent(cleanHandle)}`}
-            className="px-4 py-2.5 rounded-xl bg-[#3995ff] hover:bg-blue-600 text-white text-xs font-bold shrink-0 transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold shrink-0 transition-colors"
           >
             Hamjamiyat profiliga o‘tish
           </Link>
@@ -181,7 +181,7 @@ export default async function PublicAuthorPage({
           </h2>
 
           {items.length === 0 ? (
-            <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-8 text-center text-sm text-slate-500">
+            <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-8 text-center text-sm text-slate-500">
               Muallif tomonidan hali ochiq maqolalar nashr qilinmagan.
             </div>
           ) : (

@@ -85,7 +85,7 @@ class PostInlineActionBar extends StatelessWidget {
           icon: resolved.isLiked ? Icons.favorite : Icons.favorite_border_rounded,
           label: '${resolved.likesCount}',
           isActive: resolved.isLiked,
-          activeColor: AppColors.danger,
+          activeColor: AppColors.like,
           onTap: () {
             HapticFeedback.selectionClick();
             feedController.toggleLike(resolved.id);

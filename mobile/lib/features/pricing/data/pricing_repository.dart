@@ -87,6 +87,18 @@ class PricingOverview {
   });
 }
 
+class CheckoutResult {
+  final String message;
+  final String? checkoutUrl;
+  final bool requiresPayment;
+
+  const CheckoutResult({
+    required this.message,
+    this.checkoutUrl,
+    this.requiresPayment = false,
+  });
+}
+
 class PricingRepository {
   final ApiClient _apiClient;
 
@@ -108,10 +120,10 @@ class PricingRepository {
     );
   }
 
-  Future<String> checkout({
+  Future<CheckoutResult> checkout({
     required String planSlug,
     required String billingCycle,
-    String provider = 'payme',
+    String provider = 'inpay',
   }) async {
     final decoded = await _apiClient.post(
       ApiConstants.subscriptionCheckoutEndpoint,
@@ -122,7 +134,11 @@ class PricingRepository {
       },
     );
     final data = decoded['data'] as Map<String, dynamic>? ?? const {};
-    return data['message'] as String? ?? 'So\'rov yuborildi';
+    return CheckoutResult(
+      message: data['message'] as String? ?? 'So\'rov yuborildi',
+      checkoutUrl: data['checkoutUrl'] as String?,
+      requiresPayment: data['requiresPayment'] as bool? ?? false,
+    );
   }
 
   Future<void> cancelSubscription() async {

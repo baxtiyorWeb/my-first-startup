@@ -17,14 +17,14 @@ Ushbu papka Geters platformasining **Flutter** asosidagi mobil ilovasini o'z ich
 
 2. Ilovani ishga tushirish (emulator yoki ulangan qurilma):
    ```bash
-   # Android emulyator (host = 10.0.2.2)
+   # Android (internetdagi API)
    flutter run --dart-define-from-file=config/dev-android.json
 
-   # Desktop / iOS simulyator (host = 127.0.0.1)
+   # Desktop / iOS simulyator (lokal backend)
    flutter run --dart-define-from-file=config/dev.json
    ```
 
-   `--dart-define-from-file` berilmasa `API_BASE_URL` = `http://127.0.0.1:3000/api` bo'ladi (faqat debug uchun).
+   `--dart-define-from-file` berilmasa ham ilova `https://www.geters.uz/api` manzilidan foydalanadi. Lokal Android emulyator backendiga ulanish uchun `API_BASE_URL=http://10.0.2.2:3000/api` ni build vaqtida bering; jismoniy qurilmada `10.0.2.2` o'rniga kompyuterning LAN IP manzilini ishlating.
 
 3. Statik tahlil (linter):
    ```bash
@@ -38,7 +38,7 @@ Ilova backend manzilini faqat build vaqtida oladi (`String.fromEnvironment`), ko
 | Fayl | Manzil | Qachon |
 |---|---|---|
 | `config/dev.json` | `http://127.0.0.1:3000/api` | desktop, iOS simulyator |
-| `config/dev-android.json` | `http://10.0.2.2:3000/api` | Android emulyator |
+| `config/dev-android.json` | `https://www.geters.uz/api` | Android qurilma va emulyator |
 | `config/prod.example.json` | `https://www.geters.uz/api` | namuna, `prod.json` ga nusxalanadi |
 | `config/prod.json` | haqiqiy production manzil | git'ga qo'shilmaydi |
 

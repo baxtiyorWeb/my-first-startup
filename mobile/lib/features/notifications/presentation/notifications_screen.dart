@@ -205,7 +205,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                   child: Icon(
                                                     icon,
                                                     size: 10,
-                                                    color: Colors.white,
+                                                    color: AppColors.onPrimary,
                                                   ),
                                                 ),
                                               ),

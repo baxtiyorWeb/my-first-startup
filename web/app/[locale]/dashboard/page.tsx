@@ -19,7 +19,7 @@ export default function DashboardPage() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-48 bg-white dark:bg-[#101117] rounded-[17px] border border-slate-200/90 dark:border-[#24252f]"
+                  className="h-48 bg-white dark:bg-[#000000] rounded-[17px] border border-slate-200/90 dark:border-[#2f3336]"
                 />
               ))}
             </div>

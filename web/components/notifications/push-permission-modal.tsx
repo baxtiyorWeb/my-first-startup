@@ -66,7 +66,7 @@ export function PushPermissionModal() {
   return (
     <div
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] w-[min(92vw,420px)]
-                 bg-[#0f1623] border border-slate-700/60 rounded-2xl shadow-2xl
+                 bg-[#16181c] border border-slate-700/60 rounded-2xl shadow-2xl
                  animate-in slide-in-from-bottom-4 fade-in duration-300"
       role="dialog"
       aria-modal="true"

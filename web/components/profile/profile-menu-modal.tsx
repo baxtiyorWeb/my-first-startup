@@ -112,7 +112,7 @@ export function ProfileMenuModal({ isOpen, onClose }: ProfileMenuModalProps) {
         aria-modal="true"
         aria-labelledby="profile-menu-title"
       >
-        <div className="w-full sm:max-w-md max-h-[90vh] sm:max-h-[85vh] bg-white dark:bg-[#0A0A0A] border-t sm:border border-slate-200 dark:border-white/[0.08] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col pointer-events-auto overflow-hidden transition-all duration-300">
+        <div className="w-full sm:max-w-md max-h-[90vh] sm:max-h-[85vh] bg-white dark:bg-[#000000] border-t sm:border border-slate-200 dark:border-white/[0.08] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col pointer-events-auto overflow-hidden transition-all duration-300">
           {/* Header */}
           <div className="px-5 py-4 border-b border-slate-100 dark:border-white/[0.06] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">

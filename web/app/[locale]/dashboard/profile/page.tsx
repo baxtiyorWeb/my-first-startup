@@ -267,7 +267,7 @@ function ProfileContent() {
       )}
 
       {/* 3. Clean Content Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200/90 dark:border-[#24252f] bg-white dark:bg-[#101117] rounded-t-[16px] px-3 pt-1 shadow-2xs">
+      <div className="flex items-center justify-between border-b border-slate-200/90 dark:border-[#2f3336] bg-white dark:bg-[#000000] rounded-t-[16px] px-3 pt-1 shadow-2xs">
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
           {/* All Posts */}
           <button
@@ -275,8 +275,8 @@ function ProfileContent() {
             onClick={() => setActiveTab("posts")}
             className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === "posts"
-                ? "border-[#3995ff] text-[#3995ff] font-bold"
-                : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-[#f4f4fa]"
+                ? "border-[#1d9bf0] text-[#1d9bf0] font-bold"
+                : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-[#e7e9ea]"
             }`}
           >
             {t("profile.tabs.thoughts")} ({userPosts.length})
@@ -288,8 +288,8 @@ function ProfileContent() {
             onClick={() => setActiveTab("discussions")}
             className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === "discussions"
-                ? "border-[#3995ff] text-[#3995ff] font-bold"
-                : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-[#f4f4fa]"
+                ? "border-[#1d9bf0] text-[#1d9bf0] font-bold"
+                : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-[#e7e9ea]"
             }`}
           >
             {t("profile.tabs.discussions")} ({activeDiscussions.length})

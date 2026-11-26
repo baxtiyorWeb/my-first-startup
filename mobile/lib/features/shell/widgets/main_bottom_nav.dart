@@ -68,13 +68,13 @@ class MainBottomNav extends StatelessWidget {
                 child: InkWell(
                   onTap: onCreateTap,
                   customBorder: const CircleBorder(),
-                  child: const SizedBox(
+                  child: SizedBox(
                     width: 44,
                     height: 44,
                     child: Icon(
                       Icons.add_rounded,
                       size: 26,
-                      color: Colors.white,
+                      color: isDark ? AppColors.onPrimary : Colors.white,
                     ),
                   ),
                 ),

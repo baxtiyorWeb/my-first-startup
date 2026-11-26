@@ -118,7 +118,7 @@ export default function AdminReportsPage() {
 
       <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
         {/* Controls Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#101117] p-3.5 rounded-[16px] border border-slate-200/90 dark:border-[#24252f] shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#000000] p-3.5 rounded-[16px] border border-slate-200/90 dark:border-[#2f3336] shadow-xs">
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
             {[
               { id: "all", label: "Barchasi" },
@@ -131,8 +131,8 @@ export default function AdminReportsPage() {
                 onClick={() => setFilterType(tab.id)}
                 className={`h-9 px-3.5 rounded-[11px] text-xs font-semibold cursor-pointer transition-colors whitespace-nowrap ${
                   filterType === tab.id
-                    ? "bg-[#3995ff] text-white"
-                    : "bg-slate-100 dark:bg-[#181920] text-slate-600 dark:text-[#a0a5b8] hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-[#1d9bf0] text-white"
+                    : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-[#8b98a5] hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 {tab.label}
@@ -144,7 +144,7 @@ export default function AdminReportsPage() {
             type="button"
             onClick={fetchReports}
             disabled={isLoading}
-            className="h-9 px-3.5 rounded-[11px] bg-slate-100 dark:bg-[#181920] hover:bg-slate-200 dark:hover:bg-[#20222e] text-slate-700 dark:text-slate-200 text-xs font-semibold inline-flex items-center gap-2 cursor-pointer transition-colors"
+            className="h-9 px-3.5 rounded-[11px] bg-slate-100 dark:bg-[#16181c] hover:bg-slate-200 dark:hover:bg-[#202327] text-slate-700 dark:text-slate-200 text-xs font-semibold inline-flex items-center gap-2 cursor-pointer transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
             <span>Yangilash</span>
@@ -157,19 +157,19 @@ export default function AdminReportsPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-28 rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] animate-pulse"
+                className="h-28 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] animate-pulse"
               />
             ))}
           </div>
         ) : filteredReports.length === 0 ? (
-          <div className="py-16 text-center bg-white dark:bg-[#101117] rounded-[16px] border border-slate-200/90 dark:border-[#24252f] p-8 space-y-3">
+          <div className="py-16 text-center bg-white dark:bg-[#000000] rounded-[16px] border border-slate-200/90 dark:border-[#2f3336] p-8 space-y-3">
             <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
               <Check className="w-6 h-6 stroke-[2.5]" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Hozircha shikoyatlar yo'q!
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#a0a5b8] max-w-sm mx-auto">
+            <p className="text-xs text-slate-500 dark:text-[#8b98a5] max-w-sm mx-auto">
               Barcha bildirilgan murojaatlar ko'rib chiqilgan. Yangi shikoyatlar tushganda shu yerda ko'rinadi.
             </p>
           </div>
@@ -178,7 +178,7 @@ export default function AdminReportsPage() {
             {filteredReports.map((report) => (
               <div
                 key={report.id}
-                className="bg-white dark:bg-[#101117] rounded-[16px] border border-slate-200/90 dark:border-[#24252f] p-4 sm:p-5 shadow-xs space-y-3.5 transition-colors hover:border-slate-300 dark:hover:border-[#383a48]"
+                className="bg-white dark:bg-[#000000] rounded-[16px] border border-slate-200/90 dark:border-[#2f3336] p-4 sm:p-5 shadow-xs space-y-3.5 transition-colors hover:border-slate-300 dark:hover:border-[#3e4144]"
               >
                 {/* Header row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -188,13 +188,13 @@ export default function AdminReportsPage() {
                       <span>{report.reason}</span>
                     </span>
 
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] bg-slate-100 dark:bg-[#181920] text-slate-600 dark:text-[#a0a5b8] text-[11px] font-semibold border border-slate-200/60 dark:border-[#262836]">
-                      {report.targetType === "post" && <FileText className="w-3 h-3 text-[#3995ff]" />}
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-[#8b98a5] text-[11px] font-semibold border border-slate-200/60 dark:border-[#2f3336]">
+                      {report.targetType === "post" && <FileText className="w-3 h-3 text-[#1d9bf0]" />}
                       {report.targetType === "comment" && <MessageSquare className="w-3 h-3 text-emerald-500" />}
                       <span className="capitalize">{report.targetType}</span>
                     </span>
 
-                    <span className="text-[11px] text-slate-400 dark:text-[#8e95ab] flex items-center gap-1">
+                    <span className="text-[11px] text-slate-400 dark:text-[#71767b] flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       <span>{formatRelativeTime(report.createdAt)}</span>
                     </span>
@@ -202,14 +202,14 @@ export default function AdminReportsPage() {
 
                   {/* Reporter details */}
                   {report.reporter && (
-                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-[#a0a5b8]">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-[#8b98a5]">
                       <span>Shikoyatchi:</span>
                       <UserAvatar
                         name={report.reporter.name}
                         avatarUrl={report.reporter.avatarUrl || undefined}
                         size="xs"
                       />
-                      <span className="font-semibold text-slate-800 dark:text-[#f4f4fa]">
+                      <span className="font-semibold text-slate-800 dark:text-[#e7e9ea]">
                         {report.reporter.name}
                       </span>
                     </div>
@@ -217,17 +217,17 @@ export default function AdminReportsPage() {
                 </div>
 
                 {/* Target content snippet */}
-                <div className="p-3.5 rounded-[12px] bg-slate-50 dark:bg-[#151722] border border-slate-200/60 dark:border-[#222430] space-y-1">
+                <div className="p-3.5 rounded-[12px] bg-slate-50 dark:bg-[#16181c] border border-slate-200/60 dark:border-[#2f3336] space-y-1">
                   {report.targetAuthor && (
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-[#8e95ab]">
-                      Muallif: <span className="text-slate-800 dark:text-[#f2f4fa]">{report.targetAuthor}</span>
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-[#71767b]">
+                      Muallif: <span className="text-slate-800 dark:text-[#e7e9ea]">{report.targetAuthor}</span>
                     </p>
                   )}
                   {report.targetSnippet ? (
                     <ContentPreview
                       content={report.targetSnippet}
                       lineClamp={2}
-                      className="text-xs sm:text-[13px] text-slate-800 dark:text-[#e4e7f5]"
+                      className="text-xs sm:text-[13px] text-slate-800 dark:text-[#e7e9ea]"
                     />
                   ) : (
                     <span className="text-xs italic text-slate-400">
@@ -235,19 +235,19 @@ export default function AdminReportsPage() {
                     </span>
                   )}
                   {report.context && (
-                    <p className="text-[11px] text-slate-500 dark:text-[#8e95ab] pt-1">
+                    <p className="text-[11px] text-slate-500 dark:text-[#71767b] pt-1">
                       Izoh: &ldquo;{report.context}&rdquo;
                     </p>
                   )}
                 </div>
 
                 {/* Actions row */}
-                <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100 dark:border-[#24252f]">
+                <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100 dark:border-[#2f3336]">
                   <button
                     type="button"
                     disabled={actionLoadingId === report.id}
                     onClick={() => handleAction(report.id, "dismiss")}
-                    className="h-8 px-3 rounded-[9px] bg-slate-100 dark:bg-[#181920] hover:bg-slate-200 dark:hover:bg-[#252838] text-slate-700 dark:text-[#c4c7d9] text-xs font-semibold cursor-pointer transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
+                    className="h-8 px-3 rounded-[9px] bg-slate-100 dark:bg-[#16181c] hover:bg-slate-200 dark:hover:bg-[#2f3336] text-slate-700 dark:text-[#cfd9de] text-xs font-semibold cursor-pointer transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
                   >
                     <XCircle className="w-3.5 h-3.5" />
                     <span>Bekor qilish (Yopish)</span>

@@ -405,7 +405,7 @@ export default function AdminUsersPage() {
                               {u.verified && (
                                 <span
                                   title="Tasdiqlangan muallif"
-                                  className="bg-[#3995ff] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
+                                  className="bg-[#1d9bf0] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
                                 >
                                   <Check size={9} className="text-white stroke-[2.5]" />
                                 </span>
@@ -470,8 +470,8 @@ export default function AdminUsersPage() {
                             onClick={() => handleToggleVerified(u.id, !u.verified)}
                             className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                               u.verified
-                                ? "bg-[#3995ff]/15 text-[#3995ff] border-[#3995ff]/40 hover:bg-[#3995ff]/25"
-                                : "border-slate-200/80 dark:border-white/10 text-slate-400 hover:text-[#3995ff] hover:border-[#3995ff]/50"
+                                ? "bg-[#1d9bf0]/15 text-[#1d9bf0] border-[#1d9bf0]/40 hover:bg-[#1d9bf0]/25"
+                                : "border-slate-200/80 dark:border-white/10 text-slate-400 hover:text-[#1d9bf0] hover:border-[#1d9bf0]/50"
                             }`}
                             title={
                               u.verified

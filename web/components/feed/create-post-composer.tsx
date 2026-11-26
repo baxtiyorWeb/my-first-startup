@@ -145,7 +145,7 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
     <div
       data-node-id="11:5"
       data-name="Post yaratish"
-      className="w-full bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] rounded-[16px] p-3.5 sm:p-4 mb-3.5 shadow-xs transition-all duration-200"
+      className="w-full bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] rounded-[16px] p-3.5 sm:p-4 mb-3.5 shadow-xs transition-all duration-200"
     >
       <input
         ref={fileInputRef}
@@ -165,10 +165,10 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
               name={session.user.name || "Foydalanuvchi"}
               avatarUrl={session.user.avatarUrl}
               size="md"
-              className="size-[42px] sm:size-[46px] rounded-full border border-slate-200 dark:border-[#24252f]"
+              className="size-[42px] sm:size-[46px] rounded-full border border-slate-200 dark:border-[#2f3336]"
             />
           ) : (
-            <div className="size-[42px] sm:size-[46px] rounded-full flex items-center justify-center bg-gradient-to-b from-slate-700 to-slate-900 dark:from-[#262838] dark:to-[#171822] text-white border border-slate-300 dark:border-[#34374a] shadow-xs">
+            <div className="size-[42px] sm:size-[46px] rounded-full flex items-center justify-center bg-gradient-to-b from-slate-700 to-slate-900 dark:from-[#2f3336] dark:to-[#16181c] text-white border border-slate-300 dark:border-[#3e4144] shadow-xs">
               <span className="font-semibold text-[15px] sm:text-[16px]">
                 {authorInitials}
               </span>
@@ -189,30 +189,30 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
                   handleInputClick();
                 }
               }}
-              className="w-full h-[46px] sm:h-[50px] bg-slate-50 dark:bg-[#111219] border border-slate-200 dark:border-[#2a2d39] rounded-[14px] px-4 flex items-center cursor-pointer hover:border-slate-300 dark:hover:border-[#3d4152] transition-colors group"
+              className="w-full h-[46px] sm:h-[50px] bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] rounded-[14px] px-4 flex items-center cursor-pointer hover:border-slate-300 dark:hover:border-[#3e4144] transition-colors group"
             >
-              <p className="text-[13px] sm:text-[14px] text-slate-500 dark:text-[#c2c6d9] group-hover:text-slate-700 dark:group-hover:text-slate-200 truncate select-none">
+              <p className="text-[13px] sm:text-[14px] text-slate-500 dark:text-[#cfd9de] group-hover:text-slate-700 dark:group-hover:text-slate-200 truncate select-none">
                 Nima haqida ulashmoqchisiz?
               </p>
             </div>
           ) : (
-            <div className="bg-slate-50 dark:bg-[#111219] border border-slate-200 dark:border-[#2a2d39] rounded-[14px] p-3 transition-all">
+            <div className="bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] rounded-[14px] p-3 transition-all">
               <textarea
                 ref={textareaRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Nima haqida ulashmoqchisiz? (fikrlar, yangiliklar, g'oyalar...)"
                 rows={3}
-                className="w-full bg-transparent text-[13.5px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-[#8e95ab] resize-none focus:outline-none"
+                className="w-full bg-transparent text-[13.5px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-[#71767b] resize-none focus:outline-none"
               />
 
               {/* Uploaded Media Thumbnails */}
               {mediaUrls.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-slate-200/80 dark:border-[#24252f]">
+                <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-slate-200/80 dark:border-[#2f3336]">
                   {mediaUrls.map((url, idx) => (
                     <div
                       key={idx}
-                      className="relative size-16 rounded-[10px] overflow-hidden border border-slate-200 dark:border-[#24252f] group/thumb"
+                      className="relative size-16 rounded-[10px] overflow-hidden border border-slate-200 dark:border-[#2f3336] group/thumb"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -246,15 +246,15 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
       </div>
 
       {/* Bottom Row: Format Option Buttons + Primary Submit */}
-      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#24252f] flex items-center justify-between gap-2">
+      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#2f3336] flex items-center justify-between gap-2">
         <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none shrink min-w-0 py-0.5">
           {/* Post option */}
           <button
             type="button"
             onClick={handleInputClick}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#f4f3fc] hover:bg-slate-100 dark:hover:bg-[#181922] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
           >
-            <PenSquare size={16} className="text-slate-500 dark:text-[#a0a5b8]" />
+            <PenSquare size={16} className="text-slate-500 dark:text-[#8b98a5]" />
             <span>Post</span>
           </button>
 
@@ -262,9 +262,9 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
           <button
             type="button"
             onClick={() => handleStudioNavigate("article")}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#f4f3fc] hover:bg-slate-100 dark:hover:bg-[#181922] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
           >
-            <FileText size={16} className="text-[#3995ff]" />
+            <FileText size={16} className="text-[#1d9bf0]" />
             <span>Maqola</span>
           </button>
 
@@ -272,7 +272,7 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
           <button
             type="button"
             onClick={() => handleStudioNavigate("video")}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#f4f3fc] hover:bg-slate-100 dark:hover:bg-[#181922] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
           >
             <Video size={16} className="text-emerald-500" />
             <span>Video darslik</span>
@@ -282,7 +282,7 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
           <button
             type="button"
             onClick={() => handleStudioNavigate("news")}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#f4f3fc] hover:bg-slate-100 dark:hover:bg-[#181922] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
           >
             <Newspaper size={16} className="text-amber-500" />
             <span>Yangilik</span>
@@ -292,9 +292,9 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
           <button
             type="button"
             onClick={handleImageButtonClick}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#f4f3fc] hover:bg-slate-100 dark:hover:bg-[#181922] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
           >
-            <ImageIcon size={16} className="text-slate-500 dark:text-[#a0a5b8]" />
+            <ImageIcon size={16} className="text-slate-500 dark:text-[#8b98a5]" />
             <span>Rasm</span>
           </button>
         </div>
@@ -325,7 +325,7 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
                 handleSubmit();
               }
             }}
-            className="inline-flex items-center justify-center gap-1.5 bg-[#3995ff] hover:bg-[#2884ee] disabled:opacity-50 text-white font-semibold text-[13px] h-[36px] px-4 rounded-[11px] transition-all cursor-pointer shadow-xs active:scale-98"
+            className="inline-flex items-center justify-center gap-1.5 bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 text-white font-semibold text-[13px] h-[36px] px-4 rounded-[11px] transition-all cursor-pointer shadow-xs active:scale-98"
           >
             {isSubmitting ? (
               <Loader2 size={14} className="animate-spin" />

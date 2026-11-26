@@ -144,7 +144,7 @@ class PostDetailCommentComposer extends StatelessWidget {
                           disabledBackgroundColor: isDark
                               ? AppColors.surfaceDarkElevated
                               : AppColors.surfaceLightSubtle,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.onPrimary,
                           disabledForegroundColor: isDark
                               ? AppColors.textMutedDark
                               : AppColors.textMutedLight,
@@ -156,7 +156,7 @@ class PostDetailCommentComposer extends StatelessWidget {
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: AppColors.onPrimary,
                                   strokeWidth: 2,
                                 ),
                               )

@@ -164,9 +164,9 @@ export default function ExplorePage() {
       {/* 1. Asosiy Kashf etish ustuni (Main Explore Column) */}
       <div className="flex-1 min-w-0 max-w-[860px] 2xl:max-w-[900px] space-y-6 pb-12">
         {/* Header Hero Banner */}
-        <div className="p-5 sm:p-6 rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] shadow-xs space-y-4">
+        <div className="p-5 sm:p-6 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] shadow-xs space-y-4">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-[#3995ff]">
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-[#1d9bf0]">
               <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span>{t("explore.badge") || "Kashf qilish & Hamjamiyat"}</span>
             </div>
@@ -188,7 +188,7 @@ export default function ExplorePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Mualliflar, loyihalar yoki tahlillardan qidirish..."
-                className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3995ff] focus:border-transparent transition-all"
+                className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] focus:border-transparent transition-all"
               />
               {searchQuery && (
                 <button
@@ -208,8 +208,8 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory("all")}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   activeCategory === "all"
-                    ? "bg-[#3995ff] text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-[#181920] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#24252f] hover:bg-slate-200/70 dark:hover:bg-[#20222e]"
+                    ? "bg-[#1d9bf0] text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200/70 dark:hover:bg-[#202327]"
                 }`}
               >
                 {t("exploreFilters.all") || "Barchasi"}
@@ -219,8 +219,8 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory("project")}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeCategory === "project"
-                    ? "bg-[#3995ff] text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-[#181920] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#24252f] hover:bg-slate-200/70 dark:hover:bg-[#20222e]"
+                    ? "bg-[#1d9bf0] text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200/70 dark:hover:bg-[#202327]"
                 }`}
               >
                 <Rocket className="w-3.5 h-3.5 text-amber-500" />
@@ -231,8 +231,8 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory("cofounder")}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeCategory === "cofounder"
-                    ? "bg-[#3995ff] text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-[#181920] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#24252f] hover:bg-slate-200/70 dark:hover:bg-[#20222e]"
+                    ? "bg-[#1d9bf0] text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200/70 dark:hover:bg-[#202327]"
                 }`}
               >
                 <span>🤝</span>
@@ -243,8 +243,8 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory("discussions")}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeCategory === "discussions"
-                    ? "bg-[#3995ff] text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-[#181920] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#24252f] hover:bg-slate-200/70 dark:hover:bg-[#20222e]"
+                    ? "bg-[#1d9bf0] text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200/70 dark:hover:bg-[#202327]"
                 }`}
               >
                 <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
@@ -258,7 +258,7 @@ export default function ExplorePage() {
         <div className="space-y-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-600 dark:text-[#3995ff]" />
+              <Users className="w-4 h-4 text-blue-600 dark:text-[#1d9bf0]" />
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 {t("explore.activeAuthors") || "Faol mualliflar & ekspertlar"}
               </h2>
@@ -273,12 +273,12 @@ export default function ExplorePage() {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="h-24 rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/80 dark:border-[#24252f]"
+                  className="h-24 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/80 dark:border-[#2f3336]"
                 />
               ))}
             </div>
           ) : filteredAuthors.length === 0 ? (
-            <div className="py-8 text-center bg-white dark:bg-[#101117] border border-slate-200/80 dark:border-[#24252f] rounded-[16px] p-4 text-xs text-slate-500">
+            <div className="py-8 text-center bg-white dark:bg-[#000000] border border-slate-200/80 dark:border-[#2f3336] rounded-[16px] p-4 text-xs text-slate-500">
               {t("explore.authorsBuilding") || "Hozircha mualliflar topilmadi."}
             </div>
           ) : (
@@ -296,7 +296,7 @@ export default function ExplorePage() {
                     href={localePath(
                       `/dashboard/profile?handle=${encodeURIComponent(author.handle.replace(/^@/, ""))}`
                     )}
-                    className="p-4 rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] hover:border-[#3995ff]/50 dark:hover:border-[#3995ff]/40 shadow-xs transition-all flex flex-col justify-between gap-3 group cursor-pointer"
+                    className="p-4 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] hover:border-[#1d9bf0]/50 dark:hover:border-[#1d9bf0]/40 shadow-xs transition-all flex flex-col justify-between gap-3 group cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
@@ -307,12 +307,12 @@ export default function ExplorePage() {
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-[#3995ff] transition-colors">
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-[#1d9bf0] transition-colors">
                               {author.name}
                             </span>
                             {author.verified && (
                               <span
-                                className="size-3.5 rounded-full bg-[#3995ff] text-white flex items-center justify-center shrink-0"
+                                className="size-3.5 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center shrink-0"
                                 title="Tasdiqlangan mutaxassis"
                               >
                                 <Check size={8} strokeWidth={3} />
@@ -328,12 +328,12 @@ export default function ExplorePage() {
                         </div>
                       </div>
 
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-[#3995ff] shrink-0 transition-transform group-hover:translate-x-0.5 mt-1" />
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-[#1d9bf0] shrink-0 transition-transform group-hover:translate-x-0.5 mt-1" />
                     </div>
 
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#1d1f2a]">
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#202327]">
                       {author.intent && author.intent !== "none" ? (
-                        <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#181920] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-[#24252f] truncate max-w-[170px]">
+                        <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#16181c] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] truncate max-w-[170px]">
                           {author.intent === "looking_for_cofounder" &&
                             (t("intents.badge_cofounder") || "🤝 Hammuassis")}
                           {author.intent === "open_to_work" &&
@@ -355,13 +355,13 @@ export default function ExplorePage() {
                           onClick={(e) => handleToggleFollow(author.handle, e)}
                           className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
                             isFollowing
-                              ? "bg-slate-100 dark:bg-[#181920] border border-slate-200 dark:border-[#24252f] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#20222e]"
-                              : "bg-[#3995ff] hover:bg-blue-600 text-white shadow-2xs"
+                              ? "bg-slate-100 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"
+                              : "bg-[#1d9bf0] hover:bg-blue-600 text-white shadow-2xs"
                           }`}
                         >
                           {isFollowing ? (
                             <>
-                              <UserCheck className="w-3 h-3 text-[#3995ff]" />
+                              <UserCheck className="w-3 h-3 text-[#1d9bf0]" />
                               <span>Kuzatilmoqda</span>
                             </>
                           ) : (
@@ -384,7 +384,7 @@ export default function ExplorePage() {
         <div className="space-y-3.5 pt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-blue-600 dark:text-[#3995ff]" />
+              <MessageSquare className="w-4 h-4 text-blue-600 dark:text-[#1d9bf0]" />
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 {t("explore.featuredPerspectives") || "E’tiborga molik tahlillar & munozaralar"}
               </h2>
@@ -399,12 +399,12 @@ export default function ExplorePage() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-32 rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/80 dark:border-[#24252f]"
+                  className="h-32 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/80 dark:border-[#2f3336]"
                 />
               ))}
             </div>
           ) : filteredPosts.length === 0 ? (
-            <div className="py-12 text-center bg-white dark:bg-[#101117] border border-slate-200/80 dark:border-[#24252f] rounded-[16px] p-6 text-sm text-slate-500">
+            <div className="py-12 text-center bg-white dark:bg-[#000000] border border-slate-200/80 dark:border-[#2f3336] rounded-[16px] p-6 text-sm text-slate-500">
               {t("explore.perspectivesEmpty") || "Tanlangan parametrlar bo‘yicha tahliliy postlar topilmadi."}
             </div>
           ) : (
@@ -412,7 +412,7 @@ export default function ExplorePage() {
               {filteredPosts.map((item) => (
                 <div
                   key={item.id}
-                  className="p-5 sm:p-6 rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] hover:border-slate-300 dark:hover:border-[#343644] shadow-xs transition-all space-y-3 group"
+                  className="p-5 sm:p-6 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] hover:border-slate-300 dark:hover:border-[#3e4144] shadow-xs transition-all space-y-3 group"
                 >
                   {/* Author Header */}
                   <div className="flex items-center justify-between gap-3">
@@ -434,7 +434,7 @@ export default function ExplorePage() {
                           </span>
                           {item.author.verified && (
                             <span
-                              className="size-3 rounded-full bg-[#3995ff] text-white flex items-center justify-center shrink-0"
+                              className="size-3 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center shrink-0"
                               title="Tasdiqlangan"
                             >
                               <Check size={7} strokeWidth={3} />
@@ -465,7 +465,7 @@ export default function ExplorePage() {
                     {item.title && (
                       <Link
                         href={localePath(`/dashboard/posts/${item.id}`)}
-                        className="block font-bold text-base text-slate-950 dark:text-white hover:text-blue-600 dark:hover:text-[#3995ff] transition-colors leading-snug"
+                        className="block font-bold text-base text-slate-950 dark:text-white hover:text-blue-600 dark:hover:text-[#1d9bf0] transition-colors leading-snug"
                       >
                         {item.title}
                       </Link>
@@ -500,7 +500,7 @@ export default function ExplorePage() {
                           <Link
                             key={url + idx}
                             href={localePath(`/dashboard/posts/${item.id}`)}
-                            className="relative block h-full w-full bg-slate-100 dark:bg-[#14151d] overflow-hidden"
+                            className="relative block h-full w-full bg-slate-100 dark:bg-[#16181c] overflow-hidden"
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -516,7 +516,7 @@ export default function ExplorePage() {
                   )}
 
                   {/* Footer Metrics & Action Link */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#1d1f2a] text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#202327] text-xs text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-4">
                       <span className="flex items-center gap-1.5 hover:text-rose-500 transition-colors">
                         <Heart className="w-3.5 h-3.5" />
@@ -541,7 +541,7 @@ export default function ExplorePage() {
 
                     <Link
                       href={localePath(`/dashboard/posts/${item.id}`)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-[#3995ff] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-[#1d9bf0] hover:underline"
                     >
                       <span>Munozaraga o‘tish</span>
                       <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />

@@ -337,7 +337,7 @@ class _FallbackBackdrop extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0A1224), Color(0xFF101D38), Color(0xFF070A12)],
+          colors: [Color(0xFF000000), Color(0xFF16181C), Color(0xFF000000)],
         ),
       ),
       child: Center(

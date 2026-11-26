@@ -82,10 +82,10 @@ class CreatePostComposerBar extends StatelessWidget {
                 borderRadius: 999,
                 tintColor: sendBtnColor,
                 onTap: onTap,
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.send_rounded,
-                    color: Colors.white,
+                    color: isDark ? AppColors.onPrimary : Colors.white,
                     size: 17,
                   ),
                 ),

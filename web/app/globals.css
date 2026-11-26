@@ -10,62 +10,64 @@
 }
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --border: #e2e8f0;
+  /* X (Twitter) light palette */
+  --background: #ffffff;
+  --foreground: #0f1419;
+  --muted: #f7f9f9;
+  --muted-foreground: #536471;
+  --border: #cfd9de;
   --card: #ffffff;
-  --card-foreground: #0f172a;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --accent: #6366f1;
-  --accent-foreground: #ffffff;
+  --card-foreground: #0f1419;
+  --primary: #1d9bf0;
+  --primary-foreground: #0f1419;
+  --accent: #1d9bf0;
+  --accent-foreground: #0f1419;
   /* Markaziy kontent kengligi — bir joydan butun ilova bo'ylab o'lchamni boshqarish */
   --content-max-width: 1320px;
-  --surface-0: #f8fafc;
+  --surface-0: #ffffff;
   --surface-1: #ffffff;
-  --surface-2: #f1f5f9;
-  --surface-subtle: #e2e8f0;
-  --border-subtle: #e2e8f0;
-  --border-default: #cbd5e1;
-  --border-strong: #94a3b8;
+  --surface-2: #f7f9f9;
+  --surface-subtle: #eff3f4;
+  --border-subtle: #e1e8ed;
+  --border-default: #cfd9de;
+  --border-strong: #8b98a5;
 }
 
 .dark,
 :root[class~="dark"] {
+  /* X (Twitter) dark palette — pure black canvas */
   --background: #000000;
-  --foreground: #ededed;
-  --muted: #171717;
-  --muted-foreground: #a1a1aa;
-  --border: rgba(255, 255, 255, 0.1);
-  --card: #0a0a0a;
-  --card-foreground: #ededed;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --accent: #818cf8;
-  --accent-foreground: #ffffff;
+  --foreground: #e7e9ea;
+  --muted: #16181c;
+  --muted-foreground: #71767b;
+  --border: #2f3336;
+  --card: #000000;
+  --card-foreground: #e7e9ea;
+  --primary: #1d9bf0;
+  --primary-foreground: #0f1419;
+  --accent: #1d9bf0;
+  --accent-foreground: #0f1419;
   --surface-0: #000000;
-  --surface-1: #0a0a0a;
-  --surface-2: #121212;
-  --surface-subtle: #18181b;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-default: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.2);
+  --surface-1: #000000;
+  --surface-2: #16181c;
+  --surface-subtle: #202327;
+  --border-subtle: #2f3336;
+  --border-default: #333639;
+  --border-strong: #3e4144;
 
-  /* Map Tailwind slate palette to deep Vercel monochrome in dark mode */
+  /* Map Tailwind slate palette to X dark neutrals */
   --color-slate-950: #000000;
-  --color-slate-900: #0a0a0a;
-  --color-slate-850: #121212;
-  --color-slate-800: #171717;
-  --color-slate-700: #262626;
-  --color-slate-600: #52525b;
-  --color-slate-500: #71717a;
-  --color-slate-400: #a1a1aa;
-  --color-slate-300: #d4d4d8;
-  --color-slate-200: #e4e4e7;
-  --color-slate-100: #f4f4f5;
-  --color-slate-50: #fafafa;
+  --color-slate-900: #000000;
+  --color-slate-850: #16181c;
+  --color-slate-800: #16181c;
+  --color-slate-700: #2f3336;
+  --color-slate-600: #536471;
+  --color-slate-500: #71767b;
+  --color-slate-400: #8b98a5;
+  --color-slate-300: #cfd9de;
+  --color-slate-200: #e7e9ea;
+  --color-slate-100: #f7f9f9;
+  --color-slate-50: #ffffff;
 }
 
 @theme inline {
@@ -84,38 +86,229 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-/* Vercel Deep Black Palette for entire dark application */
+/*
+ * X (Twitter) color scales.
+ * Tailwind utility classes across the app (bg-blue-600, text-rose-500, ...)
+ * resolve to X's real palette instead of Tailwind's defaults.
+ */
+@theme {
+  --color-blue-50: #e8f5fd;
+  --color-blue-100: #d1ecfb;
+  --color-blue-200: #a3d9f7;
+  --color-blue-300: #70c5f2;
+  --color-blue-400: #4db5f0;
+  --color-blue-500: #1d9bf0;
+  --color-blue-600: #1d9bf0;
+  --color-blue-700: #1a8cd8;
+  --color-blue-800: #1577b8;
+  --color-blue-900: #0f5c8f;
+  --color-blue-950: #0a3d5f;
+
+  --color-indigo-50: #e8f5fd;
+  --color-indigo-100: #d1ecfb;
+  --color-indigo-200: #a3d9f7;
+  --color-indigo-300: #70c5f2;
+  --color-indigo-400: #4db5f0;
+  --color-indigo-500: #1d9bf0;
+  --color-indigo-600: #1d9bf0;
+  --color-indigo-700: #1a8cd8;
+  --color-indigo-800: #1577b8;
+  --color-indigo-900: #0f5c8f;
+  --color-indigo-950: #0a3d5f;
+
+  --color-sky-50: #e8f5fd;
+  --color-sky-100: #d1ecfb;
+  --color-sky-200: #a3d9f7;
+  --color-sky-300: #70c5f2;
+  --color-sky-400: #4db5f0;
+  --color-sky-500: #1d9bf0;
+  --color-sky-600: #1d9bf0;
+  --color-sky-700: #1a8cd8;
+  --color-sky-800: #1577b8;
+  --color-sky-900: #0f5c8f;
+  --color-sky-950: #0a3d5f;
+
+  --color-violet-50: #f1edff;
+  --color-violet-100: #e3dbff;
+  --color-violet-200: #c7b7ff;
+  --color-violet-300: #ab93ff;
+  --color-violet-400: #8f6fff;
+  --color-violet-500: #7856ff;
+  --color-violet-600: #7856ff;
+  --color-violet-700: #6346d9;
+  --color-violet-800: #4e37b3;
+  --color-violet-900: #3a288c;
+  --color-violet-950: #1f154d;
+
+  --color-emerald-50: #e6f9f3;
+  --color-emerald-100: #ccf3e7;
+  --color-emerald-200: #99e7cf;
+  --color-emerald-300: #66dbb7;
+  --color-emerald-400: #33cf9f;
+  --color-emerald-500: #00ba7c;
+  --color-emerald-600: #00ba7c;
+  --color-emerald-700: #00a06b;
+  --color-emerald-800: #008257;
+  --color-emerald-900: #006444;
+  --color-emerald-950: #003d29;
+
+  --color-green-50: #e6f9f3;
+  --color-green-100: #ccf3e7;
+  --color-green-200: #99e7cf;
+  --color-green-300: #66dbb7;
+  --color-green-400: #33cf9f;
+  --color-green-500: #00ba7c;
+  --color-green-600: #00ba7c;
+  --color-green-700: #00a06b;
+  --color-green-800: #008257;
+  --color-green-900: #006444;
+  --color-green-950: #003d29;
+
+  --color-rose-50: #fee8f2;
+  --color-rose-100: #fdd1e5;
+  --color-rose-200: #fba3cb;
+  --color-rose-300: #f975b1;
+  --color-rose-400: #f4212e;
+  --color-rose-500: #f91880;
+  --color-rose-600: #d11c27;
+  --color-rose-700: #a81620;
+  --color-rose-800: #a81620;
+  --color-rose-900: #801119;
+  --color-rose-950: #45090d;
+
+  --color-red-50: #fee9ea;
+  --color-red-100: #fdd3d5;
+  --color-red-200: #fba7ab;
+  --color-red-300: #f97b81;
+  --color-red-400: #f74f57;
+  --color-red-500: #d11c27;
+  --color-red-600: #c4170f;
+  --color-red-700: #d11c27;
+  --color-red-800: #a81620;
+  --color-red-900: #801119;
+  --color-red-950: #45090d;
+
+  --color-amber-50: #fffbe6;
+  --color-amber-100: #fff7cc;
+  --color-amber-200: #ffef99;
+  --color-amber-300: #ffe766;
+  --color-amber-400: #ffdf33;
+  --color-amber-500: #ffd400;
+  --color-amber-600: #ffd400;
+  --color-amber-700: #d9b400;
+  --color-amber-800: #b39400;
+  --color-amber-900: #8c7400;
+  --color-amber-950: #4d4000;
+
+  --color-yellow-50: #fffbe6;
+  --color-yellow-100: #fff7cc;
+  --color-yellow-200: #ffef99;
+  --color-yellow-300: #ffe766;
+  --color-yellow-400: #ffdf33;
+  --color-yellow-500: #ffd400;
+  --color-yellow-600: #ffd400;
+  --color-yellow-700: #d9b400;
+  --color-yellow-800: #b39400;
+  --color-yellow-900: #8c7400;
+  --color-yellow-950: #4d4000;
+
+  --color-slate-50: #f7f9f9;
+  --color-slate-100: #eff3f4;
+  --color-slate-200: #cfd9de;
+  --color-slate-300: #cfd9de;
+  --color-slate-400: #8b98a5;
+  --color-slate-500: #536471;
+  --color-slate-600: #3f4d57;
+  --color-slate-700: #2c3640;
+  --color-slate-800: #1a2329;
+  --color-slate-900: #0f1419;
+  --color-slate-950: #000000;
+
+  --color-zinc-50: #f7f9f9;
+  --color-zinc-100: #eff3f4;
+  --color-zinc-200: #e1e8ed;
+  --color-zinc-300: #cfd9de;
+  --color-zinc-400: #8b98a5;
+  --color-zinc-500: #71767b;
+  --color-zinc-600: #536471;
+  --color-zinc-700: #2f3336;
+  --color-zinc-800: #2f3336;
+  --color-zinc-900: #16181c;
+  --color-zinc-950: #000000;
+}
+
+/*
+ * X button pairing: filled blue surfaces use near-black text.
+ * White text on #1d9bf0 only reaches ~3:1 contrast, so primary CTAs get
+ * #0f1419 labels (≈7:1) like X's blue controls.
+ */
+.bg-blue-500,
+.bg-blue-600,
+.bg-blue-700,
+.bg-indigo-500,
+.bg-indigo-600,
+.bg-sky-500,
+.bg-sky-600,
+.bg-\[\#1d9bf0\] {
+  color: #0f1419;
+}
+
+/*
+ * Filled status surfaces follow the same dark-label pairing.
+ * White on X green (#00ba7c) is ≈2.6:1 and on X yellow (#ffd400) ≈1.3:1,
+ * so success, warning and like-pink badges/chips also need near-black text.
+ * Solid destructive reds are darkened above so white labels stay ≥4.5:1.
+ */
+.bg-emerald-400,
+.bg-emerald-500,
+.bg-emerald-600,
+.bg-green-400,
+.bg-green-500,
+.bg-green-600,
+.bg-amber-400,
+.bg-amber-500,
+.bg-amber-600,
+.bg-yellow-400,
+.bg-yellow-500,
+.bg-yellow-600,
+.bg-rose-500 {
+  color: #0f1419;
+}
+
+/* X dark canvas for the entire dark application */
 .dark .dark\:bg-slate-950 {
   background-color: #000000 !important;
 }
 .dark .dark\:bg-slate-900 {
-  background-color: #0a0a0a !important;
+  background-color: #000000 !important;
 }
 .dark .dark\:bg-slate-900\/80,
 .dark .dark\:bg-slate-900\/90 {
-  background-color: rgba(10, 10, 10, 0.85) !important;
+  background-color: rgba(0, 0, 0, 0.85) !important;
 }
 .dark .dark\:bg-slate-800 {
-  background-color: #141414 !important;
+  background-color: #16181c !important;
 }
 .dark .dark\:bg-slate-800\/80 {
-  background-color: rgba(20, 20, 20, 0.8) !important;
+  background-color: rgba(22, 24, 28, 0.8) !important;
 }
 .dark .dark\:border-slate-800 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: #2f3336 !important;
 }
 .dark .dark\:border-slate-700,
 .dark .dark\:border-slate-700\/80 {
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: #3e4144 !important;
 }
 .dark .dark\:text-slate-100,
 .dark .dark\:text-white,
 .dark .dark\:text-slate-50 {
-  color: #ededed !important;
+  color: #e7e9ea !important;
 }
-.dark .dark\:text-slate-300,
+.dark .dark\:text-slate-300 {
+  color: #cfd9de !important;
+}
 .dark .dark\:text-slate-400 {
-  color: #a1a1aa !important;
+  color: #71767b !important;
 }
 
 body {
@@ -149,13 +342,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #cfd9de;
   border-radius: 9999px;
 }
 
 @media (prefers-color-scheme: dark) {
   ::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: #2f3336;
   }
 }
 
@@ -170,7 +363,7 @@ body {
 
 .gogetters-rich-editor:empty::before {
   content: attr(data-placeholder);
-  color: #94a3b8;
+  color: #8b98a5;
   font-size: 0.825rem;
   pointer-events: none;
   display: block;
@@ -178,7 +371,7 @@ body {
 
 @media (prefers-color-scheme: dark) {
   .gogetters-rich-editor:empty::before {
-    color: #64748b;
+    color: #71767b;
   }
 }
 
@@ -204,20 +397,20 @@ body {
 }
 
 .gogetters-rich-editor blockquote {
-  border-left: 3.5px solid #0f172a;
+  border-left: 3.5px solid #0f1419;
   padding-left: 1rem;
   padding-top: 0.4rem;
   padding-bottom: 0.4rem;
   margin: 1rem 0;
   font-style: italic;
-  background: rgba(241, 245, 249, 0.7);
+  background: rgba(247, 249, 249, 0.7);
   border-radius: 0 0.375rem 0.375rem 0;
 }
 
 @media (prefers-color-scheme: dark) {
   .gogetters-rich-editor blockquote {
-    border-left-color: #f8fafc;
-    background: rgba(30, 41, 59, 0.45);
+    border-left-color: #e7e9ea;
+    background: rgba(22, 24, 28, 0.6);
   }
 }
 
@@ -240,26 +433,26 @@ body {
 .gogetters-rich-editor code {
   font-family: var(--font-mono, monospace);
   font-size: 0.85em;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  color: #0f172a;
+  background: #f7f9f9;
+  border: 1px solid #eff3f4;
+  color: #0f1419;
   padding: 0.15rem 0.4rem;
   border-radius: 0.25rem;
 }
 
 @media (prefers-color-scheme: dark) {
   .gogetters-rich-editor code {
-    background: #1e293b;
-    border-color: #334155;
-    color: #f8fafc;
+    background: #202327;
+    border-color: #2f3336;
+    color: #e7e9ea;
   }
 }
 
 .gogetters-rich-editor pre {
   font-family: var(--font-mono, monospace);
   font-size: 0.85em;
-  background: #0f172a;
-  color: #f8fafc;
+  background: #0f1419;
+  color: #e7e9ea;
   padding: 0.9rem 1rem;
   border-radius: 0.5rem;
   overflow-x: auto;
@@ -268,34 +461,34 @@ body {
 
 @media (prefers-color-scheme: dark) {
   .gogetters-rich-editor pre {
-    background: #020617;
-    border: 1px solid #1e293b;
+    background: #000000;
+    border: 1px solid #2f3336;
   }
 }
 
 .gogetters-rich-editor mark {
-  background: #fef08a;
-  color: #0f172a;
+  background: #ffd400;
+  color: #0f1419;
   padding: 0.1rem 0.3rem;
   border-radius: 0.2rem;
 }
 
 @media (prefers-color-scheme: dark) {
   .gogetters-rich-editor mark {
-    background: #854d0e;
-    color: #fef08a;
+    background: #665200;
+    color: #ffd400;
   }
 }
 
 .gogetters-rich-editor a {
-  color: #2563eb;
+  color: #1d9bf0;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 @media (prefers-color-scheme: dark) {
   .gogetters-rich-editor a {
-    color: #60a5fa;
+    color: #4db5f0;
   }
 }
 
@@ -328,19 +521,19 @@ body {
 @keyframes highlight-scale-pulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+    box-shadow: 0 0 0 0 rgba(29, 155, 240, 0);
   }
   15% {
     transform: scale(1.025);
-    box-shadow: 0 16px 36px -6px rgba(245, 158, 11, 0.3), 0 0 0 4px rgba(245, 158, 11, 0.65);
+    box-shadow: 0 16px 36px -6px rgba(29, 155, 240, 0.3), 0 0 0 4px rgba(29, 155, 240, 0.65);
   }
   70% {
     transform: scale(1.02);
-    box-shadow: 0 12px 28px -6px rgba(245, 158, 11, 0.25), 0 0 0 3px rgba(245, 158, 11, 0.5);
+    box-shadow: 0 12px 28px -6px rgba(29, 155, 240, 0.25), 0 0 0 3px rgba(29, 155, 240, 0.5);
   }
   100% {
     transform: scale(1);
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 0 0 0 rgba(245, 158, 11, 0);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 0 0 0 rgba(29, 155, 240, 0);
   }
 }
 
@@ -403,10 +596,10 @@ body {
 }
 
 .glass-card {
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #2f3336;
 }
 
 .glass-card-hover {
@@ -415,8 +608,8 @@ body {
 
 .glass-card-hover:hover {
   transform: translateY(-4px);
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.25);
+  border-color: rgba(29, 155, 240, 0.4);
+  box-shadow: 0 20px 40px -15px rgba(29, 155, 240, 0.25);
 }
 
 /* Scroll reveal utility classes */

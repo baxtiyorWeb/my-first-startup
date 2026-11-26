@@ -83,7 +83,7 @@ export function VideoPlayerClient({
     }
 
     return (
-      <div className="w-full h-full flex items-center justify-center bg-[#0d0f17] text-slate-400 text-sm">
+      <div className="w-full h-full flex items-center justify-center bg-[#000000] text-slate-400 text-sm">
         Video manbasi biriktirilmagan
       </div>
     );
@@ -91,15 +91,15 @@ export function VideoPlayerClient({
 
   return (
     <div className="space-y-4">
-      <div className="relative aspect-video w-full rounded-[16px] overflow-hidden bg-black border border-slate-200/80 dark:border-[#24252f] shadow-lg">
+      <div className="relative aspect-video w-full rounded-[16px] overflow-hidden bg-black border border-slate-200/80 dark:border-[#2f3336] shadow-lg">
         {renderPlayer()}
       </div>
 
       {/* Interactive Video Key Moments (Chapters) */}
       {chapters.length > 0 && (
-        <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-4 sm:p-5 space-y-3">
+        <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-4 sm:p-5 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
-            <Clock className="w-4 h-4 text-[#3995ff]" />
+            <Clock className="w-4 h-4 text-[#1d9bf0]" />
             <span>Video darslik bo‘limlari (Key Moments)</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -110,11 +110,11 @@ export function VideoPlayerClient({
                 onClick={() => handleSeek(ch.seconds, idx)}
                 className={`flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                   activeChapterIdx === idx
-                    ? "bg-blue-50 dark:bg-[#162038] border-[#3995ff]/50 text-blue-700 dark:text-[#3995ff]"
-                    : "bg-slate-50 dark:bg-[#14151d] border-slate-200/70 dark:border-[#24252f] text-slate-700 dark:text-slate-300 hover:border-[#3995ff]/40"
+                    ? "bg-blue-50 dark:bg-[#0e2c3f] border-[#1d9bf0]/50 text-blue-700 dark:text-[#1d9bf0]"
+                    : "bg-slate-50 dark:bg-[#16181c] border-slate-200/70 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/40"
                 }`}
               >
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#3995ff]/15 text-[#3995ff] font-mono text-xs font-bold shrink-0">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1d9bf0]/15 text-[#1d9bf0] font-mono text-xs font-bold shrink-0">
                   <Play className="w-2.5 h-2.5 fill-current" />
                   {ch.time}
                 </span>

@@ -176,7 +176,7 @@ class _ShortsScreenState extends State<ShortsScreen> {
     final canGoBack = widget.onBack != null || Navigator.of(context).canPop();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070A12),
+      backgroundColor: const Color(0xFF000000),
       body: ListenableBuilder(
         listenable: widget.feedController,
         builder: (context, _) {

@@ -344,7 +344,7 @@ class _DiscussionBottomSheetState extends State<DiscussionBottomSheet> {
                           style: IconButton.styleFrom(
                             backgroundColor: hasText || _isSending ? AppColors.primary : disabledBg,
                             disabledBackgroundColor: disabledBg,
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppColors.onPrimary,
                             disabledForegroundColor:
                                 isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
                             shape: const CircleBorder(),
@@ -355,7 +355,7 @@ class _DiscussionBottomSheetState extends State<DiscussionBottomSheet> {
                                   width: 18,
                                   height: 18,
                                   child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: AppColors.onPrimary,
                                     strokeWidth: 2,
                                   ),
                                 )

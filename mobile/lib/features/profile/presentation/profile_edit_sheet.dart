@@ -96,7 +96,13 @@ class _ProfileEditSheetState extends State<ProfileEditSheet> {
         ..hideCurrentSnackBar()
         ..showSnackBar(
           const SnackBar(
-            content: Text('Profil ma\'lumotlari yangilandi!'),
+            content: Text(
+              'Profil ma\'lumotlari yangilandi!',
+              style: TextStyle(
+                color: AppColors.onSuccess,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.success,
           ),
@@ -110,7 +116,7 @@ class _ProfileEditSheetState extends State<ProfileEditSheet> {
           const SnackBar(
             content: Text('Profilni saqlashda xatolik yuz berdi'),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.danger,
+            backgroundColor: AppColors.dangerSurface,
           ),
         );
     }

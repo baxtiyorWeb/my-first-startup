@@ -17,22 +17,22 @@ export async function GET(req: Request) {
   <style>
     body {
       margin: 0;
-      background: #0b0f19;
+      background: #000000;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     .topbar {
       display: none !important;
     }
     .swagger-ui .info .title {
-      color: #f8fafc !important;
+      color: #f7f9f9 !important;
     }
     .swagger-ui .info p, .swagger-ui .info li {
-      color: #94a3b8 !important;
+      color: #8b98a5 !important;
     }
     .swagger-ui .scheme-container {
-      background: #0f172a !important;
+      background: #0f1419 !important;
       box-shadow: none !important;
-      border-bottom: 1px solid #1e293b !important;
+      border-bottom: 1px solid #2f3336 !important;
     }
     .swagger-ui {
       max-width: 1200px;

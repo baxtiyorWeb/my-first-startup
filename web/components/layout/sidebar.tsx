@@ -163,7 +163,7 @@ export function Sidebar() {
         data-node-id="11:3"
         data-name="Yon menyu"
         aria-label="Asosiy navigatsiya"
-        className="hidden md:flex flex-col fixed top-0 left-0 bottom-0 z-30 bg-white dark:bg-[#0b0c13] border-r border-slate-200 dark:border-[#24252f] transition-all duration-300 ease-out select-none"
+        className="hidden md:flex flex-col fixed top-0 left-0 bottom-0 z-30 bg-white dark:bg-[#000000] border-r border-slate-200 dark:border-[#2f3336] transition-all duration-300 ease-out select-none"
         style={{
           width: isCollapsed
             ? `${SIDEBAR_COLLAPSED_WIDTH}px`
@@ -171,7 +171,7 @@ export function Sidebar() {
         }}
       >
         {/* 1. Brand / Logo Header (Figma nodes 11:152, 11:153, 11:154) */}
-        <div className="h-[68px] flex items-center px-4 border-b border-slate-200 dark:border-[#24252f] shrink-0">
+        <div className="h-[68px] flex items-center px-4 border-b border-slate-200 dark:border-[#2f3336] shrink-0">
           <Link
             href={localePath("/dashboard")}
             className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 rounded-md p-1 transition-colors cursor-pointer min-w-0"
@@ -193,7 +193,7 @@ export function Sidebar() {
                 <span className="text-[20px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight truncate font-['Inter:Bold']">
                   Geters
                 </span>
-                <span className="text-[10px] font-normal text-slate-500 dark:text-[#c8c9db] truncate font-['Inter:Regular']">
+                <span className="text-[10px] font-normal text-slate-500 dark:text-[#cfd9de] truncate font-['Inter:Regular']">
                   Bilim. Yangilik. Imkoniyat.
                 </span>
               </div>
@@ -221,8 +221,8 @@ export function Sidebar() {
                       href={localePath(item.rawHref)}
                       className={`h-[44px] flex items-center gap-3 px-3 rounded-[12px] text-[14px] transition-colors cursor-pointer focus-visible:outline-none ${
                         isActive
-                          ? "bg-blue-50 dark:bg-[#162038] text-blue-600 dark:text-[#3995ff] font-semibold border border-blue-200/80 dark:border-[#23355d]"
-                          : "text-slate-600 dark:text-[#d4d7e7] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#14151f] font-medium"
+                          ? "bg-blue-50 dark:bg-[#0e2c3f] text-blue-600 dark:text-[#1d9bf0] font-semibold border border-blue-200/80 dark:border-[#1b4a63]"
+                          : "text-slate-600 dark:text-[#d6d9db] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#16181c] font-medium"
                       } ${isCollapsed ? "justify-center px-0" : ""}`}
                       aria-label={item.label}
                       aria-current={isActive ? "page" : undefined}
@@ -230,7 +230,7 @@ export function Sidebar() {
                       <div className="relative shrink-0 flex items-center justify-center size-[20px]">
                         <IconComponent size={18} />
                         {item.badge > 0 && isCollapsed && (
-                          <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 rounded-full bg-[#3995ff] text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-[#0b0c13] shadow-2xs">
+                          <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 rounded-full bg-[#1d9bf0] text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-[#000000] shadow-2xs">
                             {item.badge > 9 ? "9+" : item.badge}
                           </span>
                         )}
@@ -241,12 +241,12 @@ export function Sidebar() {
                           <span className="truncate">{item.label}</span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             {item.pill && (
-                              <span className="px-2 py-0.5 rounded-[11px] bg-[#3995ff] text-white text-[10px] font-bold leading-none">
+                              <span className="px-2 py-0.5 rounded-[11px] bg-[#1d9bf0] text-white text-[10px] font-bold leading-none">
                                 {item.pill}
                               </span>
                             )}
                             {item.badge > 0 && (
-                              <span className="min-w-4 h-4 px-1 rounded-full bg-[#3995ff] text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-2xs">
+                              <span className="min-w-4 h-4 px-1 rounded-full bg-[#1d9bf0] text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-2xs">
                                 {item.badge > 9 ? "9+" : item.badge}
                               </span>
                             )}
@@ -258,7 +258,7 @@ export function Sidebar() {
                     {isCollapsed && (
                       <div
                         role="tooltip"
-                        className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2.5 py-1 rounded-md bg-slate-900 dark:bg-[#101117] border border-slate-700 dark:border-[#24252f] text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"
+                        className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2.5 py-1 rounded-md bg-slate-900 dark:bg-[#000000] border border-slate-700 dark:border-[#2f3336] text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"
                       >
                         {item.label}
                       </div>
@@ -269,12 +269,12 @@ export function Sidebar() {
             </div>
 
             {/* Ajratuvchi chiziq (Figma node 11:219) */}
-            <div className="h-px bg-slate-200 dark:bg-[#24252f] mx-2" />
+            <div className="h-px bg-slate-200 dark:bg-[#2f3336] mx-2" />
 
             {/* Creator Studio Section (Figma node 11:218) */}
             <div className="space-y-1">
               {!isCollapsed && (
-                <p className="px-3 py-1 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-[#8e95ab] uppercase font-['Inter:Regular']">
+                <p className="px-3 py-1 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-[#71767b] uppercase font-['Inter:Regular']">
                   Creator Studio
                 </p>
               )}
@@ -288,8 +288,8 @@ export function Sidebar() {
                       href={localePath(item.rawHref)}
                       className={`h-[42px] flex items-center gap-3 px-3 rounded-[12px] text-[13px] sm:text-[14px] transition-colors cursor-pointer focus-visible:outline-none ${
                         isActive
-                          ? "bg-blue-50 dark:bg-[#162038] text-blue-600 dark:text-[#3995ff] font-semibold border border-blue-200/80 dark:border-[#23355d]"
-                          : "text-slate-600 dark:text-[#d4d7e7] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#14151f] font-medium"
+                          ? "bg-blue-50 dark:bg-[#0e2c3f] text-blue-600 dark:text-[#1d9bf0] font-semibold border border-blue-200/80 dark:border-[#1b4a63]"
+                          : "text-slate-600 dark:text-[#d6d9db] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#16181c] font-medium"
                       } ${isCollapsed ? "justify-center px-0" : ""}`}
                       aria-label={item.label}
                     >
@@ -301,7 +301,7 @@ export function Sidebar() {
                         <span className="flex-1 overflow-hidden whitespace-nowrap flex items-center justify-between min-w-0">
                           <span className="truncate">{item.label}</span>
                           {item.pill && (
-                            <span className="px-2 py-0.5 rounded-[11px] bg-[#1c2b45] text-[#3995ff] border border-[#2a3f65] text-[10px] font-bold leading-none">
+                            <span className="px-2 py-0.5 rounded-[11px] bg-[#0e2c3f] text-[#1d9bf0] border border-[#1b4a63] text-[10px] font-bold leading-none">
                               {item.pill}
                             </span>
                           )}
@@ -312,7 +312,7 @@ export function Sidebar() {
                     {isCollapsed && (
                       <div
                         role="tooltip"
-                        className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2.5 py-1 rounded-md bg-slate-900 dark:bg-[#101117] border border-slate-700 dark:border-[#24252f] text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"
+                        className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2.5 py-1 rounded-md bg-slate-900 dark:bg-[#000000] border border-slate-700 dark:border-[#2f3336] text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"
                       >
                         {item.label}
                       </div>
@@ -327,35 +327,35 @@ export function Sidebar() {
               <div
                 data-node-id="11:252"
                 data-name="Kontent saqlash hajmi"
-                className="mx-1 bg-slate-100/90 dark:bg-[#14161e] border border-slate-200 dark:border-[#222430] rounded-[14px] p-3 space-y-2 select-none shadow-2xs"
+                className="mx-1 bg-slate-100/90 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] rounded-[14px] p-3 space-y-2 select-none shadow-2xs"
               >
                 <div className="flex items-center gap-2">
-                  <HardDrive size={15} className="text-[#3995ff] shrink-0" />
+                  <HardDrive size={15} className="text-[#1d9bf0] shrink-0" />
                   <span className="text-[12px] font-semibold text-slate-800 dark:text-white truncate">
                     Kontent yuklash
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#c7cadd]">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#cfd9de]">
                   <span>{storageInfo.displayString}</span>
-                  <span className="font-semibold text-[#3995ff]">
+                  <span className="font-semibold text-[#1d9bf0]">
                     {storageInfo.percentageFormatted}
                   </span>
                 </div>
-                <div className="h-[6px] w-full bg-slate-200 dark:bg-[#353744] rounded-full overflow-hidden">
+                <div className="h-[6px] w-full bg-slate-200 dark:bg-[#2f3336] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#3995ff] rounded-full transition-all duration-300"
+                    className="h-full bg-[#1d9bf0] rounded-full transition-all duration-300"
                     style={{ width: `${storageInfo.percentage}%` }}
                   />
                 </div>
               </div>
             ) : (
               <div className="flex justify-center group relative">
-                <div className="size-9 rounded-xl bg-slate-100 dark:bg-[#14161e] border border-slate-200 dark:border-[#222430] flex items-center justify-center text-[#3995ff] cursor-pointer">
+                <div className="size-9 rounded-xl bg-slate-100 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] flex items-center justify-center text-[#1d9bf0] cursor-pointer">
                   <HardDrive size={16} />
                 </div>
                 <div
                   role="tooltip"
-                  className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2.5 py-1 rounded-md bg-slate-900 dark:bg-[#101117] border border-slate-700 dark:border-[#24252f] text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"
+                  className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2.5 py-1 rounded-md bg-slate-900 dark:bg-[#000000] border border-slate-700 dark:border-[#2f3336] text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"
                 >
                   Kontent yuklash: {storageInfo.displayString} ({storageInfo.percentageFormatted})
                 </div>
@@ -364,14 +364,14 @@ export function Sidebar() {
           </div>
 
           {/* 3. Bottom Secondary Navigation & User Profile (Figma node 11:259, 11:262) */}
-          <div className="space-y-2 pt-3 border-t border-slate-200 dark:border-[#24252f]">
+          <div className="space-y-2 pt-3 border-t border-slate-200 dark:border-[#2f3336]">
             {/* Install App button (hidden once app is installed) */}
             {!isInstalled && (
               <div className="relative group">
                 <button
                   type="button"
                   onClick={promptInstall}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold text-blue-600 dark:text-[#3995ff] hover:bg-blue-50/80 dark:hover:bg-[#14161e] rounded-[12px] transition-colors cursor-pointer focus-visible:outline-none ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold text-blue-600 dark:text-[#1d9bf0] hover:bg-blue-50/80 dark:hover:bg-[#16181c] rounded-[12px] transition-colors cursor-pointer focus-visible:outline-none ${
                     isCollapsed ? "justify-center px-0" : ""
                   }`}
                   aria-label="Ilovani telefon yoki kompyuterga o‘rnatish"
@@ -397,7 +397,7 @@ export function Sidebar() {
             <div>
               {session.isAuthenticated ? (
                 <div
-                  className={`flex items-center justify-between p-2 rounded-[13px] bg-slate-50 dark:bg-[#14161e] border border-slate-200/80 dark:border-[#222430] transition-colors ${
+                  className={`flex items-center justify-between p-2 rounded-[13px] bg-slate-50 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] transition-colors ${
                     isCollapsed ? "justify-center p-1.5" : ""
                   }`}
                 >
@@ -416,7 +416,7 @@ export function Sidebar() {
                         <span className="text-[13px] font-semibold text-slate-900 dark:text-white truncate">
                           {session.user.name || "baxtiyor"}
                         </span>
-                        <span className="text-[11px] text-slate-500 dark:text-[#bfc4d8] truncate">
+                        <span className="text-[11px] text-slate-500 dark:text-[#cfd9de] truncate">
                           {session.user.role || "Creator"}
                         </span>
                       </div>
@@ -437,7 +437,7 @@ export function Sidebar() {
               ) : (
                 <Link
                   href={localePath("/auth/login")}
-                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-[12px] bg-[#3995ff] hover:bg-[#2884ee] text-white text-xs font-semibold transition-all shadow-xs ${
+                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-[12px] bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white text-xs font-semibold transition-all shadow-xs ${
                     isCollapsed ? "p-2" : ""
                   }`}
                   title={t("nav.login")}

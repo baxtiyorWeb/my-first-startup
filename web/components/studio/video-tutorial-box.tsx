@@ -76,7 +76,7 @@ export function VideoTutorialBox({
   const ytPreviewId = extractYouTubeVideoId(videoUrl);
 
   return (
-    <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-emerald-500/30 dark:border-emerald-500/25 p-4 sm:p-5 space-y-4 shadow-xs">
+    <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-emerald-500/30 dark:border-emerald-500/25 p-4 sm:p-5 space-y-4 shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
           <Video className="w-4 h-4" />
@@ -97,7 +97,7 @@ export function VideoTutorialBox({
 
       {/* Optional Bunny / Media Picker Drawer */}
       {showLibrary && libraryVideos.length > 0 && (
-        <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] space-y-2 max-h-48 overflow-y-auto">
+        <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] space-y-2 max-h-48 overflow-y-auto">
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
             Serverga yuklangan videolar:
           </div>
@@ -113,12 +113,12 @@ export function VideoTutorialBox({
                 }
                 setShowLibrary(false);
               }}
-              className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white dark:hover:bg-[#1a1c26] border border-transparent hover:border-[#3995ff]/40 text-left transition-all cursor-pointer"
+              className="w-full flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-white dark:hover:bg-[#202327] border border-transparent hover:border-[#1d9bf0]/40 text-left transition-all cursor-pointer"
             >
               <span className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                 {vid.title}
               </span>
-              <span className="text-[10px] font-mono text-[#3995ff] shrink-0">
+              <span className="text-[10px] font-mono text-[#1d9bf0] shrink-0">
                 Tanlash
               </span>
             </button>
@@ -130,7 +130,7 @@ export function VideoTutorialBox({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="sm:col-span-2">
           <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
-            <Link2 className="w-3 h-3 text-[#3995ff]" />
+            <Link2 className="w-3 h-3 text-[#1d9bf0]" />
             <span>YouTube, Bunny Stream yoki MP4 URL *</span>
           </label>
           <input
@@ -138,7 +138,7 @@ export function VideoTutorialBox({
             value={videoUrl}
             onChange={(e) => onVideoUrlChange(e.target.value)}
             placeholder="https://www.youtube.com/watch?v=... yoki https://iframe.mediadelivery.net/embed/..."
-            className="w-full rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-full rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
           {ytPreviewId && (
             <p className="text-[10px] text-emerald-500 mt-1 font-medium">
@@ -149,7 +149,7 @@ export function VideoTutorialBox({
 
         <div>
           <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
-            <Clock className="w-3 h-3 text-[#3995ff]" />
+            <Clock className="w-3 h-3 text-[#1d9bf0]" />
             <span>Davomiyligi (MM:SS)</span>
           </label>
           <input
@@ -161,13 +161,13 @@ export function VideoTutorialBox({
               onDurationSecondsChange(secs > 0 ? secs : null);
             }}
             placeholder="14:30"
-            className="w-full rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-3 py-2 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-full rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-3 py-2 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
         </div>
       </div>
 
       {/* Video Chapters / Key Moments Builder */}
-      <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-[#1c1e29]">
+      <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-[#202327]">
         <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-200">
           Vaqt Kodlari / Key Moments (Google Video qidiruvida alohida bo‘lim bo‘lib chiqadi)
         </label>
@@ -177,10 +177,10 @@ export function VideoTutorialBox({
             {chapters.map((ch, idx) => (
               <div
                 key={`${ch.seconds}-${idx}`}
-                className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200/70 dark:border-[#24252f] text-xs"
+                className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] text-xs"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-mono font-bold text-[#3995ff] shrink-0">
+                  <span className="font-mono font-bold text-[#1d9bf0] shrink-0">
                     {ch.time}
                   </span>
                   <span className="truncate text-slate-800 dark:text-slate-200">
@@ -207,7 +207,7 @@ export function VideoTutorialBox({
             value={newChapTime}
             onChange={(e) => setNewChapTime(e.target.value)}
             placeholder="02:15"
-            className="w-20 rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="w-20 rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
           <input
             type="text"
@@ -220,12 +220,12 @@ export function VideoTutorialBox({
               }
             }}
             placeholder="Bo'lim nomi (masalan: SSR va ISR farqi)"
-            className="flex-1 rounded-lg bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+            className="flex-1 rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
           />
           <button
             type="button"
             onClick={handleAddChapter}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#3995ff] hover:bg-blue-600 text-white text-xs font-bold cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold cursor-pointer transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Qo‘shish</span>
@@ -236,7 +236,7 @@ export function VideoTutorialBox({
       {/* Transcript / Summary Notes */}
       <div className="space-y-1">
         <label className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-          <FileText className="w-3 h-3 text-[#3995ff]" />
+          <FileText className="w-3 h-3 text-[#1d9bf0]" />
           <span>Video Transkripti / Qisqa Konspekt (Google matn indeksatsiyasi uchun)</span>
         </label>
         <textarea
@@ -244,7 +244,7 @@ export function VideoTutorialBox({
           value={transcript}
           onChange={(e) => onTranscriptChange(e.target.value)}
           placeholder="Video darsda tushuntirilgan asosiy tezislar va terminlar..."
-          className="w-full rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] p-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff] resize-y"
+          className="w-full rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] p-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] resize-y"
         />
       </div>
     </div>

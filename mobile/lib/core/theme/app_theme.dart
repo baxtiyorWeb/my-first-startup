@@ -33,7 +33,7 @@ abstract class AppTheme {
       pageTransitionsTheme: _transitionsTheme,
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
-        onPrimary: Colors.white,
+        onPrimary: AppColors.onPrimary,
         primaryContainer: AppColors.primarySurface,
         onPrimaryContainer: AppColors.primaryDark,
         secondary: AppColors.slateAccent,
@@ -174,7 +174,7 @@ abstract class AppTheme {
       pageTransitionsTheme: _transitionsTheme,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
-        onPrimary: Colors.white,
+        onPrimary: AppColors.onPrimary,
         primaryContainer: AppColors.surfaceDarkSubtle,
         onPrimaryContainer: Colors.white,
         secondary: AppColors.primaryLight,

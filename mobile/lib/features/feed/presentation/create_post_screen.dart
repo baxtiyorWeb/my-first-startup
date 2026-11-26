@@ -215,7 +215,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating, backgroundColor: bg),
+        SnackBar(
+          content: Text(
+            message,
+            style: bg == AppColors.success
+                ? const TextStyle(
+                    color: AppColors.onSuccess,
+                    fontWeight: FontWeight.w600,
+                  )
+                : null,
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: bg,
+        ),
       );
   }
 

@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import type { PricingOverviewResponse, PricingPlanDto } from "@/lib/api/pricing";
 import { toast } from "@/components/ui/toast";
 
-const PRICING_COMING_SOON = true;
+const PRICING_COMING_SOON = false;
 
 function formatUzs(amount: number): string {
   if (amount <= 0) return "Bepul";
@@ -43,8 +43,15 @@ export default function PricingPage() {
       const res = await api.pricing.checkout({
         planSlug: plan.slug,
         billingCycle,
-        provider: "payme",
+        provider: "inpay",
       });
+
+      if (res.requiresPayment && res.checkoutUrl) {
+        toast.success("To'lov sahifasiga o'tilmoqda...");
+        window.location.href = res.checkoutUrl;
+        return;
+      }
+
       toast.success(res.message);
       await loadPricing();
     } catch (err) {
@@ -229,7 +236,7 @@ export default function PricingPage() {
                     }`}
                   >
                     {busySlug === plan.slug
-                      ? "Yuklanmoqda..."
+                      ? "To'lov sahifasi ochilmoqda..."
                       : plan.isCurrent
                       ? "Joriy reja"
                       : price <= 0

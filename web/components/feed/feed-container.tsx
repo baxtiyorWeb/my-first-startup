@@ -217,12 +217,12 @@ export function FeedContainer() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-48 bg-white dark:bg-[#101117] rounded-[17px] border border-slate-200/90 dark:border-[#24252f]"
+              className="h-48 bg-white dark:bg-[#000000] rounded-[17px] border border-slate-200/90 dark:border-[#2f3336]"
             />
           ))}
         </div>
       ) : error ? (
-        <div className="py-12 text-center bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] rounded-[17px] p-6 space-y-3">
+        <div className="py-12 text-center bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] rounded-[17px] p-6 space-y-3">
           <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">
             {error}
           </p>
@@ -232,18 +232,18 @@ export function FeedContainer() {
               setIsLoading(true);
               fetchFeed();
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#3995ff] text-white text-xs font-semibold hover:bg-[#2a84ee] cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1d9bf0] text-white text-xs font-semibold hover:bg-[#1a8cd8] cursor-pointer transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>{t("common.retry")}</span>
           </button>
         </div>
       ) : displayedPosts.length === 0 ? (
-        <div className="py-14 text-center bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] rounded-[17px] p-6">
-          <p className="text-sm font-semibold text-slate-800 dark:text-[#f6f6fa]">
+        <div className="py-14 text-center bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] rounded-[17px] p-6">
+          <p className="text-sm font-semibold text-slate-800 dark:text-[#e7e9ea]">
             {t("feed.emptyTitle") || "Hozircha postlar yo'q"}
           </p>
-          <p className="text-xs text-slate-500 dark:text-[#a0a5b8] mt-1">
+          <p className="text-xs text-slate-500 dark:text-[#8b98a5] mt-1">
             {activeTab !== "all"
               ? "Ushbu bo'limda hozircha postlar mavjud emas"
               : t("feed.emptySubtitle") ||
@@ -276,7 +276,7 @@ export function FeedContainer() {
                 type="button"
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
-                className="px-5 py-2.5 text-xs font-semibold rounded-[12px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] text-slate-700 dark:text-[#f6f6fa] hover:bg-slate-50 dark:hover:bg-[#181920] transition-colors cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 text-xs font-semibold rounded-[12px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] text-slate-700 dark:text-[#e7e9ea] hover:bg-slate-50 dark:hover:bg-[#16181c] transition-colors cursor-pointer disabled:opacity-50"
               >
                 {isLoadingMore
                   ? t("feed.loadingMore") || "Yuklanmoqda..."

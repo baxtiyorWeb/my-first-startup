@@ -1,52 +1,64 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Slate-first architectural color system for Geters (Light + Dark).
+/// X (Twitter) inspired color system for Geters (Light + Dark).
+///
+/// One blue accent (#1D9BF0), neutral gray hierarchy, pure black dark canvas
+/// and hairline borders — the same visual language X uses.
 abstract class AppColors {
   // Brand & Interactive Accents
-  static const Color primary = Color(0xFF2563EB);
-  static const Color primaryLight = Color(0xFF3B82F6);
-  static const Color primaryDark = Color(0xFF1D4ED8);
-  static const Color slateAccent = Color(0xFF1E293B); // Slate-800 light primary CTA/pill
-  static const Color slateAccentHover = Color(0xFF334155); // Slate-700
-  static const Color primarySurface = Color(0xFFEFF6FF);
-  static const Color primarySurfaceDark = Color(0xFF172554);
+  static const Color primary = Color(0xFF1D9BF0); // X blue
+  static const Color primaryLight = Color(0xFF4DB5F0);
+  static const Color primaryDark = Color(0xFF1A8CD8);
+  static const Color slateAccent = Color(0xFF0F1419); // X black CTA in light mode
+  static const Color slateAccentHover = Color(0xFF272C30);
+  static const Color primarySurface = Color(0xFFE8F5FD);
+  static const Color primarySurfaceDark = Color(0xFF10394F);
 
-  // Light Mode Slate Surfaces
-  static const Color backgroundLight = Color(0xFFF8FAFC); // Slate-50 canvas
+  // Light Mode Surfaces
+  static const Color backgroundLight = Color(0xFFFFFFFF);
   static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color surfaceLightElevated = Color(0xFFF1F5F9); // Slate-100
-  static const Color surfaceLightSubtle = Color(0xFFE2E8F0); // Slate-200
-  static const Color borderLight = Color(0xFFE2E8F0); // Slate-200
+  static const Color surfaceLightElevated = Color(0xFFF7F9F9);
+  static const Color surfaceLightSubtle = Color(0xFFEFF3F4);
+  static const Color borderLight = Color(0xFFCFD9DE);
 
-  // Dark Mode Architectural Slate Surfaces
-  static const Color backgroundDark = Color(0xFF090D16);
-  static const Color surfaceDark = Color(0xFF0F172A); // Slate-900
-  static const Color surfaceDarkElevated = Color(0xFF1E293B); // Slate-800
-  static const Color surfaceDarkSubtle = Color(0xFF162033);
-  static const Color borderDark = Color(0xFF1E293B); // Slate-800
-  static const Color borderDarkElevated = Color(0xFF2D3A50);
+  // Dark Mode Surfaces (X dark is pure black with #16181C elevated surfaces)
+  static const Color backgroundDark = Color(0xFF000000);
+  static const Color surfaceDark = Color(0xFF000000);
+  static const Color surfaceDarkElevated = Color(0xFF16181C);
+  static const Color surfaceDarkSubtle = Color(0xFF202327);
+  static const Color borderDark = Color(0xFF2F3336);
+  static const Color borderDarkElevated = Color(0xFF3E4144);
 
-  // Slate Typography Hierarchy
-  static const Color textPrimaryLight = Color(0xFF0F172A); // Slate-900
-  static const Color textSecondaryLight = Color(0xFF334155); // Slate-700
-  static const Color textMutedLight = Color(0xFF64748B); // Slate-500
+  // Gray Typography Hierarchy
+  static const Color textPrimaryLight = Color(0xFF0F1419);
+  static const Color textSecondaryLight = Color(0xFF536471);
+  static const Color textMutedLight = Color(0xFF8B98A5);
 
-  static const Color textPrimaryDark = Color(0xFFF8FAFC); // Slate-50
-  static const Color textSecondaryDark = Color(0xFFCBD5E1); // Slate-300
-  static const Color textMutedDark = Color(0xFF94A3B8); // Slate-400
-  static const Color textSubMutedDark = Color(0xFF64748B); // Slate-500
+  static const Color textPrimaryDark = Color(0xFFE7E9EA);
+  static const Color textSecondaryDark = Color(0xFFCFD9DE);
+  static const Color textMutedDark = Color(0xFF71767B);
+  static const Color textSubMutedDark = Color(0xFF536471);
 
-  // Semantic Status
-  static const Color success = Color(0xFF10B981);
-  static const Color danger = Color(0xFFEF4444);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color verified = Color(0xFF2563EB);
-  static const Color purple = Color(0xFF8B5CF6);
-  static const Color info = Color(0xFF0EA5E9);
+  // Semantic Status (X palette)
+  static const Color success = Color(0xFF00BA7C); // X repost green
+  static const Color danger = Color(0xFFF4212E); // X error red
+  static const Color warning = Color(0xFFFFD400); // X highlight yellow
+  static const Color like = Color(0xFFF91880); // X like/heart pink
+  static const Color onPrimary = Color(0xFF0F1419); // text/icons on X blue surfaces
+
+  // Foregrounds for saturated status surfaces (WCAG AA checked vs X palette)
+  static const Color onSuccess = Color(0xFF0F1419); // 7.0:1 on #00BA7C
+  static const Color dangerSurface = Color(0xFFC4170F); // error banner fill, white 6.0:1
+  static const Color successTextLight = Color(0xFF007A52); // #00BA7C text on white
+  static const Color warningTextLight = Color(0xFF8C7400); // #FFD400 text on white
+
+  static const Color verified = Color(0xFF1A8CD8); // X verified blue, white check 3.6:1
+  static const Color purple = Color(0xFF7856FF);
+  static const Color info = Color(0xFF1D9BF0);
 
   // Code & Terminal Surfaces
-  static const Color codeSurfaceDark = Color(0xFF020617); // Slate-950
-  static const Color codeSurfaceLight = Color(0xFF0F172A); // Slate-900
-  static const Color codeText = Color(0xFFE2E8F0); // Slate-200
-  static const Color codeAccent = Color(0xFF38BDF8); // Sky-400
+  static const Color codeSurfaceDark = Color(0xFF000000);
+  static const Color codeSurfaceLight = Color(0xFF0F1419);
+  static const Color codeText = Color(0xFFE7E9EA);
+  static const Color codeAccent = Color(0xFF1D9BF0);
 }

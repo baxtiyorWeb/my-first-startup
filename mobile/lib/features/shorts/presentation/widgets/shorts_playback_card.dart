@@ -112,7 +112,7 @@ class ShortsPlaybackCard extends StatelessWidget {
                             child: Text(
                               formatSpeed(speed),
                               style: TextStyle(
-                                color: selected ? Colors.white : textSecondary,
+                                color: selected ? AppColors.onPrimary : textSecondary,
                                 fontSize: 12.5,
                                 fontWeight: selected
                                     ? FontWeight.w700

@@ -19,8 +19,11 @@ import {
   type PricingOverviewDto,
   type SubscriptionStatusDto,
 } from "./pricing.defaults";
+import { createInpayPayment, isInpayConfigured } from "./inpay.client";
 
 export type { PlanDto, PricingOverviewDto, SubscriptionStatusDto };
+
+export type PaymentProvider = "inpay" | "click" | "payme" | "stripe";
 
 export async function getPricingOverview(userId?: string): Promise<PricingOverviewDto> {
   const cacheKey = userId ? `pricing:${userId}` : "pricing:guest";
@@ -96,10 +99,12 @@ export async function getPricingOverview(userId?: string): Promise<PricingOvervi
     }
   }
 
-  const providerConfigured = Boolean(
-    process.env.PAYMENT_WEBHOOK_SECRET &&
-    (process.env.PAYME_MERCHANT_ID || process.env.CLICK_SERVICE_ID || process.env.STRIPE_SECRET_KEY)
-  );
+  const providerConfigured =
+    isInpayConfigured() ||
+    Boolean(
+      process.env.PAYMENT_WEBHOOK_SECRET &&
+        (process.env.PAYME_MERCHANT_ID || process.env.CLICK_SERVICE_ID || process.env.STRIPE_SECRET_KEY)
+    );
 
   const sourcePlans = dbPlans.length > 0 ? dbPlans : DEFAULT_PLANS;
 
@@ -120,7 +125,7 @@ export async function initiateSubscriptionCheckout(params: {
   userId: string;
   planSlug: string;
   billingCycle: "monthly" | "yearly";
-  provider: "click" | "payme" | "stripe";
+  provider: PaymentProvider;
   idempotencyKey?: string;
 }) {
   try {
@@ -187,6 +192,10 @@ export async function initiateSubscriptionCheckout(params: {
       .limit(1);
 
     if (existingTx) {
+      const storedCheckoutUrl =
+        typeof existingTx.metadata?.checkoutUrl === "string"
+          ? existingTx.metadata.checkoutUrl
+          : null;
       return {
         transactionId: existingTx.id,
         status: existingTx.status,
@@ -194,12 +203,22 @@ export async function initiateSubscriptionCheckout(params: {
         amount: existingTx.amount,
         currency: existingTx.currency,
         provider: existingTx.provider,
-        checkoutUrl: null,
+        checkoutUrl: existingTx.status === "pending" ? storedCheckoutUrl : null,
         message:
           existingTx.status === "succeeded"
             ? "To'lov allaqachon tasdiqlangan"
-            : "To'lov provayder tasdiqlashini kutmoqda",
+            : existingTx.status === "pending"
+              ? "To'lov provayder tasdiqlashini kutmoqda"
+              : "To'lov yakunlanmagan. Yangi to'lov yaratishingiz mumkin.",
       };
+    }
+
+    if (params.provider === "inpay" && !isInpayConfigured()) {
+      throw new AppError(
+        "INTERNAL_ERROR",
+        "To'lov tizimi hali sozlanmagan. Iltimos, keyinroq urinib ko'ring.",
+        503
+      );
     }
 
     const [txRecord] = await db
@@ -219,6 +238,59 @@ export async function initiateSubscriptionCheckout(params: {
       })
       .returning();
 
+    if (params.provider !== "inpay") {
+      return {
+        transactionId: txRecord.id,
+        status: "pending",
+        requiresPayment: true,
+        amount,
+        currency: plan.currency,
+        provider: params.provider,
+        checkoutUrl: null,
+        message:
+          "To'lov tranzaksiyasi yaratildi. Premium kirish faqat to'lov provayderi webhook tasdiqlaganidan so'ng faollashadi.",
+      };
+    }
+
+    // Create the hosted checkout page on inPAY. The idempotency key is shared
+    // with the local transaction so retries never create a duplicate payment.
+    const description = `${plan.name} — ${params.billingCycle === "yearly" ? "yillik" : "oylik"} tarif (Geters)`;
+    let payment: Awaited<ReturnType<typeof createInpayPayment>>;
+    try {
+      payment = await createInpayPayment({
+        amount,
+        description,
+        idempotencyKey: idemKey,
+        metadata: {
+          transaction_id: txRecord.id,
+          user_id: params.userId,
+          plan_slug: plan.slug,
+          billing_cycle: params.billingCycle,
+        },
+      });
+    } catch (error) {
+      await db
+        .update(paymentTransactions)
+        .set({ status: "failed", updatedAt: new Date() })
+        .where(eq(paymentTransactions.id, txRecord.id));
+      throw error;
+    }
+
+    const checkoutUrl = payment.checkoutUrl;
+    await db
+      .update(paymentTransactions)
+      .set({
+        providerTransactionId: payment.id,
+        metadata: {
+          ...txRecord.metadata,
+          inpayPaymentId: payment.id,
+          checkoutUrl,
+          livemode: payment.livemode,
+        },
+        updatedAt: new Date(),
+      })
+      .where(eq(paymentTransactions.id, txRecord.id));
+
     return {
       transactionId: txRecord.id,
       status: "pending",
@@ -226,9 +298,10 @@ export async function initiateSubscriptionCheckout(params: {
       amount,
       currency: plan.currency,
       provider: params.provider,
-      checkoutUrl: null,
-      message:
-        "To'lov tranzaksiyasi yaratildi. Premium kirish faqat to'lov provayderi webhook tasdiqlaganidan so'ng faollashadi.",
+      checkoutUrl,
+      message: checkoutUrl
+        ? "To'lov sahifasiga o'tishingiz mumkin"
+        : "To'lov yaratildi. Provayder tasdiqlashini kutmoqda.",
     };
   } catch (error) {
     if (isMissingRelationError(error)) {
@@ -246,6 +319,23 @@ export function verifyWebhookSignature(rawBody: string, signature: string | null
   const actualBuf = Buffer.from(signature.trim(), "utf8");
   if (expectedBuf.length !== actualBuf.length) return false;
   return crypto.timingSafeEqual(expectedBuf, actualBuf);
+}
+
+export async function findTransactionIdByProviderPayment(
+  providerTransactionId: string
+): Promise<string | null> {
+  const [row] = await db
+    .select({ id: paymentTransactions.id })
+    .from(paymentTransactions)
+    .where(
+      and(
+        eq(paymentTransactions.provider, "inpay"),
+        eq(paymentTransactions.providerTransactionId, providerTransactionId)
+      )
+    )
+    .limit(1);
+
+  return row?.id ?? null;
 }
 
 export async function processPaymentWebhook(params: {

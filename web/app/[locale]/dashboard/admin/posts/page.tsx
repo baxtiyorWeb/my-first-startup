@@ -355,7 +355,7 @@ export default function AdminPostsPage() {
                     <div className="flex items-center gap-1.5 self-end sm:self-start shrink-0">
                       <Link
                         href={localePath(`/dashboard/create?edit=${p.id}`)}
-                        className="px-2.5 py-1.5 rounded-xl border border-[#3995ff]/30 bg-[#3995ff]/10 text-[#3995ff] hover:bg-[#3995ff]/20 text-[11px] font-bold transition-colors"
+                        className="px-2.5 py-1.5 rounded-xl border border-[#1d9bf0]/30 bg-[#1d9bf0]/10 text-[#1d9bf0] hover:bg-[#1d9bf0]/20 text-[11px] font-bold transition-colors"
                         title="SEO Studio'da tahrirlash"
                       >
                         SEO Studio

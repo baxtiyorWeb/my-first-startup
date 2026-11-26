@@ -137,7 +137,7 @@ class CommentThreadItem extends StatelessWidget {
                         Icon(
                           item.isLiked ? Icons.favorite : Icons.favorite_border,
                           size: 13.5,
-                          color: item.isLiked ? AppColors.danger : AppColors.textMutedLight,
+                          color: item.isLiked ? AppColors.like : AppColors.textMutedLight,
                         ),
                         if (item.likesCount > 0) ...[
                           const SizedBox(width: 4),
@@ -145,7 +145,7 @@ class CommentThreadItem extends StatelessWidget {
                             '${item.likesCount}',
                             style: TextStyle(
                               fontSize: 11,
-                              color: item.isLiked ? AppColors.danger : AppColors.textMutedLight,
+                              color: item.isLiked ? AppColors.like : AppColors.textMutedLight,
                               fontWeight: item.isLiked ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),

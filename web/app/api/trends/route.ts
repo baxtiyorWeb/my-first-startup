@@ -5,11 +5,11 @@ import { enforceRateLimit } from "@/server/common/rate-limiter";
 import { getTrendingTags } from "@/server/modules/tags/tags.service";
 
 const RANK_COLORS = [
-  "text-[#3995ff]",
-  "text-[#76d5f5]",
-  "text-[#ff9a26]",
-  "text-[#3995ff]",
-  "text-[#10b981]",
+  "text-[#1d9bf0]",
+  "text-[#8ecdf8]",
+  "text-[#ffd400]",
+  "text-[#1d9bf0]",
+  "text-[#00ba7c]",
 ];
 
 export async function GET(req: NextRequest) {

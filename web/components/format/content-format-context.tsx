@@ -277,7 +277,7 @@ export function ContentFormatProvider({
             [&_div]:min-h-[1.5em]
             [&_p:empty]:min-h-[1.5em]
             [&_div:empty]:min-h-[1.5em]
-            [&_a]:text-blue-600 [&_a]:dark:text-[#3995ff] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:opacity-80
+            [&_a]:text-blue-600 [&_a]:dark:text-[#1d9bf0] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:opacity-80
             ${options?.className || ""}`}
           dangerouslySetInnerHTML={{ __html: sanitized }}
         />

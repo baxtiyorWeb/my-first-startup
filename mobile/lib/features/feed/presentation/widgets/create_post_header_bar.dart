@@ -223,7 +223,7 @@ class CreatePostSubmitButton extends StatelessWidget {
                     width: 14,
                     height: 14,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       strokeWidth: 2,
                     ),
                   )
@@ -231,13 +231,13 @@ class CreatePostSubmitButton extends StatelessWidget {
                   Icon(
                     isEditing ? Icons.check_rounded : Icons.send_outlined,
                     size: 15,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     isEditing ? 'Saqlash' : 'Chop etish',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),

@@ -104,14 +104,14 @@ class PostGridCard extends StatelessWidget {
                       Icon(
                         resolved.isLiked ? Icons.favorite : Icons.favorite_border,
                         size: 14,
-                        color: resolved.isLiked ? AppColors.danger : muted,
+                        color: resolved.isLiked ? AppColors.like : muted,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${resolved.likesCount}',
                         style: TextStyle(
                           fontSize: 11,
-                          color: resolved.isLiked ? AppColors.danger : muted,
+                          color: resolved.isLiked ? AppColors.like : muted,
                         ),
                       ),
                     ],

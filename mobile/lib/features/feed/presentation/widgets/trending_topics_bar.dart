@@ -45,7 +45,7 @@ class _TrendingTopicsBarState extends State<TrendingTopicsBar> {
     final palette = [
       isDark ? AppColors.primaryLight : AppColors.primary,
       isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-      isDark ? const Color(0xFF818CF8) : const Color(0xFF6366F1),
+      isDark ? const Color(0xFF4DB5F0) : const Color(0xFF1D9BF0),
       AppColors.success,
       AppColors.info,
     ];
@@ -124,10 +124,12 @@ class _TrendingTopicsBarState extends State<TrendingTopicsBar> {
                           padding: const EdgeInsets.only(right: 10),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.local_fire_department_rounded,
                                 size: 16,
-                                color: AppColors.warning,
+                                color: isDark
+                                    ? AppColors.warning
+                                    : AppColors.warningTextLight,
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -170,7 +172,7 @@ class _TrendingTopicsBarState extends State<TrendingTopicsBar> {
                             Text(
                               '#${tag.name}',
                               style: TextStyle(
-                                color: isSelected ? Colors.white : tagColor,
+                                color: isSelected ? AppColors.onPrimary : tagColor,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12,
                               ),
@@ -181,7 +183,7 @@ class _TrendingTopicsBarState extends State<TrendingTopicsBar> {
                                 _formatUsage(tag.usageCount),
                                 style: TextStyle(
                                   color: isSelected
-                                      ? Colors.white.withAlpha(210)
+                                      ? AppColors.onPrimary.withAlpha(190)
                                       : (isDark
                                           ? AppColors.textMutedDark
                                           : AppColors.textMutedLight),

@@ -164,7 +164,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w600,
                         color: isSelected
-                            ? Colors.white
+                            ? (isDark ? AppColors.onPrimary : Colors.white)
                             : (isDark
                                 ? AppColors.textSecondaryDark
                                 : AppColors.textPrimaryLight),

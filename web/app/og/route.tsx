@@ -4,10 +4,10 @@ import type { NextRequest } from "next/server";
 export const runtime = "edge";
 
 const KIND_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  article: { label: "MAQOLA & QO'LLANMA", color: "#3995ff", bg: "rgba(57,149,255,0.16)" },
-  video: { label: "VIDEO DARSLIK", color: "#10b981", bg: "rgba(16,185,129,0.16)" },
-  news: { label: "TEXNOLOGIYA YANGILIGI", color: "#f59e0b", bg: "rgba(245,158,11,0.16)" },
-  hub: { label: "BILIMLAR BAZASI", color: "#3995ff", bg: "rgba(57,149,255,0.16)" },
+  article: { label: "MAQOLA & QO'LLANMA", color: "#1d9bf0", bg: "rgba(57,149,255,0.16)" },
+  video: { label: "VIDEO DARSLIK", color: "#00ba7c", bg: "rgba(16,185,129,0.16)" },
+  news: { label: "TEXNOLOGIYA YANGILIGI", color: "#ffd400", bg: "rgba(245,158,11,0.16)" },
+  hub: { label: "BILIMLAR BAZASI", color: "#1d9bf0", bg: "rgba(57,149,255,0.16)" },
 };
 
 export async function GET(req: NextRequest) {
@@ -29,12 +29,12 @@ export async function GET(req: NextRequest) {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          backgroundColor: "#0b0c13",
+          backgroundColor: "#000000",
           backgroundImage:
             "radial-gradient(circle at 85% 15%, rgba(57, 149, 255, 0.18), transparent 45%), radial-gradient(circle at 15% 90%, rgba(16, 185, 129, 0.10), transparent 40%)",
           padding: "56px 64px",
           fontFamily: "sans-serif",
-          color: "#f8fafc",
+          color: "#f7f9f9",
         }}
       >
         {/* Top Bar */}
@@ -45,12 +45,12 @@ export async function GET(req: NextRequest) {
                 width: "44px",
                 height: "44px",
                 borderRadius: "12px",
-                backgroundColor: "#101117",
-                border: "1px solid #24252f",
+                backgroundColor: "#000000",
+                border: "1px solid #2f3336",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#3995ff",
+                color: "#1d9bf0",
                 fontSize: "24px",
                 fontWeight: 800,
               }}
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
               <span style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.02em" }}>
                 Geters.uz
               </span>
-              <span style={{ fontSize: "13px", color: "#94a3b8" }}>
+              <span style={{ fontSize: "13px", color: "#8b98a5" }}>
                 Bilim. Video Darsliklar. Yangiliklar.
               </span>
             </div>
@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
             flexDirection: "column",
             gap: "18px",
             backgroundColor: "rgba(16, 17, 23, 0.86)",
-            border: "1px solid #24252f",
+            border: "1px solid #2f3336",
             borderRadius: "24px",
             padding: "42px 48px",
           }}
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
             style={{
               fontSize: "15px",
               fontWeight: 700,
-              color: "#3995ff",
+              color: "#1d9bf0",
               letterSpacing: "0.08em",
             }}
           >
@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            borderTop: "1px solid #1e202b",
+            borderTop: "1px solid #202327",
             paddingTop: "24px",
           }}
         >
@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
                 width: "36px",
                 height: "36px",
                 borderRadius: "999px",
-                backgroundColor: "#3995ff",
+                backgroundColor: "#1d9bf0",
                 color: "#ffffff",
                 display: "flex",
                 alignItems: "center",
@@ -153,14 +153,14 @@ export async function GET(req: NextRequest) {
             >
               {author.charAt(0).toUpperCase()}
             </div>
-            <span style={{ fontSize: "20px", fontWeight: 600, color: "#e2e8f0" }}>
+            <span style={{ fontSize: "20px", fontWeight: 600, color: "#e1e8ed" }}>
               {author}
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "20px", fontSize: "18px", color: "#94a3b8" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "20px", fontSize: "18px", color: "#8b98a5" }}>
             {meta ? <span>{meta}</span> : null}
-            <span style={{ color: "#3995ff", fontWeight: 700 }}>geters.uz</span>
+            <span style={{ color: "#1d9bf0", fontWeight: 700 }}>geters.uz</span>
           </div>
         </div>
       </div>

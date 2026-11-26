@@ -192,10 +192,10 @@ export function DiscussionIsland({
   return (
     <section
       aria-label="Muhokama va Fikrlar"
-      className="space-y-6 pt-6 border-t border-slate-200/80 dark:border-[#24252f]"
+      className="space-y-6 pt-6 border-t border-slate-200/80 dark:border-[#2f3336]"
     >
       {/* Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f]">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336]">
         <div className="flex items-center gap-2.5">
           <button
             type="button"
@@ -203,7 +203,7 @@ export function DiscussionIsland({
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
               isLiked
                 ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
-                : "bg-slate-50 dark:bg-[#14151d] border-slate-200 dark:border-[#24252f] text-slate-700 dark:text-slate-300 hover:border-rose-500/40"
+                : "bg-slate-50 dark:bg-[#16181c] border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-rose-500/40"
             }`}
           >
             <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
@@ -212,9 +212,9 @@ export function DiscussionIsland({
 
           <a
             href="#comments"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] text-slate-700 dark:text-slate-300 hover:border-[#3995ff]/40 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/40 transition-colors"
           >
-            <MessageSquare className="w-4 h-4 text-[#3995ff]" />
+            <MessageSquare className="w-4 h-4 text-[#1d9bf0]" />
             <span>{commentsCount}</span>
           </a>
 
@@ -229,8 +229,8 @@ export function DiscussionIsland({
             onClick={handleToggleBookmark}
             className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
               isSaved
-                ? "bg-[#3995ff]/10 border-[#3995ff]/30 text-[#3995ff]"
-                : "bg-slate-50 dark:bg-[#14151d] border-slate-200 dark:border-[#24252f] text-slate-700 dark:text-slate-300 hover:border-[#3995ff]/40"
+                ? "bg-[#1d9bf0]/10 border-[#1d9bf0]/30 text-[#1d9bf0]"
+                : "bg-slate-50 dark:bg-[#16181c] border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/40"
             }`}
           >
             <Bookmark className={`w-4 h-4 ${isSaved ? "fill-current" : ""}`} />
@@ -241,7 +241,7 @@ export function DiscussionIsland({
             href={telegramShareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#3995ff]/10 text-[#3995ff] border border-[#3995ff]/25 hover:bg-[#3995ff]/20 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#1d9bf0]/10 text-[#1d9bf0] border border-[#1d9bf0]/25 hover:bg-[#1d9bf0]/20 transition-colors"
           >
             <Share2 className="w-4 h-4" />
             <span>Telegram</span>
@@ -250,7 +250,7 @@ export function DiscussionIsland({
           <button
             type="button"
             onClick={handleCopyShare}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] text-slate-700 dark:text-slate-300 hover:border-[#3995ff]/40 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/40 transition-colors cursor-pointer"
             title="Havolani nusxalash"
           >
             <Copy className="w-4 h-4" />
@@ -261,11 +261,11 @@ export function DiscussionIsland({
       {/* Threaded Comments Box */}
       <div
         id="comments"
-        className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-5 sm:p-6 space-y-5"
+        className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-5 sm:p-6 space-y-5"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-950 dark:text-white flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-[#3995ff]" />
+            <MessageSquare className="w-4 h-4 text-[#1d9bf0]" />
             <span>Muhokama va savollar ({commentsCount})</span>
           </h2>
         </div>
@@ -284,13 +284,13 @@ export function DiscussionIsland({
                 onChange={(e) => setNewComment(e.target.value)}
                 rows={2}
                 placeholder="Fikringiz yoki savolingizni yozing..."
-                className="w-full rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] p-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#3995ff] resize-none"
+                className="w-full rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] p-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] resize-none"
               />
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={isSubmitting || !newComment.trim()}
-                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#3995ff] hover:bg-blue-600 text-white text-xs font-bold disabled:opacity-50 cursor-pointer transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold disabled:opacity-50 cursor-pointer transition-colors"
                 >
                   {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                   <span>Yuborish</span>
@@ -299,13 +299,13 @@ export function DiscussionIsland({
             </div>
           </form>
         ) : (
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200/80 dark:border-[#24252f] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <p className="text-xs text-slate-600 dark:text-slate-300">
               Savol berish va muhokamada qatnashish uchun hisobingizga kiring.
             </p>
             <Link
               href={localePath("/auth/login")}
-              className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#3995ff] hover:bg-blue-600 text-white text-xs font-bold shrink-0 transition-colors"
+              className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold shrink-0 transition-colors"
             >
               Kirish
             </Link>
@@ -315,7 +315,7 @@ export function DiscussionIsland({
         {/* Comments List */}
         {isLoadingComments ? (
           <div className="py-6 flex justify-center">
-            <Loader2 className="w-5 h-5 animate-spin text-[#3995ff]" />
+            <Loader2 className="w-5 h-5 animate-spin text-[#1d9bf0]" />
           </div>
         ) : comments.length === 0 ? (
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-4">
@@ -325,7 +325,7 @@ export function DiscussionIsland({
           <div className="space-y-4">
             {comments.map((comment) => (
               <div key={comment.id} className="space-y-2.5">
-                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200/70 dark:border-[#24252f] space-y-2">
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <UserAvatar
@@ -337,7 +337,7 @@ export function DiscussionIsland({
                         {comment.author.name}
                       </span>
                       {comment.author.verified && (
-                        <span className="size-3.5 rounded-full bg-[#3995ff] text-white flex items-center justify-center">
+                        <span className="size-3.5 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center">
                           <Check size={8} strokeWidth={3} />
                         </span>
                       )}
@@ -365,7 +365,7 @@ export function DiscussionIsland({
                       onClick={() =>
                         setReplyTargetId(replyTargetId === comment.id ? null : comment.id)
                       }
-                      className="inline-flex items-center gap-1 cursor-pointer hover:text-[#3995ff]"
+                      className="inline-flex items-center gap-1 cursor-pointer hover:text-[#1d9bf0]"
                     >
                       <CornerDownRight className="w-3 h-3" />
                       <span>Javob berish</span>
@@ -382,12 +382,12 @@ export function DiscussionIsland({
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder="Javobingizni yozing..."
-                        className="flex-1 rounded-lg bg-white dark:bg-[#0b0c13] border border-slate-200 dark:border-[#24252f] px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3995ff]"
+                        className="flex-1 rounded-lg bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
                       />
                       <button
                         type="submit"
                         disabled={isSubmitting || !replyText.trim()}
-                        className="px-3 py-1.5 rounded-lg bg-[#3995ff] text-white text-xs font-bold cursor-pointer disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-lg bg-[#1d9bf0] text-white text-xs font-bold cursor-pointer disabled:opacity-50"
                       >
                         Yuborish
                       </button>
@@ -397,11 +397,11 @@ export function DiscussionIsland({
 
                 {/* Nested Replies */}
                 {Array.isArray(comment.replies) && comment.replies.length > 0 && (
-                  <div className="pl-4 sm:pl-6 border-l-2 border-slate-200 dark:border-[#24252f] space-y-2">
+                  <div className="pl-4 sm:pl-6 border-l-2 border-slate-200 dark:border-[#2f3336] space-y-2">
                     {comment.replies.map((reply) => (
                       <div
                         key={reply.id}
-                        className="p-3 rounded-xl bg-slate-50/70 dark:bg-[#12131c] border border-slate-200/60 dark:border-[#20222f] space-y-1.5"
+                        className="p-3 rounded-xl bg-slate-50/70 dark:bg-[#000000] border border-slate-200/60 dark:border-[#2f3336] space-y-1.5"
                       >
                         <div className="flex items-center gap-2">
                           <UserAvatar

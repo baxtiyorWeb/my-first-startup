@@ -49,7 +49,7 @@ export function GoGettersLanding() {
   };
 
   return (
-    <div className="vercel-scope min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-[#EDEDED] font-sans selection:bg-slate-900 selection:text-white dark:selection:bg-white dark:selection:text-black antialiased relative overflow-x-hidden transition-colors duration-200">
+    <div className="vercel-scope min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-[#e7e9ea] font-sans selection:bg-slate-900 selection:text-white dark:selection:bg-white dark:selection:text-black antialiased relative overflow-x-hidden transition-colors duration-200">
       {/* Vercel Ambient Grid & Top Light Glow */}
       <div
         className="fixed inset-0 pointer-events-none z-0 opacity-20 dark:opacity-25"
@@ -360,7 +360,7 @@ export function GoGettersLanding() {
             3. INTERACTIVE PRODUCT SHOWCASE (MOTION DEMO)
         ───────────────────────────────────────────────────────────── */}
         <div id="platforma" className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-12">
-          <div className="rounded-2xl border border-slate-200 dark:border-white/[0.12] bg-white dark:bg-[#0A0A0A] shadow-xl dark:shadow-2xl shadow-slate-200/50 dark:shadow-black overflow-hidden">
+          <div className="rounded-2xl border border-slate-200 dark:border-white/[0.12] bg-white dark:bg-[#000000] shadow-xl dark:shadow-2xl shadow-slate-200/50 dark:shadow-black overflow-hidden">
             {/* Window Chrome Header with Tabs */}
             <div className="px-4 py-3 bg-slate-100/60 dark:bg-white/[0.02] border-b border-slate-200 dark:border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               {/* macOS window dots */}
@@ -404,7 +404,7 @@ export function GoGettersLanding() {
             </div>
 
             {/* Window Content Area */}
-            <div className="p-4 sm:p-7 min-h-[300px] bg-slate-50 dark:bg-gradient-to-b dark:from-[#0A0A0A] dark:to-black">
+            <div className="p-4 sm:p-7 min-h-[300px] bg-slate-50 dark:bg-gradient-to-b dark:from-[#000000] dark:to-black">
               {/* TAB 1: FEED PREVIEW */}
               {activeTab === "feed" && (
                 <div className="max-w-2xl mx-auto space-y-4">
@@ -761,7 +761,7 @@ export function GoGettersLanding() {
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             {/* Card 1: Wide Card */}
-            <div className="md:col-span-8 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0A] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all space-y-4 shadow-xs">
+            <div className="md:col-span-8 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#000000] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all space-y-4 shadow-xs">
               <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.1] flex items-center justify-center text-slate-900 dark:text-white">
                 <Layers className="w-4 h-4" />
               </div>
@@ -790,7 +790,7 @@ export function GoGettersLanding() {
             </div>
 
             {/* Card 2: Co-founder matching */}
-            <div className="md:col-span-4 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0A] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all space-y-4 shadow-xs">
+            <div className="md:col-span-4 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#000000] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all space-y-4 shadow-xs">
               <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.1] flex items-center justify-center text-slate-900 dark:text-white">
                 <Briefcase className="w-4 h-4" />
               </div>
@@ -806,7 +806,7 @@ export function GoGettersLanding() {
             </div>
 
             {/* Card 3: No-spam, High signal */}
-            <div className="md:col-span-4 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0A] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all space-y-4 shadow-xs">
+            <div className="md:col-span-4 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#000000] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all space-y-4 shadow-xs">
               <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.1] flex items-center justify-center text-slate-900 dark:text-white">
                 <Shield className="w-4 h-4" />
               </div>
@@ -822,7 +822,7 @@ export function GoGettersLanding() {
             </div>
 
             {/* Card 4: Wide Card */}
-            <div className="md:col-span-8 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0A] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all space-y-4 shadow-xs">
+            <div className="md:col-span-8 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#000000] hover:border-slate-300 dark:hover:border-white/[0.18] transition-all space-y-4 shadow-xs">
               <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.1] flex items-center justify-center text-slate-900 dark:text-white">
                 <Zap className="w-4 h-4" />
               </div>
@@ -860,7 +860,7 @@ export function GoGettersLanding() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0A] space-y-3 shadow-xs">
+            <div className="p-6 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#000000] space-y-3 shadow-xs">
               <span className="text-xs font-bold text-slate-400 dark:text-zinc-500">
                 01 /
               </span>
@@ -873,7 +873,7 @@ export function GoGettersLanding() {
               </p>
             </div>
 
-            <div className="p-6 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0A] space-y-3 shadow-xs">
+            <div className="p-6 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#000000] space-y-3 shadow-xs">
               <span className="text-xs font-bold text-slate-400 dark:text-zinc-500">
                 02 /
               </span>
@@ -886,7 +886,7 @@ export function GoGettersLanding() {
               </p>
             </div>
 
-            <div className="p-6 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0A] space-y-3 shadow-xs">
+            <div className="p-6 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#000000] space-y-3 shadow-xs">
               <span className="text-xs font-bold text-slate-400 dark:text-zinc-500">
                 03 /
               </span>
@@ -938,7 +938,7 @@ export function GoGettersLanding() {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0A] overflow-hidden transition-colors shadow-xs"
+                className="rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#000000] overflow-hidden transition-colors shadow-xs"
               >
                 <button
                   type="button"

@@ -103,7 +103,11 @@ class SearchEmptyDiscovery extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.local_fire_department_rounded, size: 19, color: AppColors.warning),
+            Icon(
+              Icons.local_fire_department_rounded,
+              size: 19,
+              color: isDark ? AppColors.warning : AppColors.warningTextLight,
+            ),
             const SizedBox(width: 8),
             Text(
               'Trend teglar',

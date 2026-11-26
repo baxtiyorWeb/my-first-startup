@@ -86,8 +86,8 @@ export function FeedFilterToolbar({
               type="button"
               onClick={() => onTabChange(tab.id)}
               className={`h-[40px] px-2.5 sm:px-3 rounded-[14px] flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${isActive
-                  ? "bg-[#3995ff] text-white shadow-xs"
-                  : "bg-white dark:bg-[#14151d] text-slate-700 dark:text-[#c2c6da] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#1c1e28] border border-slate-200/90 dark:border-[#24252f]"
+                  ? "bg-[#1d9bf0] text-white shadow-xs"
+                  : "bg-white dark:bg-[#16181c] text-slate-700 dark:text-[#cfd9de] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#202327] border border-slate-200/90 dark:border-[#2f3336]"
                 }`}
             >
               <Icon size={14} />
@@ -104,7 +104,7 @@ export function FeedFilterToolbar({
           <button
             type="button"
             onClick={() => setIsSortOpen((prev) => !prev)}
-            className="h-[40px] px-2.5 sm:px-3 rounded-[14px] bg-white dark:bg-[#111219] border border-slate-200/90 dark:border-[#24252f] flex items-center gap-1.5 text-[11px] sm:text-[12px] font-semibold text-slate-700 dark:text-[#f2f3fa] hover:border-slate-300 dark:hover:border-[#383a48] transition-colors cursor-pointer whitespace-nowrap"
+            className="h-[40px] px-2.5 sm:px-3 rounded-[14px] bg-white dark:bg-[#16181c] border border-slate-200/90 dark:border-[#2f3336] flex items-center gap-1.5 text-[11px] sm:text-[12px] font-semibold text-slate-700 dark:text-[#e7e9ea] hover:border-slate-300 dark:hover:border-[#3e4144] transition-colors cursor-pointer whitespace-nowrap"
           >
             <span> {currentSortLabel}</span>
             <ChevronDown
@@ -114,7 +114,7 @@ export function FeedFilterToolbar({
           </button>
 
           {isSortOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-[#151722] rounded-[14px] border border-slate-200 dark:border-[#24252f] shadow-lg py-1.5 z-30 text-xs animate-in fade-in zoom-in-95">
+            <div className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-[#16181c] rounded-[14px] border border-slate-200 dark:border-[#2f3336] shadow-lg py-1.5 z-30 text-xs animate-in fade-in zoom-in-95">
               {sortOptions.map((opt) => (
                 <button
                   key={opt.id}
@@ -123,14 +123,14 @@ export function FeedFilterToolbar({
                     onSortChange(opt.id);
                     setIsSortOpen(false);
                   }}
-                  className={`w-full px-3 py-2 text-left flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-[#1c1e28] transition-colors ${sortBy === opt.id
-                      ? "text-[#3995ff] font-semibold"
-                      : "text-slate-700 dark:text-[#c4c7d9]"
+                  className={`w-full px-3 py-2 text-left flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-[#202327] transition-colors ${sortBy === opt.id
+                      ? "text-[#1d9bf0] font-semibold"
+                      : "text-slate-700 dark:text-[#cfd9de]"
                     }`}
                 >
                   <span>{opt.label}</span>
                   {sortBy === opt.id && (
-                    <Check size={14} className="text-[#3995ff]" />
+                    <Check size={14} className="text-[#1d9bf0]" />
                   )}
                 </button>
               ))}
@@ -139,14 +139,14 @@ export function FeedFilterToolbar({
         </div>
 
         {/* View Mode Toggle (Grid / List) */}
-        <div className="h-[40px] bg-white dark:bg-[#111219] border border-slate-200/90 dark:border-[#24252f] rounded-[14px] p-0.5 sm:p-1 flex items-center gap-0.5">
+        <div className="h-[40px] bg-white dark:bg-[#16181c] border border-slate-200/90 dark:border-[#2f3336] rounded-[14px] p-0.5 sm:p-1 flex items-center gap-0.5">
           <button
             type="button"
             title="Katakcha ko'rinishi (Grid)"
             onClick={() => onViewModeChange("grid")}
             className={`p-1.5 rounded-[8px] transition-colors cursor-pointer ${viewMode === "grid"
-                ? "bg-slate-100 dark:bg-[#24252f] text-slate-900 dark:text-white"
-                : "text-slate-400 dark:text-[#8e95ab] hover:text-slate-700 dark:hover:text-white"
+                ? "bg-slate-100 dark:bg-[#2f3336] text-slate-900 dark:text-white"
+                : "text-slate-400 dark:text-[#71767b] hover:text-slate-700 dark:hover:text-white"
               }`}
           >
             <LayoutGrid size={15} />
@@ -156,8 +156,8 @@ export function FeedFilterToolbar({
             title="Ro'yxat ko'rinishi (List)"
             onClick={() => onViewModeChange("list")}
             className={`p-1.5 rounded-[8px] transition-colors cursor-pointer ${viewMode === "list"
-                ? "bg-slate-100 dark:bg-[#24252f] text-slate-900 dark:text-white"
-                : "text-slate-400 dark:text-[#8e95ab] hover:text-slate-700 dark:hover:text-white"
+                ? "bg-slate-100 dark:bg-[#2f3336] text-slate-900 dark:text-white"
+                : "text-slate-400 dark:text-[#71767b] hover:text-slate-700 dark:hover:text-white"
               }`}
           >
             <ListIcon size={15} />

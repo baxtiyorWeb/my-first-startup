@@ -23,11 +23,11 @@ export function TrendingTopicsWidget() {
   const { localePath } = useI18n();
 
   const [trends, setTrends] = useState([
-    { rank: 1, tag: "AI", count: "12.4K post", rankColor: "text-[#3995ff]" },
-    { rank: 2, tag: "Nextjs", count: "8.9K post", rankColor: "text-[#76d5f5]" },
-    { rank: 3, tag: "Dasturlash", count: "7.1K post", rankColor: "text-[#ff9a26]" },
-    { rank: 4, tag: "EdTech", count: "5.6K post", rankColor: "text-[#3995ff]" },
-    { rank: 5, tag: "Startap", count: "4.2K post", rankColor: "text-[#10b981]" },
+    { rank: 1, tag: "AI", count: "12.4K post", rankColor: "text-[#1d9bf0]" },
+    { rank: 2, tag: "Nextjs", count: "8.9K post", rankColor: "text-[#8ecdf8]" },
+    { rank: 3, tag: "Dasturlash", count: "7.1K post", rankColor: "text-[#ffd400]" },
+    { rank: 4, tag: "EdTech", count: "5.6K post", rankColor: "text-[#1d9bf0]" },
+    { rank: 5, tag: "Startap", count: "4.2K post", rankColor: "text-[#00ba7c]" },
   ]);
 
   useEffect(() => {
@@ -49,33 +49,33 @@ export function TrendingTopicsWidget() {
     <div
       data-node-id="11:632"
       data-name="Trend mavzular"
-      className="bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] rounded-[16px] p-4 shadow-xs"
+      className="bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] rounded-[16px] p-4 shadow-xs"
     >
       <div className="flex items-center gap-2 mb-3.5">
         <span className="text-[18px] select-none">🔥</span>
-        <h3 className="font-bold text-[16px] text-slate-900 dark:text-[#f6f6fa]">
+        <h3 className="font-bold text-[16px] text-slate-900 dark:text-[#e7e9ea]">
           Trend mavzular
         </h3>
       </div>
 
-      <div className="divide-y divide-slate-100 dark:divide-[#252730]">
+      <div className="divide-y divide-slate-100 dark:divide-[#2f3336]">
         {trends.map((item) => (
           <Link
             key={item.tag}
             href={localePath(`/dashboard?hl=${item.tag}`)}
-            className="flex items-center justify-between py-2.5 hover:bg-slate-50 dark:hover:bg-[#151722] -mx-2 px-2 rounded-lg transition-colors group"
+            className="flex items-center justify-between py-2.5 hover:bg-slate-50 dark:hover:bg-[#16181c] -mx-2 px-2 rounded-lg transition-colors group"
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <span
-                className={`size-[20px] rounded-[8px] bg-slate-100 dark:bg-[#181920] border border-slate-200/60 dark:border-[#262836] flex items-center justify-center font-bold text-[11px] ${item.rankColor} shrink-0`}
+                className={`size-[20px] rounded-[8px] bg-slate-100 dark:bg-[#16181c] border border-slate-200/60 dark:border-[#2f3336] flex items-center justify-center font-bold text-[11px] ${item.rankColor} shrink-0`}
               >
                 {item.rank}
               </span>
-              <span className="font-semibold text-[13.5px] text-slate-800 dark:text-[#f4f4fa] group-hover:text-blue-600 dark:group-hover:text-[#3995ff] transition-colors truncate">
+              <span className="font-semibold text-[13.5px] text-slate-800 dark:text-[#e7e9ea] group-hover:text-blue-600 dark:group-hover:text-[#1d9bf0] transition-colors truncate">
                 #{item.tag}
               </span>
             </div>
-            <span className="text-[12px] text-slate-400 dark:text-[#c5c9de] shrink-0 font-normal">
+            <span className="text-[12px] text-slate-400 dark:text-[#cfd9de] shrink-0 font-normal">
               {item.count}
             </span>
           </Link>
@@ -200,11 +200,11 @@ export function SuggestedAuthorsWidget() {
     <div
       data-node-id="11:657"
       data-name="Tavsiya etilgan mualliflar"
-      className="bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] rounded-[16px] p-4 shadow-xs"
+      className="bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] rounded-[16px] p-4 shadow-xs"
     >
       <div className="flex items-center gap-2 mb-3.5">
-        <Users size={18} className="text-slate-700 dark:text-[#a0a5b8]" />
-        <h3 className="font-bold text-[16px] text-slate-900 dark:text-[#f6f6fa]">
+        <Users size={18} className="text-slate-700 dark:text-[#8b98a5]" />
+        <h3 className="font-bold text-[16px] text-slate-900 dark:text-[#e7e9ea]">
           Tavsiya etilgan mualliflar
         </h3>
       </div>
@@ -213,7 +213,7 @@ export function SuggestedAuthorsWidget() {
         {authors.map((author, idx) => (
           <div
             key={author.id}
-            className="flex items-center justify-between gap-2.5 p-1 -mx-1 rounded-lg hover:bg-slate-50 dark:hover:bg-[#151722] transition-colors"
+            className="flex items-center justify-between gap-2.5 p-1 -mx-1 rounded-lg hover:bg-slate-50 dark:hover:bg-[#16181c] transition-colors"
           >
             {/* Author info */}
             <div className="flex items-center gap-2.5 min-w-0">
@@ -225,7 +225,7 @@ export function SuggestedAuthorsWidget() {
                   name={author.name}
                   avatarUrl={author.avatarUrl}
                   size="md"
-                  className="size-[38px] rounded-full border border-slate-200 dark:border-[#24252f]"
+                  className="size-[38px] rounded-full border border-slate-200 dark:border-[#2f3336]"
                 />
               </Link>
 
@@ -233,20 +233,20 @@ export function SuggestedAuthorsWidget() {
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <Link
                     href={localePath(`/dashboard/profile?handle=${author.handle}`)}
-                    className="font-semibold text-[12.5px] text-slate-900 dark:text-[#f6f6fa] hover:underline truncate"
+                    className="font-semibold text-[12.5px] text-slate-900 dark:text-[#e7e9ea] hover:underline truncate"
                   >
                     {author.name}
                   </Link>
                   {author.verified && (
                     <span
                       title="Tasdiqlangan muallif"
-                      className="bg-[#3995ff] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
+                      className="bg-[#1d9bf0] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
                     >
                       <Check size={9} className="text-white stroke-[2.5]" />
                     </span>
                   )}
                 </div>
-                <p className="text-[11.5px] text-slate-500 dark:text-[#c2c6da] truncate">
+                <p className="text-[11.5px] text-slate-500 dark:text-[#cfd9de] truncate">
                   {author.role}
                 </p>
               </div>
@@ -258,8 +258,8 @@ export function SuggestedAuthorsWidget() {
               onClick={() => handleToggleFollow(idx, author.handle, author.name)}
               className={`h-[30px] px-3 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
                 author.isFollowing
-                  ? "bg-slate-100 dark:bg-[#1e202c] text-slate-700 dark:text-[#c2c6da] hover:bg-slate-200 dark:hover:bg-[#252838]"
-                  : "bg-[#3995ff] hover:bg-[#2884ee] text-white shadow-xs"
+                  ? "bg-slate-100 dark:bg-[#202327] text-slate-700 dark:text-[#cfd9de] hover:bg-slate-200 dark:hover:bg-[#2f3336]"
+                  : "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white shadow-xs"
               }`}
             >
               {author.isFollowing ? (
@@ -307,19 +307,19 @@ export function ShortsPreviewWidget() {
     <div
       data-node-id="11:8"
       data-name="Video darsliklar"
-      className="bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] rounded-[16px] p-4 shadow-xs space-y-3"
+      className="bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] rounded-[16px] p-4 shadow-xs space-y-3"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <PlaySquare size={18} className="text-emerald-500" />
-          <h3 className="font-bold text-[15px] text-slate-900 dark:text-[#fafaff]">
+          <h3 className="font-bold text-[15px] text-slate-900 dark:text-[#e7e9ea]">
             Video darsliklar
           </h3>
         </div>
 
         <Link
           href={localePath("/videos")}
-          className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-300 hover:text-[#3995ff] transition-colors"
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-300 hover:text-[#1d9bf0] transition-colors"
         >
           <span>Barchasi</span>
           <ArrowRight size={11} />
@@ -332,9 +332,9 @@ export function ShortsPreviewWidget() {
             <Link
               key={vid.id}
               href={localePath(`/videos/${vid.slug || vid.id}`)}
-              className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200/70 dark:border-[#24252f] hover:border-[#3995ff]/50 transition-colors group"
+              className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] hover:border-[#1d9bf0]/50 transition-colors group"
             >
-              <div className="size-10 rounded-lg bg-[#0b0c13] flex items-center justify-center shrink-0 overflow-hidden">
+              <div className="size-10 rounded-lg bg-[#000000] flex items-center justify-center shrink-0 overflow-hidden">
                 {vid.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -343,11 +343,11 @@ export function ShortsPreviewWidget() {
                     className="size-full object-cover"
                   />
                 ) : (
-                  <Play size={15} className="text-[#3995ff] fill-current" />
+                  <Play size={15} className="text-[#1d9bf0] fill-current" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-slate-900 dark:text-white group-hover:text-[#3995ff] line-clamp-2 leading-snug">
+                <p className="text-xs font-semibold text-slate-900 dark:text-white group-hover:text-[#1d9bf0] line-clamp-2 leading-snug">
                   {vid.title || "Amaliy video darslik"}
                 </p>
                 <span className="text-[10px] text-slate-400">
@@ -358,13 +358,13 @@ export function ShortsPreviewWidget() {
           ))}
         </div>
       ) : (
-        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200/70 dark:border-[#24252f] space-y-2.5">
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] space-y-2.5">
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
             YouTube yoki Bunny Stream orqali ilk video darslikni SEO Studio‘da joylang.
           </p>
           <Link
             href={localePath("/dashboard/create?kind=video")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3995ff] hover:bg-blue-600 text-white text-[11px] font-bold transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1d9bf0] hover:bg-blue-600 text-white text-[11px] font-bold transition-colors"
           >
             <Play size={12} className="fill-current" />
             <span>Video joylash</span>
@@ -383,7 +383,7 @@ export function CreatorMonetizationWidget() {
     <div
       data-node-id="11:688"
       data-name="Bilimlar Bazasi"
-      className="rounded-[16px] p-4.5 text-white relative overflow-hidden shadow-md bg-gradient-to-br from-[#0e1322] via-[#141a2e] to-[#1a233d] border border-[#232f50]"
+      className="rounded-[16px] p-4.5 text-white relative overflow-hidden shadow-md bg-gradient-to-br from-[#000000] via-[#16181c] to-[#202327] border border-[#1b4a63]"
     >
       <div className="absolute -right-8 -bottom-8 size-32 rounded-full bg-blue-500/10 blur-2xl pointer-events-none" />
 
@@ -401,7 +401,7 @@ export function CreatorMonetizationWidget() {
       <div className="flex flex-wrap gap-2">
         <Link
           href={localePath("/hub")}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[9px] bg-[#3995ff] hover:bg-blue-600 text-white font-semibold text-[11.5px] transition-colors shadow-xs"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[9px] bg-[#1d9bf0] hover:bg-blue-600 text-white font-semibold text-[11.5px] transition-colors shadow-xs"
         >
           <span>Hub‘ga o‘tish</span>
           <ArrowRight size={12} />

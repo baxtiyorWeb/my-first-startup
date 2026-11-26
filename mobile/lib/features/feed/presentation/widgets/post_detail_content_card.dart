@@ -119,7 +119,7 @@ class PostDetailContentCard extends StatelessWidget {
                           ? (isDark
                               ? AppColors.textSecondaryDark
                               : AppColors.textPrimaryLight)
-                          : Colors.white,
+                          : AppColors.onPrimary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 6,

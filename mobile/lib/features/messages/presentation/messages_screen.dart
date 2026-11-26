@@ -265,7 +265,7 @@ class _ConversationTile extends StatelessWidget {
                                       ? '99+'
                                       : '${conv.unreadCount}',
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.onPrimary,
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
                                   ),

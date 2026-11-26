@@ -7,10 +7,10 @@ abstract class ApiConstants {
   static const String _configuredBaseUrl =
       String.fromEnvironment('API_BASE_URL');
 
-  static const String _developmentBaseUrl = 'http://127.0.0.1:3000/api';
+  static const String _developmentBaseUrl = 'https://www.geters.uz/api';
 
-  /// Production build'da faqat [API_BASE_URL] ishlatiladi; lokal fallback
-  /// faqat debug rejimda qo'llanadi.
+  /// Debug build konfiguratsiyasiz ishlasa, mobil ilova ishlab turgan API'dan
+  /// foydalanadi; lokal backend uchun [API_BASE_URL] ni alohida bering.
   static const String baseUrl =
       _configuredBaseUrl == '' ? _developmentBaseUrl : _configuredBaseUrl;
 

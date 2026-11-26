@@ -27,7 +27,7 @@ class BadgeChip extends StatelessWidget {
         : (isDark ? AppColors.surfaceDarkElevated : AppColors.surfaceLightElevated);
 
     final text = isSelected
-        ? Colors.white
+        ? (isDark ? AppColors.onPrimary : Colors.white)
         : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight);
 
     final border = isSelected

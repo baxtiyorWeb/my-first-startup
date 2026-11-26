@@ -32,7 +32,7 @@ function getKindMeta(kind: PublicContentItem["contentKind"], locale: Locale) {
   }
   return {
     label: locale === "uz" ? "Maqola" : locale === "ru" ? "Статья" : "Article",
-    cls: "bg-[#3995ff]/10 text-blue-600 dark:text-[#3995ff] border-[#3995ff]/25",
+    cls: "bg-[#1d9bf0]/10 text-blue-600 dark:text-[#1d9bf0] border-[#1d9bf0]/25",
     Icon: BookOpen,
   };
 }
@@ -55,9 +55,9 @@ export function ContentCard({
   ).format(new Date(item.publishedAt));
 
   return (
-    <article className="group flex flex-col justify-between rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] hover:border-[#3995ff]/50 transition-all overflow-hidden shadow-xs">
+    <article className="group flex flex-col justify-between rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] hover:border-[#1d9bf0]/50 transition-all overflow-hidden shadow-xs">
       {/* Media / Cover */}
-      <Link href={href} className="relative block aspect-video w-full bg-slate-100 dark:bg-[#14151d] overflow-hidden">
+      <Link href={href} className="relative block aspect-video w-full bg-slate-100 dark:bg-[#16181c] overflow-hidden">
         {item.coverImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -67,8 +67,8 @@ export function ContentCard({
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gradient-to-br from-slate-100 to-slate-200/70 dark:from-[#12141e] dark:to-[#0d0f17] text-center">
-            <kindMeta.Icon className="w-8 h-8 text-[#3995ff]/70 mb-2" />
+          <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gradient-to-br from-slate-100 to-slate-200/70 dark:from-[#16181c] dark:to-[#000000] text-center">
+            <kindMeta.Icon className="w-8 h-8 text-[#1d9bf0]/70 mb-2" />
             <span className="text-xs font-bold text-slate-600 dark:text-slate-300 line-clamp-2">
               {item.title}
             </span>
@@ -78,7 +78,7 @@ export function ContentCard({
         {/* Top badges */}
         <div className="absolute top-3 left-3 flex items-center gap-1.5">
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border backdrop-blur-md bg-white/90 dark:bg-[#0b0c13]/85 ${kindMeta.cls}`}
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border backdrop-blur-md bg-white/90 dark:bg-[#000000]/85 ${kindMeta.cls}`}
           >
             <kindMeta.Icon className="w-3 h-3" />
             {kindMeta.label}
@@ -89,7 +89,7 @@ export function ContentCard({
         {item.contentKind === "video" && (
           <>
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-colors flex items-center justify-center">
-              <div className="size-12 rounded-full bg-[#3995ff] text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <div className="size-12 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <Play className="w-5 h-5 fill-current ml-0.5" />
               </div>
             </div>
@@ -106,12 +106,12 @@ export function ContentCard({
       <div className="p-5 flex-1 flex flex-col justify-between gap-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-            <span className="font-semibold text-[#3995ff]">{category.label[locale]}</span>
+            <span className="font-semibold text-[#1d9bf0]">{category.label[locale]}</span>
             <time dateTime={item.publishedAt}>{formattedDate}</time>
           </div>
 
           <Link href={href} className="block">
-            <h3 className="text-base font-bold text-slate-950 dark:text-white group-hover:text-[#3995ff] transition-colors line-clamp-2 leading-snug">
+            <h3 className="text-base font-bold text-slate-950 dark:text-white group-hover:text-[#1d9bf0] transition-colors line-clamp-2 leading-snug">
               {item.title}
             </h3>
           </Link>
@@ -122,7 +122,7 @@ export function ContentCard({
         </div>
 
         {/* Footer Author + Stats */}
-        <div className="pt-3 border-t border-slate-100 dark:border-[#1c1e29] flex items-center justify-between gap-2">
+        <div className="pt-3 border-t border-slate-100 dark:border-[#202327] flex items-center justify-between gap-2">
           <Link href={authorHref} className="flex items-center gap-2 min-w-0 group/author">
             <UserAvatar
               name={item.author.name}
@@ -133,7 +133,7 @@ export function ContentCard({
               {item.author.name}
             </span>
             {item.author.verified && (
-              <span className="size-3.5 rounded-full bg-[#3995ff] text-white flex items-center justify-center shrink-0">
+              <span className="size-3.5 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center shrink-0">
                 <Check size={8} strokeWidth={3} />
               </span>
             )}

@@ -78,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SnackBar(
             content: Text('Sozlamani saqlashda xatolik yuz berdi'),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.danger,
+            backgroundColor: AppColors.dangerSurface,
           ),
         );
     }
@@ -109,7 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     _ThemeOptionTile(
                       icon: Icons.light_mode_outlined,
-                      label: 'Yorug\'',
+                      label: 'Kunduzgi',
                       isSelected: currentMode == ThemeMode.light,
                       onTap: () => widget.themeController.setThemeMode(ThemeMode.light),
                       isDark: isDark,

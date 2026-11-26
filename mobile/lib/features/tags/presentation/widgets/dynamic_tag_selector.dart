@@ -118,7 +118,9 @@ class _DynamicTagSelectorState extends State<DynamicTagSelector> {
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
                       color: atLimit
-                          ? AppColors.warning
+                          ? (isDark
+                              ? AppColors.warning
+                              : AppColors.warningTextLight)
                           : (isDark
                               ? AppColors.textSecondaryDark
                               : AppColors.textSecondaryLight),

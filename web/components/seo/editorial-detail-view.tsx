@@ -165,7 +165,7 @@ export function EditorialDetailView({
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0c13] text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#000000] text-slate-900 dark:text-slate-100">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsSchema) }}
@@ -183,17 +183,17 @@ export function EditorialDetailView({
           aria-label="Breadcrumb"
           className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-6"
         >
-          <Link href={`/${locale}`} className="hover:text-[#3995ff] transition-colors">
+          <Link href={`/${locale}`} className="hover:text-[#1d9bf0] transition-colors">
             {locale === "uz" ? "Bosh sahifa" : locale === "ru" ? "Главная" : "Home"}
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
-          <Link href={`/${locale}/${sectionSeg}`} className="hover:text-[#3995ff] transition-colors">
+          <Link href={`/${locale}/${sectionSeg}`} className="hover:text-[#1d9bf0] transition-colors">
             {sectionLabel}
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
           <Link
             href={`/${locale}/${sectionSeg}?category=${item.category}`}
-            className="hover:text-[#3995ff] transition-colors font-medium text-[#3995ff]"
+            className="hover:text-[#1d9bf0] transition-colors font-medium text-[#1d9bf0]"
           >
             {categoryMeta.label[locale]}
           </Link>
@@ -207,12 +207,12 @@ export function EditorialDetailView({
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`/${locale}/${sectionSeg}?category=${item.category}`}
-                  className="px-3 py-1 rounded-full text-xs font-bold bg-[#3995ff]/10 text-[#3995ff] border border-[#3995ff]/25"
+                  className="px-3 py-1 rounded-full text-xs font-bold bg-[#1d9bf0]/10 text-[#1d9bf0] border border-[#1d9bf0]/25"
                 >
                   {categoryMeta.label[locale]}
                 </Link>
                 {item.focusKeyword && (
-                  <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-200/70 dark:bg-[#14151d] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#24252f]">
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-200/70 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-[#2f3336]">
                     #{item.focusKeyword}
                   </span>
                 )}
@@ -223,7 +223,7 @@ export function EditorialDetailView({
               </h1>
 
               {/* Author & Meta Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 py-3 border-y border-slate-200/80 dark:border-[#24252f]">
+              <div className="flex flex-wrap items-center justify-between gap-4 py-3 border-y border-slate-200/80 dark:border-[#2f3336]">
                 <Link
                   href={`/${locale}/authors/${encodeURIComponent(item.author.handle.replace(/^@/, ""))}`}
                   className="flex items-center gap-3 group"
@@ -235,11 +235,11 @@ export function EditorialDetailView({
                   />
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-bold text-slate-950 dark:text-white group-hover:text-[#3995ff] transition-colors">
+                      <span className="text-sm font-bold text-slate-950 dark:text-white group-hover:text-[#1d9bf0] transition-colors">
                         {item.author.name}
                       </span>
                       {item.author.verified && (
-                        <span className="size-4 rounded-full bg-[#3995ff] text-white flex items-center justify-center">
+                        <span className="size-4 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center">
                           <Check size={9} strokeWidth={3} />
                         </span>
                       )}
@@ -267,7 +267,7 @@ export function EditorialDetailView({
                   </span>
                   <Link
                     href={`/${locale}/dashboard/create?edit=${item.id}`}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-[#3995ff] transition-colors"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-[#1d9bf0] transition-colors"
                     title="Muallif / Admin uchun tahrirlash"
                   >
                     <Edit3 className="w-3 h-3" />
@@ -287,7 +287,7 @@ export function EditorialDetailView({
                 chapters={item.videoChapters}
               />
             ) : item.coverImageUrl ? (
-              <figure className="rounded-[16px] overflow-hidden border border-slate-200/90 dark:border-[#24252f] bg-slate-100 dark:bg-[#101117]">
+              <figure className="rounded-[16px] overflow-hidden border border-slate-200/90 dark:border-[#2f3336] bg-slate-100 dark:bg-[#000000]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={item.coverImageUrl}
@@ -295,7 +295,7 @@ export function EditorialDetailView({
                   className="w-full max-h-[460px] object-cover"
                 />
                 {item.coverImageAlt && item.coverImageAlt !== item.title && (
-                  <figcaption className="px-4 py-2 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-200/70 dark:border-[#24252f]">
+                  <figcaption className="px-4 py-2 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-200/70 dark:border-[#2f3336]">
                     {item.coverImageAlt}
                   </figcaption>
                 )}
@@ -304,9 +304,9 @@ export function EditorialDetailView({
 
             {/* Mobile Table of Contents */}
             {headings.length >= 2 && (
-              <div className="lg:hidden rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-4 space-y-2.5">
+              <div className="lg:hidden rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-4 space-y-2.5">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
-                  <ListTree className="w-4 h-4 text-[#3995ff]" />
+                  <ListTree className="w-4 h-4 text-[#1d9bf0]" />
                   <span>Mundarija</span>
                 </div>
                 <ul className="space-y-1.5 text-xs">
@@ -314,7 +314,7 @@ export function EditorialDetailView({
                     <li key={h.id} className={h.level === 3 ? "pl-3" : ""}>
                       <a
                         href={`#${h.id}`}
-                        className="text-slate-600 dark:text-slate-300 hover:text-[#3995ff] transition-colors block py-0.5"
+                        className="text-slate-600 dark:text-slate-300 hover:text-[#1d9bf0] transition-colors block py-0.5"
                       >
                         {h.text}
                       </a>
@@ -325,7 +325,7 @@ export function EditorialDetailView({
             )}
 
             {/* Main Rich Editorial Body */}
-            <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-5 sm:p-8 shadow-xs">
+            <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-5 sm:p-8 shadow-xs">
               <div
                 className="rich-content prose prose-slate dark:prose-invert max-w-none text-base leading-relaxed text-slate-800 dark:text-slate-200
                   [&_h2]:text-xl [&_h2]:sm:text-2xl [&_h2]:font-bold [&_h2]:text-slate-950 [&_h2]:dark:text-white [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:scroll-mt-24
@@ -333,21 +333,21 @@ export function EditorialDetailView({
                   [&_p]:my-3 [&_p]:leading-relaxed
                   [&_strong]:font-bold [&_strong]:text-slate-950 [&_strong]:dark:text-white
                   [&_b]:font-bold [&_b]:text-slate-950 [&_b]:dark:text-white
-                  [&_blockquote]:border-l-4 [&_blockquote]:border-[#3995ff] [&_blockquote]:bg-slate-50 [&_blockquote]:dark:bg-[#14151d] [&_blockquote]:px-4 [&_blockquote]:py-2.5 [&_blockquote]:my-4 [&_blockquote]:rounded-r-xl [&_blockquote]:italic [&_blockquote]:text-slate-700 [&_blockquote]:dark:text-slate-300
-                  [&_pre]:bg-[#0b0c13] [&_pre]:border [&_pre]:border-[#24252f] [&_pre]:rounded-xl [&_pre]:p-4 [&_pre]:overflow-x-auto [&_pre]:my-4 [&_pre]:text-xs [&_pre]:sm:text-sm [&_pre]:text-slate-100
-                  [&_code]:font-mono [&_code]:text-[13px] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-slate-100 [&_code]:dark:bg-[#181a24] [&_code]:text-blue-700 [&_code]:dark:text-[#3995ff]
+                  [&_blockquote]:border-l-4 [&_blockquote]:border-[#1d9bf0] [&_blockquote]:bg-slate-50 [&_blockquote]:dark:bg-[#16181c] [&_blockquote]:px-4 [&_blockquote]:py-2.5 [&_blockquote]:my-4 [&_blockquote]:rounded-r-xl [&_blockquote]:italic [&_blockquote]:text-slate-700 [&_blockquote]:dark:text-slate-300
+                  [&_pre]:bg-[#000000] [&_pre]:border [&_pre]:border-[#2f3336] [&_pre]:rounded-xl [&_pre]:p-4 [&_pre]:overflow-x-auto [&_pre]:my-4 [&_pre]:text-xs [&_pre]:sm:text-sm [&_pre]:text-slate-100
+                  [&_code]:font-mono [&_code]:text-[13px] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-slate-100 [&_code]:dark:bg-[#202327] [&_code]:text-blue-700 [&_code]:dark:text-[#1d9bf0]
                   [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-slate-100
                   [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-3 [&_ul]:space-y-1.5
                   [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-3 [&_ol]:space-y-1.5
-                  [&_img]:rounded-xl [&_img]:border [&_img]:border-slate-200 [&_img]:dark:border-[#24252f] [&_img]:my-5
-                  [&_a]:text-blue-600 [&_a]:dark:text-[#3995ff] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:opacity-80
-                  [&_table]:w-full [&_table]:border-collapse [&_table]:my-5 [&_th]:bg-slate-100 [&_th]:dark:bg-[#14151d] [&_th]:p-2.5 [&_th]:border [&_th]:border-slate-200 [&_th]:dark:border-[#24252f] [&_td]:p-2.5 [&_td]:border [&_td]:border-slate-200 [&_td]:dark:border-[#24252f]"
+                  [&_img]:rounded-xl [&_img]:border [&_img]:border-slate-200 [&_img]:dark:border-[#2f3336] [&_img]:my-5
+                  [&_a]:text-blue-600 [&_a]:dark:text-[#1d9bf0] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:opacity-80
+                  [&_table]:w-full [&_table]:border-collapse [&_table]:my-5 [&_th]:bg-slate-100 [&_th]:dark:bg-[#16181c] [&_th]:p-2.5 [&_th]:border [&_th]:border-slate-200 [&_th]:dark:border-[#2f3336] [&_td]:p-2.5 [&_td]:border [&_td]:border-slate-200 [&_td]:dark:border-[#2f3336]"
                 dangerouslySetInnerHTML={{ __html: htmlWithIds }}
               />
 
               {/* Transcript / Key Notes for Video Tutorials */}
               {item.transcript && (
-                <div className="mt-8 pt-6 border-t border-slate-200/80 dark:border-[#24252f] space-y-3">
+                <div className="mt-8 pt-6 border-t border-slate-200/80 dark:border-[#2f3336] space-y-3">
                   <h2 className="text-lg font-bold text-slate-950 dark:text-white">
                     Darslik Konspekti &amp; Transkript
                   </h2>
@@ -359,13 +359,13 @@ export function EditorialDetailView({
 
               {/* Tags */}
               {item.tags.length > 0 && (
-                <div className="mt-8 pt-5 border-t border-slate-200/80 dark:border-[#24252f] flex flex-wrap items-center gap-2">
+                <div className="mt-8 pt-5 border-t border-slate-200/80 dark:border-[#2f3336] flex flex-wrap items-center gap-2">
                   <Tag className="w-3.5 h-3.5 text-slate-400" />
                   {item.tags.map((tag) => (
                     <Link
                       key={tag}
                       href={`/${locale}/${sectionSeg}?tag=${encodeURIComponent(tag)}`}
-                      className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#14151d] border border-slate-200/80 dark:border-[#24252f] text-slate-700 dark:text-slate-300 hover:border-[#3995ff]/50 hover:text-[#3995ff] transition-colors"
+                      className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/50 hover:text-[#1d9bf0] transition-colors"
                     >
                       #{tag}
                     </Link>
@@ -375,7 +375,7 @@ export function EditorialDetailView({
             </div>
 
             {/* E-E-A-T Author Bio Box */}
-            <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3.5">
                 <UserAvatar
                   name={item.author.name}
@@ -384,17 +384,17 @@ export function EditorialDetailView({
                 />
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs uppercase tracking-wider font-bold text-[#3995ff]">
+                    <span className="text-xs uppercase tracking-wider font-bold text-[#1d9bf0]">
                       Muallif haqida
                     </span>
                   </div>
                   <Link
                     href={`/${locale}/authors/${encodeURIComponent(item.author.handle.replace(/^@/, ""))}`}
-                    className="text-base font-bold text-slate-950 dark:text-white hover:text-[#3995ff] transition-colors flex items-center gap-1.5"
+                    className="text-base font-bold text-slate-950 dark:text-white hover:text-[#1d9bf0] transition-colors flex items-center gap-1.5"
                   >
                     <span>{item.author.name}</span>
                     {item.author.verified && (
-                      <span className="size-4 rounded-full bg-[#3995ff] text-white flex items-center justify-center">
+                      <span className="size-4 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center">
                         <Check size={9} strokeWidth={3} />
                       </span>
                     )}
@@ -406,7 +406,7 @@ export function EditorialDetailView({
               </div>
               <Link
                 href={`/${locale}/authors/${encodeURIComponent(item.author.handle.replace(/^@/, ""))}`}
-                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#14151d] border border-slate-200 dark:border-[#24252f] text-xs font-bold text-slate-800 dark:text-white hover:border-[#3995ff] transition-colors shrink-0"
+                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-xs font-bold text-slate-800 dark:text-white hover:border-[#1d9bf0] transition-colors shrink-0"
               >
                 Barcha materiallari
               </Link>
@@ -441,9 +441,9 @@ export function EditorialDetailView({
           <aside className="lg:col-span-4 space-y-5 lg:sticky lg:top-24">
             {/* Desktop Table of Contents */}
             {headings.length >= 2 && (
-              <div className="hidden lg:block rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-5 space-y-3">
+              <div className="hidden lg:block rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-5 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-                  <ListTree className="w-4 h-4 text-[#3995ff]" />
+                  <ListTree className="w-4 h-4 text-[#1d9bf0]" />
                   <span>Mundarija</span>
                 </div>
                 <nav aria-label="Mundarija" className="space-y-1.5 text-xs">
@@ -451,7 +451,7 @@ export function EditorialDetailView({
                     <a
                       key={h.id}
                       href={`#${h.id}`}
-                      className={`block py-1 text-slate-600 dark:text-slate-300 hover:text-[#3995ff] transition-colors border-l-2 border-transparent hover:border-[#3995ff] ${
+                      className={`block py-1 text-slate-600 dark:text-slate-300 hover:text-[#1d9bf0] transition-colors border-l-2 border-transparent hover:border-[#1d9bf0] ${
                         h.level === 3 ? "pl-5 text-[11px]" : "pl-3 font-medium"
                       }`}
                     >
@@ -463,9 +463,9 @@ export function EditorialDetailView({
             )}
 
             {/* Topic Cluster Pillar Links (Hub Internal Linking) */}
-            <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-5 space-y-3">
+            <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-5 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-                <Layers className="w-4 h-4 text-[#3995ff]" />
+                <Layers className="w-4 h-4 text-[#1d9bf0]" />
                 <span>Texnologiyalar Hubi</span>
               </div>
               <div className="space-y-2">
@@ -473,11 +473,11 @@ export function EditorialDetailView({
                   <Link
                     key={topic.slug}
                     href={`/${locale}/hub/${topic.slug}`}
-                    className="block p-3 rounded-xl bg-slate-50 dark:bg-[#14151d] border border-slate-200/70 dark:border-[#24252f] hover:border-[#3995ff]/50 transition-colors group"
+                    className="block p-3 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] hover:border-[#1d9bf0]/50 transition-colors group"
                   >
                     <div className="flex items-center gap-2">
                       <span>{topic.icon}</span>
-                      <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#3995ff]">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#1d9bf0]">
                         {topic.title[locale]}
                       </span>
                     </div>
@@ -490,7 +490,7 @@ export function EditorialDetailView({
             </div>
 
             {/* Glossary Internal Links */}
-            <div className="rounded-[16px] bg-white dark:bg-[#101117] border border-slate-200/90 dark:border-[#24252f] p-5 space-y-3">
+            <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-5 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
                 <BookOpen className="w-4 h-4 text-emerald-500" />
                 <span>Asosiy IT Atamalar</span>
@@ -500,7 +500,7 @@ export function EditorialDetailView({
                   <Link
                     key={g.slug}
                     href={`/${locale}/glossary/${g.slug}`}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-50 dark:bg-[#14151d] border border-slate-200/70 dark:border-[#24252f] text-slate-700 dark:text-slate-300 hover:border-[#3995ff]/50 hover:text-[#3995ff] transition-colors"
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/50 hover:text-[#1d9bf0] transition-colors"
                   >
                     {g.term[locale]}
                   </Link>

@@ -130,7 +130,7 @@ export function Header({ title, subtitle }: HeaderProps) {
       <header
         data-node-id="11:4"
         data-name="Yuqori panel"
-        className="sticky top-0 z-20 h-[64px] sm:h-[68px] w-full bg-white/95 dark:bg-[#0b0c13]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#24252f] transition-colors select-none"
+        className="sticky top-0 z-20 h-[64px] sm:h-[68px] w-full bg-white/95 dark:bg-[#000000]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#2f3336] transition-colors select-none"
         role="banner"
       >
         <div className="h-full px-2.5 sm:px-5 lg:px-7 flex items-center justify-between gap-1.5 sm:gap-4 max-w-full">
@@ -143,7 +143,7 @@ export function Header({ title, subtitle }: HeaderProps) {
               aria-label={
                 isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")
               }
-              className="hidden md:flex p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-[#151722] active:scale-95 cursor-pointer focus-visible:outline-none transition-all shrink-0 touch-manipulation"
+              className="hidden md:flex p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-[#16181c] active:scale-95 cursor-pointer focus-visible:outline-none transition-all shrink-0 touch-manipulation"
             >
               <MenuIcon
                 size={20}
@@ -175,7 +175,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                 {displayTitle}
               </h1>
               {displaySubtitle && (
-                <span className="hidden xl:inline-block text-[11px] font-normal text-slate-500 dark:text-[#a0a5b8] truncate max-w-[220px]">
+                <span className="hidden xl:inline-block text-[11px] font-normal text-slate-500 dark:text-[#8b98a5] truncate max-w-[220px]">
                   • {displaySubtitle}
                 </span>
               )}
@@ -187,23 +187,23 @@ export function Header({ title, subtitle }: HeaderProps) {
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="relative w-full h-[42px] sm:h-[44px] px-3 sm:px-4 rounded-[22px] bg-slate-100 dark:bg-[#101117] hover:bg-slate-200/70 dark:hover:bg-[#151722] border border-slate-200/80 dark:border-[#181a23] hover:border-slate-300 dark:hover:border-[#2a2d3d] text-xs text-slate-500 dark:text-[#c5c8da] shadow-2xs flex items-center justify-between gap-2 transition-all cursor-pointer group active:scale-[0.99]"
+              className="relative w-full h-[42px] sm:h-[44px] px-3 sm:px-4 rounded-[22px] bg-slate-100 dark:bg-[#000000] hover:bg-slate-200/70 dark:hover:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] hover:border-slate-300 dark:hover:border-[#3e4144] text-xs text-slate-500 dark:text-[#cfd9de] shadow-2xs flex items-center justify-between gap-2 transition-all cursor-pointer group active:scale-[0.99]"
               title={`${t("common.search")} (Ctrl+K)`}
             >
               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                <div className="w-4 h-4 shrink-0 text-slate-400 dark:text-[#8e95ab] group-hover:text-[#3995ff] transition-colors flex items-center justify-center">
+                <div className="w-4 h-4 shrink-0 text-slate-400 dark:text-[#71767b] group-hover:text-[#1d9bf0] transition-colors flex items-center justify-center">
                   <SearchIcon size={16} />
                 </div>
-                <span className="hidden sm:inline text-[13px] text-slate-500 dark:text-[#c5c8da] truncate font-normal">
+                <span className="hidden sm:inline text-[13px] text-slate-500 dark:text-[#cfd9de] truncate font-normal">
                   Qidirish... (mavzu, muallif, video, darslik...)
                 </span>
-                <span className="inline sm:hidden text-[11px] text-slate-500 dark:text-[#c5c8da] truncate font-normal">
+                <span className="inline sm:hidden text-[11px] text-slate-500 dark:text-[#cfd9de] truncate font-normal">
                   {t("search.headerPlaceholderShort") || "Qidirish..."}
                 </span>
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                <kbd className="hidden sm:inline-flex h-[24px] items-center gap-1 rounded-[7px] border border-slate-200 dark:border-[#2a2c3a] bg-white dark:bg-[#1d1f29] px-2 font-mono text-[11px] font-medium text-slate-500 dark:text-[#cdd0e1] shadow-2xs">
+                <kbd className="hidden sm:inline-flex h-[24px] items-center gap-1 rounded-[7px] border border-slate-200 dark:border-[#2f3336] bg-white dark:bg-[#202327] px-2 font-mono text-[11px] font-medium text-slate-500 dark:text-[#cfd9de] shadow-2xs">
                   <span>Ctrl + K</span>
                 </kbd>
               </div>
@@ -216,7 +216,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             {!normalizedPath.startsWith("/dashboard/create") && (
               <Link
                 href={localePath("/dashboard/create")}
-                className="hidden md:inline-flex items-center gap-1.5 h-[40px] px-3.5 sm:px-4 rounded-[11px] bg-[#3995ff] hover:bg-[#2884ee] active:scale-95 text-white text-[13px] font-semibold cursor-pointer transition-all shadow-xs"
+                className="hidden md:inline-flex items-center gap-1.5 h-[40px] px-3.5 sm:px-4 rounded-[11px] bg-[#1d9bf0] hover:bg-[#1a8cd8] active:scale-95 text-white text-[13px] font-semibold cursor-pointer transition-all shadow-xs"
                 title="SEO Studio'da kontent yozish"
               >
                 <PlusIcon
@@ -236,7 +236,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                 <button
                   type="button"
                   onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-[13px] hover:bg-slate-100 dark:hover:bg-[#141520] border border-transparent hover:border-slate-200 dark:hover:border-[#24252f] cursor-pointer focus-visible:outline-none transition-colors active:scale-95"
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-[13px] hover:bg-slate-100 dark:hover:bg-[#16181c] border border-transparent hover:border-slate-200 dark:hover:border-[#2f3336] cursor-pointer focus-visible:outline-none transition-colors active:scale-95"
                   aria-label={t("nav.userMenu")}
                   aria-expanded={isUserMenuOpen}
                 >
@@ -245,21 +245,21 @@ export function Header({ title, subtitle }: HeaderProps) {
                     avatarUrl={session.user.avatarUrl}
                     size="sm"
                   />
-                  <span className="hidden md:inline-block text-xs font-semibold text-slate-800 dark:text-[#f6f6fa] max-w-[100px] truncate">
+                  <span className="hidden md:inline-block text-xs font-semibold text-slate-800 dark:text-[#e7e9ea] max-w-[100px] truncate">
                     {session.user.name
                       ? session.user.name.split(" ")[0]
                       : t("nav.guestUser")}
                   </span>
                   <ChevronDown
                     size={14}
-                    className={`text-slate-400 dark:text-[#8e95ab] transition-transform duration-150 ${isUserMenuOpen ? "rotate-180" : ""}`}
+                    className={`text-slate-400 dark:text-[#71767b] transition-transform duration-150 ${isUserMenuOpen ? "rotate-180" : ""}`}
                   />
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#101117] rounded-[15px] border border-slate-200 dark:border-[#24252f] shadow-xl py-1.5 z-30 animate-in fade-in zoom-in-95 duration-100 text-xs">
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#000000] rounded-[15px] border border-slate-200 dark:border-[#2f3336] shadow-xl py-1.5 z-30 animate-in fade-in zoom-in-95 duration-100 text-xs">
                     {/* User details header */}
-                    <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-[#24252f] flex items-center gap-2.5">
+                    <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-[#2f3336] flex items-center gap-2.5">
                       <UserAvatar
                         name={session.user.name}
                         avatarUrl={session.user.avatarUrl}
@@ -269,7 +269,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                         <p className="font-semibold text-slate-900 dark:text-white truncate">
                           {session.user.name}
                         </p>
-                        <p className="text-[11px] text-slate-500 dark:text-[#a0a5b8] truncate">
+                        <p className="text-[11px] text-slate-500 dark:text-[#8b98a5] truncate">
                           {session.user.handle}
                         </p>
                       </div>
@@ -279,7 +279,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                       <Link
                         href={localePath("/dashboard/profile")}
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full px-3.5 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full px-3.5 py-2 text-left text-slate-700 dark:text-[#cfd9de] hover:bg-slate-50 dark:hover:bg-[#202327] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
                         <UserIcon size={14} className="text-slate-500" />
                         <span>{t("nav.profile")}</span>
@@ -288,7 +288,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                       <Link
                         href={localePath("/dashboard/bookmarks")}
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full px-3.5 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full px-3.5 py-2 text-left text-slate-700 dark:text-[#cfd9de] hover:bg-slate-50 dark:hover:bg-[#202327] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
                         <BookmarkIcon size={14} className="text-slate-500" />
                         <span>{t("nav.bookmarks")}</span>
@@ -297,7 +297,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                       <Link
                         href={localePath("/dashboard/settings")}
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full px-3.5 py-2 text-left text-slate-700 dark:text-[#c4c7d9] hover:bg-slate-50 dark:hover:bg-[#1c1e28] flex items-center gap-2.5 transition-colors cursor-pointer"
+                        className="w-full px-3.5 py-2 text-left text-slate-700 dark:text-[#cfd9de] hover:bg-slate-50 dark:hover:bg-[#202327] flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
                         <SettingsIcon size={14} className="text-slate-500" />
                         <span>{t("nav.settings")}</span>
@@ -308,7 +308,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                         <Link
                           href={localePath("/dashboard/admin")}
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="w-full px-3.5 py-2 text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 transition-colors cursor-pointer font-semibold border-t border-slate-100 dark:border-[#24252f]/50 mt-1 pt-2"
+                          className="w-full px-3.5 py-2 text-left text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 transition-colors cursor-pointer font-semibold border-t border-slate-100 dark:border-[#2f3336]/50 mt-1 pt-2"
                         >
                           <Shield size={14} className="text-blue-600 dark:text-blue-400" />
                           <span>Admin Panel</span>
@@ -317,7 +317,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                     </div>
 
                     {/* Logout Action */}
-                    <div className="pt-1 border-t border-slate-100 dark:border-[#24252f]">
+                    <div className="pt-1 border-t border-slate-100 dark:border-[#2f3336]">
                       <button
                         type="button"
                         onClick={() => {
@@ -336,7 +336,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             ) : (
               <Link
                 href={localePath("/auth/login")}
-                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[#3995ff] hover:bg-[#2884ee] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer shrink-0"
               >
                 <span>{t("nav.login")}</span>
               </Link>
