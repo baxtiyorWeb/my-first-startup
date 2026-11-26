@@ -296,7 +296,10 @@ export async function updatePost(
       }
     }
 
-    const tagsProvided = data.tags !== undefined || data.tagIds !== undefined;
+    // Tags are typed as hashtags inside the post content; extract them here
+    // because the editor no longer has a separate tags field.
+    const inlineTags = (plainText.match(/#[a-zA-Z0-9_\u0400-\u04FF\u0100-\u024F'ʻʼ]+/g) ?? []).slice(0, 10);
+    const tagsProvided = data.tags !== undefined || data.tagIds !== undefined || inlineTags.length > 0;
 
     await db.transaction(async (tx) => {
       let updatedTagNames: string[] | undefined;
@@ -304,7 +307,7 @@ export async function updatePost(
         const synced = await resolveAndSyncPostTagsTx(tx, {
           postId,
           userId,
-          tagInputs: norm.tags,
+          tagInputs: norm.tags.length > 0 ? norm.tags : inlineTags,
           tagIds: data.tagIds,
           isPostActive: norm.status === "published",
         });

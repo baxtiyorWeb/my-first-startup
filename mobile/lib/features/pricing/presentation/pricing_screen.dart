@@ -6,11 +6,48 @@ import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/app_button.dart';
 import '../data/pricing_repository.dart';
 import '../data/revenuecat_service.dart';
-import 'widgets/pricing_coming_soon_overlay.dart';
+
+/// Pullik tariflar hozircha vaqtincha yopiq: rejalar hammaga ko'rinadi, lekin
+/// sotib olish tugmalari faollashtirilmagan. Tariflar ishga tushganda `true`
+/// qilib qo'yish kifoya.
+const bool kPlansPurchasable = false;
+
+/// Backend ma'lumoti kelmaguncha ko'rsatiladigan namunaviy rejalar.
+const List<PricingPlan> kPreviewPlans = [
+  PricingPlan(
+    id: 'preview_free',
+    slug: 'free',
+    name: 'Bepul',
+    description: 'Asosiy jamoa va kontent imkoniyatlari',
+    priceMonthlyUzs: 0,
+    priceYearlyUzs: 0,
+    currency: 'UZS',
+    features: [
+      'Cheksiz postlar va fikrlar',
+      'Shorts video lentasi',
+      'Saqlangan postlar to\'plami',
+    ],
+    isCurrent: true,
+  ),
+  PricingPlan(
+    id: 'preview_pro',
+    slug: 'pro',
+    name: 'Pro',
+    description: 'Tez o\'sayotgan startaplar va mualliflar uchun',
+    priceMonthlyUzs: 49000,
+    priceYearlyUzs: 470000,
+    currency: 'UZS',
+    features: [
+      'Tasdiqlangan nishon va tahlil',
+      'Loyihalar uchun kengaytirilgan qamrov',
+      'Ustuvor ko\'rib chiqish',
+    ],
+    isCurrent: false,
+  ),
+];
 
 class PricingScreen extends StatefulWidget {
   final PricingRepository repository;
-  final bool comingSoonMode;
   final RevenueCatService? revenueCat;
 
   /// Signed-in user id. Required for Google Play purchases because RevenueCat
@@ -20,7 +57,6 @@ class PricingScreen extends StatefulWidget {
   const PricingScreen({
     super.key,
     required this.repository,
-    this.comingSoonMode = true,
     this.revenueCat,
     this.userId,
   });
@@ -65,14 +101,16 @@ class _PricingScreenState extends State<PricingScreen> {
     }
   }
 
+  bool get _purchasesEnabled => kPlansPurchasable;
+
   bool get _usesGooglePlay =>
-      !widget.comingSoonMode &&
+      _purchasesEnabled &&
       widget.userId != null &&
       _revenueCat.isConfigured &&
       (_overview?.googlePlayConfigured ?? false);
 
   Future<void> _selectPlan(PricingPlan plan) async {
-    if (widget.comingSoonMode) return;
+    if (!_purchasesEnabled) return;
 
     final price =
         _billingCycle == 'yearly' ? plan.priceYearlyUzs : plan.priceMonthlyUzs;
@@ -217,7 +255,6 @@ class _PricingScreenState extends State<PricingScreen> {
   }
 
   Future<void> _cancelSub() async {
-    if (widget.comingSoonMode) return;
     setState(() => _busySlug = 'cancel');
     try {
       await widget.repository.cancelSubscription();
@@ -255,16 +292,12 @@ class _PricingScreenState extends State<PricingScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sub = _overview?.currentSubscription;
     final loadedPlans = _overview?.plans ?? const <PricingPlan>[];
-    final plans = loadedPlans.isNotEmpty
-        ? loadedPlans
-        : (widget.comingSoonMode
-            ? PricingComingSoonLayer.fallbackPreviewPlans
-            : const <PricingPlan>[]);
+    final plans = loadedPlans.isNotEmpty ? loadedPlans : kPreviewPlans;
 
     Widget content;
     if (_isLoading) {
       content = const Center(child: CircularProgressIndicator());
-    } else if (_error != null && !widget.comingSoonMode) {
+    } else if (_error != null && loadedPlans.isEmpty) {
       content = Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -279,11 +312,9 @@ class _PricingScreenState extends State<PricingScreen> {
         ),
       );
     } else {
-      final planList = ListView(
+      content = ListView(
         padding: const EdgeInsets.all(16),
-        physics: widget.comingSoonMode
-            ? const NeverScrollableScrollPhysics()
-            : const BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         children: [
           Center(
             child: SegmentedButton<String>(
@@ -292,9 +323,8 @@ class _PricingScreenState extends State<PricingScreen> {
                 ButtonSegment(value: 'yearly', label: Text('Yillik (-20%)')),
               ],
               selected: {_billingCycle},
-              onSelectionChanged: widget.comingSoonMode
-                  ? null
-                  : (val) => setState(() => _billingCycle = val.first),
+              onSelectionChanged: (val) =>
+                  setState(() => _billingCycle = val.first),
             ),
           ),
           const SizedBox(height: 16),
@@ -306,6 +336,7 @@ class _PricingScreenState extends State<PricingScreen> {
               onCancel: _cancelSub,
             ),
           ...plans.map((plan) => _buildPlanCard(plan, isDark)),
+          if (!_purchasesEnabled) _buildPausedNotice(isDark),
           if (_usesGooglePlay)
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 24),
@@ -336,10 +367,6 @@ class _PricingScreenState extends State<PricingScreen> {
             ),
         ],
       );
-
-      content = widget.comingSoonMode
-          ? PricingComingSoonLayer(isDark: isDark, child: planList)
-          : planList;
     }
 
     return Scaffold(
@@ -348,9 +375,74 @@ class _PricingScreenState extends State<PricingScreen> {
     );
   }
 
+  Widget _buildPausedNotice(bool isDark) {
+    final muted = isDark ? AppColors.textMutedDark : AppColors.textMutedLight;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 2, bottom: 24),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDarkElevated : AppColors.surfaceLightElevated,
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+        border: Border.all(color: AppColors.primary.withAlpha(70)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(28),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Tariflar hozircha vaqtincha yopiq',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Rejalar bilan bemalol tanishing, lekin sotib olish hozircha vaqtincha '
+            'o\'chirilgan. Bu davrda Geters\'ning barcha asosiy imkoniyatlari hamma '
+            'uchun bepul ishlaydi — hech qanday to\'lov olinmaydi va hisobingizdan '
+            'pul yechilmaydi.',
+            style: TextStyle(fontSize: 12.5, height: 1.5, color: muted),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tariflar ishga tushganda shu sahifada xabar beramiz. Savolingiz bo\'lsa, '
+            'qo\'llab-quvvatlash jamoasiga yozishingiz mumkin.',
+            style: TextStyle(fontSize: 12.5, height: 1.5, color: muted),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPlanCard(PricingPlan plan, bool isDark) {
     final price = _billingCycle == 'yearly' ? plan.priceYearlyUzs : plan.priceMonthlyUzs;
     final isPro = plan.slug == 'pro';
+    final String actionLabel;
+    if (plan.isCurrent) {
+      actionLabel = 'Joriy reja';
+    } else if (!_purchasesEnabled) {
+      actionLabel = price <= 0 ? 'Bepul reja' : 'Tez orada ishga tushadi';
+    } else {
+      actionLabel = price <= 0 ? 'Bepul rejaga o\'tish' : 'Rejani tanlash';
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -437,12 +529,10 @@ class _PricingScreenState extends State<PricingScreen> {
           ),
           const SizedBox(height: 14),
           AppButton(
-            text: plan.isCurrent
-                ? 'Joriy reja'
-                : (price <= 0 ? 'Bepul rejaga o\'tish' : 'Rejani tanlash'),
+            text: actionLabel,
             isFullWidth: true,
             isLoading: _busySlug == plan.slug,
-            onPressed: (plan.isCurrent || widget.comingSoonMode)
+            onPressed: (plan.isCurrent || !_purchasesEnabled)
                 ? null
                 : () => _selectPlan(plan),
           ),

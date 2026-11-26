@@ -25,19 +25,13 @@ import {
   Loader2,
   Sparkles,
   Paperclip,
-  BookOpen,
-  PlayCircle,
-  Newspaper,
-  MessageSquare,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { api, ApiError } from "@/lib/api";
 import { useI18n } from "@/lib/i18n/context";
 import { compressAvatarImage } from "@/lib/image-compressor";
-import { generateSeoSlug } from "@/lib/seo/slugify";
-import type { ContentKind, VideoChapterItem } from "@/types/social";
-import { SeoInspectorPanel } from "@/components/studio/seo-inspector-panel";
-import { VideoTutorialBox } from "@/components/studio/video-tutorial-box";
+import { generateSeoSlug, CONTENT_CATEGORIES } from "@/lib/seo/slugify";
+import type { ContentKind } from "@/types/social";
 
 interface FloatingToolbarState {
   visible: boolean;
@@ -49,42 +43,28 @@ function StudioEditorWorkspace() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
-  const initialKindParam = searchParams.get("kind");
 
   const { t, localePath } = useI18n();
   const editorRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const [contentKind, setContentKind] = useState<ContentKind>(
-    initialKindParam === "video" || initialKindParam === "news" || initialKindParam === "thought"
-      ? initialKindParam
-      : "article"
-  );
+  const [contentKind, setContentKind] = useState<ContentKind>("article");
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   const [contentLocale, setContentLocale] = useState<"uz" | "ru" | "en">("uz");
   const [category, setCategory] = useState("umumiy");
-  const [tagsInput, setTagsInput] = useState("");
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
   const [focusKeyword, setFocusKeyword] = useState("");
   const [coverImageAlt, setCoverImageAlt] = useState("");
   const [status, setStatus] = useState<"draft" | "published">("published");
-  const [isIndexable, setIsIndexable] = useState(true);
-
-  // Video specific state
-  const [videoUrl, setVideoUrl] = useState("");
-  const [videoDurationSeconds, setVideoDurationSeconds] = useState<number | null>(null);
-  const [videoChapters, setVideoChapters] = useState<VideoChapterItem[]>([]);
-  const [transcript, setTranscript] = useState("");
 
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingEdit, setIsLoadingEdit] = useState(false);
-  const [htmlSnapshot, setHtmlSnapshot] = useState("");
 
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(1);
@@ -131,22 +111,15 @@ function StudioEditorWorkspace() {
           post.locale === "ru" || post.locale === "en" ? post.locale : "uz"
         );
         setCategory(String(post.category || "umumiy"));
-        setTagsInput((post.tags || []).join(", "));
         setSeoTitle(post.seoTitle || "");
         setSeoDescription(post.seoDescription || "");
         setFocusKeyword(post.focusKeyword || "");
         setCoverImageAlt(post.coverImageAlt || "");
         setStatus(post.status === "draft" ? "draft" : "published");
-        setIsIndexable(Boolean(post.isIndexable));
-        setVideoUrl(post.videoUrl || "");
-        setVideoDurationSeconds(post.videoDurationSeconds ?? null);
-        setVideoChapters(post.videoChapters || []);
-        setTranscript(post.transcript || "");
         setMediaUrls(post.mediaUrls || []);
 
         if (editorRef.current) {
           editorRef.current.innerHTML = post.content || "";
-          setHtmlSnapshot(post.content || "");
           const text = editorRef.current.innerText.trim();
           const words = text ? text.split(/\s+/).length : 0;
           setWordCount(words);
@@ -166,20 +139,12 @@ function StudioEditorWorkspace() {
     }
   }, [title, slugManuallyEdited]);
 
-  // Toggle indexable default automatically based on contentKind (only on create)
-  useEffect(() => {
-    if (!editId) {
-      setIsIndexable(contentKind !== "thought");
-    }
-  }, [contentKind, editId]);
-
   const updateEditorStats = useCallback(() => {
     if (!editorRef.current) return;
     const text = editorRef.current.innerText.trim();
     const words = text ? text.split(/\s+/).length : 0;
     setWordCount(words);
     setReadingTime(Math.max(1, Math.ceil(words / 180)));
-    setHtmlSnapshot(editorRef.current.innerHTML);
   }, []);
 
   const getActiveFormats = useCallback(() => {
@@ -504,13 +469,8 @@ function StudioEditorWorkspace() {
       return;
     }
 
-    if (contentKind !== "thought" && !title.trim()) {
-      toast.error("Maqola, video darslik yoki yangilik uchun sarlavha (H1) shart");
-      return;
-    }
-
-    if (contentKind === "video" && !videoUrl.trim()) {
-      toast.error("Video darslik uchun YouTube yoki Bunny Stream havolasini kiriting");
+    if (!title.trim()) {
+      toast.error("Maqola uchun sarlavha kiritish shart");
       return;
     }
 
@@ -518,12 +478,6 @@ function StudioEditorWorkspace() {
       .replace(/<div><br\s*\/?><\/div>/gi, "<p><br /></p>")
       .replace(/<div>(.*?)<\/div>/gi, "<p>$1</p>")
       .replace(/<p><\/p>/gi, "<p><br /></p>");
-
-    const parsedTags = tagsInput
-      .split(",")
-      .map((s) => s.replace(/^#/, "").trim())
-      .filter(Boolean)
-      .slice(0, 10);
 
     setIsSubmitting(true);
     try {
@@ -534,19 +488,13 @@ function StudioEditorWorkspace() {
         postType: "thought" as const,
         contentKind,
         status,
-        isIndexable: contentKind === "thought" ? false : isIndexable,
         locale: contentLocale,
         category,
-        tags: parsedTags,
         coverImageUrl: mediaUrls[0] || undefined,
         coverImageAlt: coverImageAlt.trim() || undefined,
         seoTitle: seoTitle.trim() || undefined,
         seoDescription: seoDescription.trim() || undefined,
         focusKeyword: focusKeyword.trim() || undefined,
-        videoUrl: contentKind === "video" ? videoUrl.trim() : undefined,
-        videoDurationSeconds: contentKind === "video" ? videoDurationSeconds : undefined,
-        videoChapters: contentKind === "video" ? videoChapters : [],
-        transcript: contentKind === "video" ? transcript.trim() || undefined : undefined,
         mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
       };
 
@@ -575,13 +523,6 @@ function StudioEditorWorkspace() {
     }
   };
 
-  const kindCards: Array<{ id: ContentKind; label: string; desc: string; Icon: React.ElementType }> = [
-    { id: "article", label: "Maqola", desc: "Chuqur qo‘llanma", Icon: BookOpen },
-    { id: "video", label: "Video darslik", desc: "Video + Konspekt", Icon: PlayCircle },
-    { id: "news", label: "IT Yangilik", desc: "Tezkor xabar", Icon: Newspaper },
-    { id: "thought", label: "Qisqa fikr", desc: "Ichki lenta", Icon: MessageSquare },
-  ];
-
   const toolBtn = (active: boolean) =>
     `p-1.5 rounded-lg transition-colors cursor-pointer ${
       active
@@ -603,10 +544,10 @@ function StudioEditorWorkspace() {
           </Link>
           <div>
             <h1 className="text-base sm:text-lg font-extrabold text-slate-950 dark:text-white">
-              {editId ? "Materialni tahrirlash (SEO Studio)" : "Geters SEO Editorial Studio"}
+              {editId ? "Materialni tahrirlash" : "Yangi post"}
             </h1>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Maqolalar, video darsliklar va yangiliklarni Google/Yandex standartida chop eting
+              Maqola, video darslik yoki yangilik yarating
             </p>
           </div>
         </div>
@@ -705,34 +646,53 @@ function StudioEditorWorkspace() {
           <Loader2 className="w-6 h-6 animate-spin text-[#1d9bf0]" />
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Main Authoring Column */}
-          <div className="lg:col-span-8 space-y-4">
-            {/* Content Type Selector */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {kindCards.map((kc) => {
-                const active = contentKind === kc.id;
-                return (
-                  <button
-                    key={kc.id}
-                    type="button"
-                    onClick={() => setContentKind(kc.id)}
-                    className={`p-3 rounded-[14px] border text-left transition-all cursor-pointer ${
-                      active
-                        ? "bg-blue-50 dark:bg-[#0e2c3f] border-[#1d9bf0] shadow-xs"
-                        : "bg-white dark:bg-[#000000] border-slate-200/90 dark:border-[#2f3336] hover:border-[#1d9bf0]/40"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <kc.Icon className={`w-4 h-4 ${active ? "text-[#1d9bf0]" : "text-slate-400"}`} />
-                      <span className={`text-xs font-bold ${active ? "text-[#1d9bf0]" : "text-slate-900 dark:text-white"}`}>
-                        {kc.label}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{kc.desc}</p>
-                  </button>
-                );
-              })}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
+            {/* Nashr sozlamalari */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-white dark:bg-[#000000] rounded-[16px] border border-slate-200/90 dark:border-[#2f3336] shadow-xs">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                  Holat
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as "draft" | "published")}
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                >
+                  <option value="published">Nashr qilish</option>
+                  <option value="draft">Qoralama</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                  Til
+                </label>
+                <select
+                  value={contentLocale}
+                  onChange={(e) => setContentLocale(e.target.value as "uz" | "ru" | "en")}
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                >
+                  <option value="uz">O‘zbekcha</option>
+                  <option value="ru">Русский</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                  Kategoriya
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                >
+                  {CONTENT_CATEGORIES.map((c) => (
+                    <option key={c.slug} value={c.slug}>
+                      {c.label.uz}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Title (H1) & WYSIWYG Editor */}
@@ -816,21 +776,10 @@ function StudioEditorWorkspace() {
                 data-placeholder="Chuqur tahlil, darslik konspekti yoki IT yangilik matnini shu yerga yozing. H2/H3 sarlavhalardan foydalansangiz avtomatik Mundarija shakllanadi..."
                 className="gogetters-rich-editor p-4 sm:p-6 text-sm sm:text-base text-slate-900 dark:text-slate-100 cursor-text min-h-[340px] leading-relaxed"
               />
+              <p className="px-4 sm:px-6 pb-3 text-[11px] text-slate-400 dark:text-slate-500">
+                Teglar matn ichida #hashtag ko‘rinishida yoziladi.
+              </p>
             </div>
-
-            {/* Video Tutorial Settings when contentKind === 'video' */}
-            {contentKind === "video" && (
-              <VideoTutorialBox
-                videoUrl={videoUrl}
-                onVideoUrlChange={setVideoUrl}
-                durationSeconds={videoDurationSeconds}
-                onDurationSecondsChange={setVideoDurationSeconds}
-                chapters={videoChapters}
-                onChaptersChange={setVideoChapters}
-                transcript={transcript}
-                onTranscriptChange={setTranscript}
-              />
-            )}
 
             {/* Cover & Media Images */}
             <div className="p-4 bg-white dark:bg-[#000000] rounded-[16px] border border-slate-200/90 dark:border-[#2f3336] space-y-3 shadow-xs">
@@ -923,41 +872,6 @@ function StudioEditorWorkspace() {
                 )}
               </button>
             </div>
-          </div>
-
-          {/* Right Live SEO Expert Assistant */}
-          <div className="lg:col-span-4 lg:sticky lg:top-20">
-            <SeoInspectorPanel
-              contentKind={contentKind}
-              locale={contentLocale}
-              onLocaleChange={setContentLocale}
-              category={category}
-              onCategoryChange={setCategory}
-              tagsInput={tagsInput}
-              onTagsInputChange={setTagsInput}
-              title={title}
-              slug={slug}
-              onSlugChange={(v) => {
-                setSlugManuallyEdited(true);
-                setSlug(generateSeoSlug(v));
-              }}
-              seoTitle={seoTitle}
-              onSeoTitleChange={setSeoTitle}
-              seoDescription={seoDescription}
-              onSeoDescriptionChange={setSeoDescription}
-              focusKeyword={focusKeyword}
-              onFocusKeywordChange={setFocusKeyword}
-              coverImageUrl={mediaUrls[0] || ""}
-              coverImageAlt={coverImageAlt}
-              onCoverImageAltChange={setCoverImageAlt}
-              isIndexable={isIndexable}
-              onIsIndexableChange={setIsIndexable}
-              status={status}
-              onStatusChange={setStatus}
-              htmlContent={htmlSnapshot}
-              videoUrl={videoUrl}
-              chaptersCount={videoChapters.length}
-            />
           </div>
         </form>
       )}

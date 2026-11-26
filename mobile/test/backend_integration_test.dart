@@ -8,6 +8,7 @@ import 'package:mobile/app.dart';
 import 'package:mobile/core/media/video_thumbnail_service.dart';
 import 'package:mobile/core/network/api_client.dart';
 import 'package:mobile/core/widgets/app_avatar.dart';
+import 'package:mobile/core/widgets/app_button.dart';
 import 'package:mobile/core/widgets/app_video_player.dart';
 import 'package:mobile/features/auth/data/auth_controller.dart';
 import 'package:mobile/features/feed/data/feed_controller.dart';
@@ -165,7 +166,7 @@ void main() {
     expect(created.videoDurationSeconds, 60);
   });
 
-  testWidgets('PricingScreen hides plans behind Coming Soon blur and unlocks when comingSoonMode is false', (WidgetTester tester) async {
+  testWidgets('PricingScreen shows all plans but keeps purchase buttons disabled', (WidgetTester tester) async {
     final mockHttp = MockClient((req) async {
       if (req.url.path.endsWith('/pricing')) {
         return http.Response(
@@ -210,30 +211,27 @@ void main() {
       apiClient: ApiClient(client: mockHttp, baseUrl: 'http://localhost:3000/api'),
     );
 
-    // 1. Default Coming Soon mode: plans rendered beneath blur + interaction blocked
+    // Rejalar hammaga ko'rinadi, faqat sotib olish tugmalari yopiq.
     await tester.pumpWidget(MaterialApp(home: PricingScreen(repository: repo)));
     await tester.pumpAndSettle();
 
     expect(find.text('Tariflar va Obuna'), findsOneWidget);
-    expect(find.text('Coming Soon'), findsOneWidget);
-    expect(find.text('Tez kunda'), findsOneWidget);
     expect(find.text('Geters Pro'), findsOneWidget);
     expect(find.text('49 000 so\'m / oy'), findsOneWidget);
 
-    await tester.tap(find.text('Yillik (-20%)'), warnIfMissed: false);
-    await tester.pumpAndSettle();
-    expect(find.text('470 000 so\'m / yil'), findsNothing);
-
-    // 2. Unlocked mode (future activation): interactive billing toggle works
-    await tester.pumpWidget(
-      MaterialApp(home: PricingScreen(repository: repo, comingSoonMode: false)),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Coming Soon'), findsNothing);
+    // Narxlarni solishtirish uchun oylik/yillik tanlovi ishlaydi.
     await tester.tap(find.text('Yillik (-20%)'));
     await tester.pumpAndSettle();
     expect(find.text('470 000 so\'m / yil'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tariflar hozircha vaqtincha yopiq'), findsOneWidget);
+    final purchaseButton = tester
+        .widgetList<AppButton>(find.byType(AppButton))
+        .firstWhere((button) => button.text == 'Tez orada ishga tushadi');
+    expect(purchaseButton.onPressed, isNull);
   });
 
   testWidgets('PostCard renders AppVideoPlayer safely when post.videoUrl is present', (WidgetTester tester) async {

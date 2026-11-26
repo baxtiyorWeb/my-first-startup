@@ -6,7 +6,10 @@ import { api } from "@/lib/api";
 import type { PricingOverviewResponse, PricingPlanDto } from "@/lib/api/pricing";
 import { toast } from "@/components/ui/toast";
 
-const PRICING_COMING_SOON = false;
+// Pullik tariflar hozircha vaqtincha yopiq: rejalar hammaga ko'rinadi, lekin
+// sotib olish tugmalari faollashtirilmagan. Tariflar ishga tushganda `false`
+// qilib qo'yish kifoya.
+const PLANS_TEMPORARILY_PAUSED = true;
 
 function formatUzs(amount: number): string {
   if (amount <= 0) return "Bepul";
@@ -86,18 +89,13 @@ export default function PricingPage() {
           O&apos;sish sur&apos;atingizga mos rejani tanlang
         </h1>
         <p className="mx-auto mt-2 max-w-xl text-sm text-slate-600 dark:text-zinc-400">
-          Barcha pullik tariflar faqat to&apos;lov provayderi server tomonidan tasdiqlanganidan so&apos;ng faollashadi.
+          Rejalar bilan bemalol tanishing. To&apos;lovlar hozircha vaqtincha to&apos;xtatilgan — barcha imkoniyatlar hamma uchun bepul.
         </p>
 
         {/* Billing Cycle Toggle */}
-        <div
-          className={`mt-5 inline-flex rounded-full bg-slate-100 p-1 dark:bg-zinc-900 ${
-            PRICING_COMING_SOON ? "pointer-events-none opacity-60" : ""
-          }`}
-        >
+        <div className="mt-5 inline-flex rounded-full bg-slate-100 p-1 dark:bg-zinc-900">
           <button
             type="button"
-            disabled={PRICING_COMING_SOON}
             onClick={() => setBillingCycle("monthly")}
             className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
               billingCycle === "monthly"
@@ -109,7 +107,6 @@ export default function PricingPage() {
           </button>
           <button
             type="button"
-            disabled={PRICING_COMING_SOON}
             onClick={() => setBillingCycle("yearly")}
             className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
               billingCycle === "yearly"
@@ -122,7 +119,7 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {currentSub && !PRICING_COMING_SOON && (
+      {currentSub && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-zinc-900/70">
           <div className="flex items-center gap-3">
             <ShieldCheck className="h-5 w-5 text-emerald-600" />
@@ -161,14 +158,7 @@ export default function PricingPage() {
         </div>
       ) : (
         <div className="relative">
-          <div
-            aria-hidden={PRICING_COMING_SOON}
-            className={`grid grid-cols-1 gap-5 md:grid-cols-3 transition-all ${
-              PRICING_COMING_SOON
-                ? "pointer-events-none select-none blur-[6px] opacity-75"
-                : ""
-            }`}
-          >
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             {(data?.plans || []).map((plan) => {
               const price =
                 billingCycle === "yearly" ? plan.priceYearlyUzs : plan.priceMonthlyUzs;
@@ -227,7 +217,9 @@ export default function PricingPage() {
 
                   <button
                     type="button"
-                    disabled={PRICING_COMING_SOON || plan.isCurrent || busySlug === plan.slug}
+                    disabled={
+                      PLANS_TEMPORARILY_PAUSED || plan.isCurrent || busySlug === plan.slug
+                    }
                     onClick={() => handleSelectPlan(plan)}
                     className={`mt-6 w-full rounded-full py-2.5 text-xs font-bold transition-opacity disabled:opacity-50 ${
                       isPro
@@ -239,6 +231,10 @@ export default function PricingPage() {
                       ? "To'lov sahifasi ochilmoqda..."
                       : plan.isCurrent
                       ? "Joriy reja"
+                      : PLANS_TEMPORARILY_PAUSED
+                      ? price <= 0
+                        ? "Bepul reja"
+                        : "Tez orada ishga tushadi"
                       : price <= 0
                       ? "Bepul rejaga o'tish"
                       : "Rejani tanlash"}
@@ -248,21 +244,28 @@ export default function PricingPage() {
             })}
           </div>
 
-          {PRICING_COMING_SOON && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
-              <div className="max-w-md rounded-3xl border border-slate-200/80 bg-white/85 p-7 text-center shadow-2xl backdrop-blur-md dark:border-zinc-700/80 dark:bg-zinc-900/85">
-                <div className="mx-auto mb-3.5 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
+          {PLANS_TEMPORARILY_PAUSED && (
+            <div className="mt-6 rounded-2xl border border-blue-200/70 bg-blue-50/70 p-5 dark:border-blue-500/25 dark:bg-blue-500/10">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
                   <Lock className="h-5 w-5" />
                 </div>
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-600/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                  Geters Premium
-                </span>
-                <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-950 dark:text-white">
-                  Coming Soon
-                </h2>
-                <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-zinc-400">
-                  Pullik tariflar va Pro imkoniyatlar tez orada ishga tushiriladi. Hozircha barcha asosiy funksiyalar barcha foydalanuvchilar uchun ochiq.
-                </p>
+                <div>
+                  <h2 className="text-base font-bold text-slate-950 dark:text-white">
+                    Tariflar hozircha vaqtincha yopiq
+                  </h2>
+                  <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-zinc-300">
+                    Rejalar bilan bemalol tanishing, lekin sotib olish hozircha
+                    vaqtincha o&apos;chirilgan. Bu davrda Geters&apos;ning barcha asosiy
+                    imkoniyatlari hamma uchun bepul ishlaydi — hech qanday
+                    to&apos;lov olinmaydi va kartangizdan pul yechilmaydi.
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-zinc-300">
+                    Tariflar ishga tushganda shu sahifada va bildirishnomalar
+                    orqali xabar beramiz. Savolingiz bo&apos;lsa, qo&apos;llab-quvvatlash
+                    jamoasiga yozishingiz mumkin.
+                  </p>
+                </div>
               </div>
             </div>
           )}
