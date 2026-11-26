@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   PenSquare,
   FileText,
-  Video,
   Newspaper,
   Image as ImageIcon,
   X,
@@ -285,16 +284,6 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
           >
             <FileText size={16} className="text-[#1d9bf0]" />
             <span>Maqola</span>
-          </button>
-
-          {/* Video darslik option */}
-          <button
-            type="button"
-            onClick={() => handleStudioNavigate("video")}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
-          >
-            <Video size={16} className="text-emerald-500" />
-            <span>Video darslik</span>
           </button>
 
           {/* Yangilik option */}

@@ -23,7 +23,6 @@ import {
   Code2,
   Layers,
   Newspaper,
-  PlayCircle,
   Terminal,
 } from "lucide-react";
 
@@ -151,21 +150,19 @@ export default async function LocaleHomePage({
   const organizationSchema = generateOrganizationSchema();
   const faqSchema = generateFAQSchema(faqs);
 
-  const [articlesRes, videosRes, newsRes] = await Promise.all([
+  const [articlesRes, newsRes] = await Promise.all([
     getPublishedContentList({ kind: "article", limit: 3, page: 1 }),
-    getPublishedContentList({ kind: "video", limit: 3, page: 1 }),
     getPublishedContentList({ kind: "news", limit: 3, page: 1 }),
   ]);
 
   const heroTexts = {
     uz: {
-      titleStart: "Maqolalar, Video Darsliklar va",
+      titleStart: "Maqolalar va",
       titleHighlight: "IT Texnologiyalar",
       titleEnd: "Ekotizimi",
       description:
-        "O‘zbekistondagi dasturchilar va texnologiya mutaxassislari uchun chuqur maqolalar, amaliy video darsliklar, tezkor IT yangiliklar va mukammal bilimlar bazasi.",
+        "O‘zbekistondagi dasturchilar va texnologiya mutaxassislari uchun chuqur maqolalar, tezkor IT yangiliklar va mukammal bilimlar bazasi.",
       exploreArticles: "Maqolalarni O‘qish",
-      exploreVideos: "Video Darsliklar",
       exploreNews: "IT Yangiliklar",
       techHeading: "Zamonaviy Texnologiyalar Katalogi",
       techSub: "Har bir texnologiya bo‘yicha chuqur arxitektura va amaliy misollar",
@@ -177,17 +174,16 @@ export default async function LocaleHomePage({
       interviewsSub: "Junior‘dan Senior‘gacha: real intervyu savollari va tahlillari",
       faqHeading: "Ko‘p So‘raladigan Savollar",
       ctaTitle: "O‘z tajribangiz va bilimlaringizni ulashing",
-      ctaSub: "Geters Studio orqali maqola, video darslik yoki IT yangilik joylang va minglab mutaxassislarga yetib boring.",
+      ctaSub: "Geters Studio orqali maqola yoki IT yangilik joylang va minglab mutaxassislarga yetib boring.",
       ctaBtn: "Studio‘da Yozish",
     },
     ru: {
-      titleStart: "Технические статьи, видеоуроки и",
+      titleStart: "Технические статьи и",
       titleHighlight: "IT-Экосистема",
       titleEnd: "знаний",
       description:
-        "Профессиональный центр знаний: глубокие технические статьи, практические видеоуроки, свежие новости IT и справочники для разработчиков.",
+        "Профессиональный центр знаний: глубокие технические статьи, свежие новости IT и справочники для разработчиков.",
       exploreArticles: "Читать Статьи",
-      exploreVideos: "Видеоуроки",
       exploreNews: "IT-Новости",
       techHeading: "Каталог современных технологий",
       techSub: "Глубокий разбор архитектуры и примеры внедрения",
@@ -199,17 +195,16 @@ export default async function LocaleHomePage({
       interviewsSub: "От Junior до Senior: реальные технические вопросы с разбором",
       faqHeading: "Часто задаваемые вопросы",
       ctaTitle: "Делитесь опытом и обучайте тысячи разработчиков",
-      ctaSub: "Публикуйте статьи, видеоуроки и обзоры в Geters Studio с автоматической SEO-оптимизацией.",
+      ctaSub: "Публикуйте статьи и обзоры в Geters Studio с автоматической SEO-оптимизацией.",
       ctaBtn: "Начать публикацию",
     },
     en: {
-      titleStart: "Technical Articles, Video Tutorials &",
+      titleStart: "Technical Articles &",
       titleHighlight: "IT News",
       titleEnd: "Ecosystem",
       description:
-        "The premier knowledge platform for software engineers: in-depth engineering articles, structured video tutorials, industry news, and developer guides.",
+        "The premier knowledge platform for software engineers: in-depth engineering articles, industry news, and developer guides.",
       exploreArticles: "Read Articles",
-      exploreVideos: "Video Tutorials",
       exploreNews: "Tech News",
       techHeading: "Modern Technology Directory",
       techSub: "In-depth architecture analysis, code examples, and best practices",
@@ -221,7 +216,7 @@ export default async function LocaleHomePage({
       interviewsSub: "From Junior to Staff: rigorous technical questions and architecture trade-offs",
       faqHeading: "Frequently Asked Questions",
       ctaTitle: "Share your engineering knowledge globally",
-      ctaSub: "Publish SEO-optimized technical articles, video tutorials, and news straight from Geters Studio.",
+      ctaSub: "Publish SEO-optimized technical articles and news straight from Geters Studio.",
       ctaBtn: "Open Studio",
     },
   }[typedLocale];
@@ -274,14 +269,6 @@ export default async function LocaleHomePage({
                   </Link>
 
                   <Link
-                    href={`/${locale}/videos`}
-                    className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-[#2f3336] bg-white dark:bg-[#000000] hover:border-emerald-500/50 text-slate-900 dark:text-white shadow-xs transition-all"
-                  >
-                    <PlayCircle className="h-4 w-4 text-emerald-500" />
-                    <span>{heroTexts.exploreVideos}</span>
-                  </Link>
-
-                  <Link
                     href={`/${locale}/news`}
                     className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl border border-slate-200 dark:border-[#2f3336] bg-white dark:bg-[#000000] hover:border-amber-500/50 text-slate-900 dark:text-white shadow-xs transition-all"
                   >
@@ -293,8 +280,8 @@ export default async function LocaleHomePage({
             </div>
           </section>
 
-          {/* Live Editorial Showcase: Maqolalar, Video Darsliklar & Yangiliklar */}
-          {(articlesRes.items.length > 0 || videosRes.items.length > 0 || newsRes.items.length > 0) && (
+          {/* Live Editorial Showcase: Maqolalar & Yangiliklar */}
+          {(articlesRes.items.length > 0 || newsRes.items.length > 0) && (
             <section className="py-14 md:py-20 border-b border-slate-200/80 dark:border-[#2f3336] space-y-14">
               {articlesRes.items.length > 0 && (
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
@@ -317,33 +304,6 @@ export default async function LocaleHomePage({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {articlesRes.items.map((item) => (
-                      <ContentCard key={item.id} item={item} locale={typedLocale} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {videosRes.items.length > 0 && (
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-                  <div className="flex items-end justify-between gap-4">
-                    <div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-500">
-                        Video Darsliklar
-                      </span>
-                      <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white mt-1">
-                        Amaliy Video Darsliklar
-                      </h2>
-                    </div>
-                    <Link
-                      href={`/${locale}/videos`}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-emerald-500 hover:underline shrink-0"
-                    >
-                      <span>Barcha videolar</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {videosRes.items.map((item) => (
                       <ContentCard key={item.id} item={item} locale={typedLocale} />
                     ))}
                   </div>

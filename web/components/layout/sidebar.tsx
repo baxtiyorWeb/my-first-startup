@@ -99,7 +99,6 @@ export function Sidebar() {
     { label: "Muhokamalar", rawHref: "/dashboard", icon: Home, badge: 0 },
     { label: "Media Portal", rawHref: "/", icon: Compass, badge: 0 },
     { label: "Maqolalar", rawHref: "/articles", icon: BookOpen, badge: 0 },
-    { label: "Video darsliklar", rawHref: "/videos", icon: Video, badge: 0 },
     { label: "Yangiliklar", rawHref: "/news", icon: Flame, badge: 0 },
     { label: "Bilimlar Bazasi", rawHref: "/hub", icon: Layers, badge: 0 },
     { label: "Shorts", rawHref: "/dashboard/shorts", icon: Video, badge: 0 },

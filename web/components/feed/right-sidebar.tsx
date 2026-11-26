@@ -4,11 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
-  PlaySquare,
   ArrowRight,
   Check,
-  Play,
-  Eye,
   UserPlus,
   UserCheck,
 } from "lucide-react";
@@ -277,100 +274,6 @@ export function SuggestedAuthorsWidget() {
   );
 }
 
-// 3. Video Darsliklar vidjeti (Real DB videos, zero fake stock placeholders)
-export function ShortsPreviewWidget() {
-  const { localePath } = useI18n();
-  const [videos, setVideos] = useState<
-    Array<{ id: string; slug?: string | null; title?: string | null; coverImageUrl?: string | null; viewsCount?: number }>
-  >([]);
-
-  useEffect(() => {
-    let mounted = true;
-    fetch("/api/posts?kind=video&limit=3")
-      .then((res) => res.json())
-      .then((json) => {
-        if (mounted && json.success && Array.isArray(json.data)) {
-          setVideos(json.data);
-        }
-      })
-      .catch(() => null);
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return (
-    <div
-      data-node-id="11:8"
-      data-name="Video darsliklar"
-      className="bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] rounded-[16px] p-4 shadow-xs space-y-3"
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <PlaySquare size={18} className="text-emerald-500" />
-          <h3 className="font-bold text-[15px] text-slate-900 dark:text-[#e7e9ea]">
-            Video darsliklar
-          </h3>
-        </div>
-
-        <Link
-          href={localePath("/videos")}
-          className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-300 hover:text-[#1d9bf0] transition-colors"
-        >
-          <span>Barchasi</span>
-          <ArrowRight size={11} />
-        </Link>
-      </div>
-
-      {videos.length > 0 ? (
-        <div className="space-y-2.5">
-          {videos.map((vid) => (
-            <Link
-              key={vid.id}
-              href={localePath(`/videos/${vid.slug || vid.id}`)}
-              className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] hover:border-[#1d9bf0]/50 transition-colors group"
-            >
-              <div className="size-10 rounded-lg bg-[#000000] flex items-center justify-center shrink-0 overflow-hidden">
-                {vid.coverImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={vid.coverImageUrl}
-                    alt={vid.title || "Video darslik"}
-                    className="size-full object-cover"
-                  />
-                ) : (
-                  <Play size={15} className="text-[#1d9bf0] fill-current" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-slate-900 dark:text-white group-hover:text-[#1d9bf0] line-clamp-2 leading-snug">
-                  {vid.title || "Amaliy video darslik"}
-                </p>
-                <span className="text-[10px] text-slate-400">
-                  {vid.viewsCount ?? 0} ko‘rish
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] space-y-2.5">
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            ilk video darslikni SEO Studio‘da joylang.
-          </p>
-          <Link
-            href={localePath("/dashboard/create?kind=video")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1d9bf0] hover:bg-blue-600 text-white text-[11px] font-bold transition-colors"
-          >
-            <Play size={12} className="fill-current" />
-            <span>Video joylash</span>
-          </Link>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // 4. Bilimlar Bazasi & SEO Studio vidjeti (Clean Navy/Blue)
 export function CreatorMonetizationWidget() {
   const { localePath } = useI18n();
@@ -419,7 +322,6 @@ export function DashboardRightSidebar() {
     <aside className="w-full space-y-4">
       <TrendingTopicsWidget />
       <SuggestedAuthorsWidget />
-      <ShortsPreviewWidget />
       <CreatorMonetizationWidget />
     </aside>
   );

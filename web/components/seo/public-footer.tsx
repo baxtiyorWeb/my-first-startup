@@ -6,10 +6,9 @@ export function PublicFooter({ locale }: { locale: Locale }) {
   const dictionary = {
     uz: {
       slogan:
-        "O'zbek tilidagi professional IT media, chuqur texnik maqolalar, video darsliklar, yangiliklar va dasturchilar bilim bazasi.",
+        "O'zbek tilidagi professional IT media, chuqur texnik maqolalar, yangiliklar va dasturchilar bilim bazasi.",
       media: "Media & Ta'lim",
       articles: "Maqolalar",
-      videos: "Video Darsliklar",
       news: "IT Yangiliklar",
       resources: "Bilimlar Bazasi",
       technologies: "Texnologiyalar Hubi",
@@ -25,10 +24,9 @@ export function PublicFooter({ locale }: { locale: Locale }) {
     },
     ru: {
       slogan:
-        "Профессиональное IT-медиа: технические статьи, видеоуроки, новости индустрии и база знаний для разработчиков.",
+        "Профессиональное IT-медиа: технические статьи, новости индустрии и база знаний для разработчиков.",
       media: "Медиа и Обучение",
       articles: "Статьи",
-      videos: "Видеоуроки",
       news: "IT-Новости",
       resources: "База Знаний",
       technologies: "Технологии",
@@ -44,10 +42,9 @@ export function PublicFooter({ locale }: { locale: Locale }) {
     },
     en: {
       slogan:
-        "A premier IT media and developer knowledge platform featuring deep technical articles, video tutorials, industry news, and guides.",
+        "A premier IT media and developer knowledge platform featuring deep technical articles, industry news, and guides.",
       media: "Media & Tutorials",
       articles: "Articles",
-      videos: "Video Tutorials",
       news: "Tech News",
       resources: "Knowledge Base",
       technologies: "Tech Hub",
@@ -113,14 +110,6 @@ export function PublicFooter({ locale }: { locale: Locale }) {
                   className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
                 >
                   {dictionary.articles}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={`/${locale}/videos`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
-                >
-                  {dictionary.videos}
                 </Link>
               </li>
               <li>

@@ -7,7 +7,6 @@ import {
   ChevronDown,
   FileText,
   BookOpen,
-  Video,
   Newspaper,
   Check,
 } from "lucide-react";
@@ -55,7 +54,6 @@ export function FeedFilterToolbar({
   }[] = [
       { id: "all", label: "Barchasi", icon: LayoutGrid },
       { id: "articles", label: "Maqolalar", icon: BookOpen },
-      { id: "videos", label: "Video darsliklar", icon: Video },
       { id: "news", label: "Yangiliklar", icon: Newspaper },
       { id: "posts", label: "Muhokamalar", icon: FileText },
     ];

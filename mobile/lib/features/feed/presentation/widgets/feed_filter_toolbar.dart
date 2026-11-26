@@ -34,7 +34,6 @@ class FeedFilterToolbar extends StatelessWidget {
       {'id': 'all', 'label': 'Barchasi', 'icon': Icons.grid_view_rounded},
       {'id': 'posts', 'label': 'Postlar', 'icon': Icons.article_outlined},
       {'id': 'articles', 'label': 'Maqolalar', 'icon': Icons.menu_book_outlined},
-      {'id': 'videos', 'label': 'Video', 'icon': Icons.play_arrow_outlined},
       {'id': 'shorts', 'label': 'Shorts', 'icon': Icons.play_circle_outline_rounded},
     ];
 

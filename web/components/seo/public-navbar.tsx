@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/context";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
-import { BookOpen, PlayCircle, Newspaper, Layers, PenTool } from "lucide-react";
+import { BookOpen, Newspaper, Layers, PenTool } from "lucide-react";
 
 export function PublicNavbar() {
   const { locale, localePath } = useI18n();
@@ -16,11 +16,6 @@ export function PublicNavbar() {
       href: localePath("/articles"),
       label: locale === "uz" ? "Maqolalar" : locale === "ru" ? "Статьи" : "Articles",
       icon: BookOpen,
-    },
-    {
-      href: localePath("/videos"),
-      label: locale === "uz" ? "Video darsliklar" : locale === "ru" ? "Видеоуроки" : "Videos",
-      icon: PlayCircle,
     },
     {
       href: localePath("/news"),
