@@ -10,6 +10,8 @@ class PricingPlan {
   final int priceYearlyUzs;
   final String currency;
   final List<String> features;
+  final String? storeProductMonthlyId;
+  final String? storeProductYearlyId;
   final bool isCurrent;
 
   const PricingPlan({
@@ -21,6 +23,8 @@ class PricingPlan {
     required this.priceYearlyUzs,
     required this.currency,
     required this.features,
+    this.storeProductMonthlyId,
+    this.storeProductYearlyId,
     required this.isCurrent,
   });
 
@@ -37,6 +41,8 @@ class PricingPlan {
               ?.map((e) => e.toString())
               .toList() ??
           const [],
+      storeProductMonthlyId: json['storeProductMonthlyId'] as String?,
+      storeProductYearlyId: json['storeProductYearlyId'] as String?,
       isCurrent: json['isCurrent'] as bool? ?? false,
     );
   }
@@ -79,11 +85,13 @@ class PricingOverview {
   final List<PricingPlan> plans;
   final SubscriptionStatus? currentSubscription;
   final bool providerConfigured;
+  final bool googlePlayConfigured;
 
   const PricingOverview({
     required this.plans,
     this.currentSubscription,
     this.providerConfigured = false,
+    this.googlePlayConfigured = false,
   });
 }
 
@@ -97,6 +105,13 @@ class CheckoutResult {
     this.checkoutUrl,
     this.requiresPayment = false,
   });
+}
+
+class StoreSyncResult {
+  final bool active;
+  final String message;
+
+  const StoreSyncResult({required this.active, required this.message});
 }
 
 class PricingRepository {
@@ -117,6 +132,7 @@ class PricingRepository {
       currentSubscription:
           subRaw != null ? SubscriptionStatus.fromJson(subRaw) : null,
       providerConfigured: data['providerConfigured'] as bool? ?? false,
+      googlePlayConfigured: data['googlePlayConfigured'] as bool? ?? false,
     );
   }
 
@@ -143,5 +159,18 @@ class PricingRepository {
 
   Future<void> cancelSubscription() async {
     await _apiClient.post(ApiConstants.subscriptionCancelEndpoint);
+  }
+
+  /// Verifies a Google Play purchase with RevenueCat on the server and
+  /// activates the matching plan for the signed-in user.
+  Future<StoreSyncResult> syncGooglePlay() async {
+    final decoded = await _apiClient.post(
+      ApiConstants.subscriptionGooglePlaySyncEndpoint,
+    );
+    final data = decoded['data'] as Map<String, dynamic>? ?? const {};
+    return StoreSyncResult(
+      active: data['active'] as bool? ?? false,
+      message: data['message'] as String? ?? 'Obuna holati yangilandi',
+    );
   }
 }

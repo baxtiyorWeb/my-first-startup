@@ -360,7 +360,7 @@ export function ShortsPreviewWidget() {
       ) : (
         <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200/70 dark:border-[#2f3336] space-y-2.5">
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            YouTube yoki Bunny Stream orqali ilk video darslikni SEO Studio‘da joylang.
+            ilk video darslikni SEO Studio‘da joylang.
           </p>
           <Link
             href={localePath("/dashboard/create?kind=video")}

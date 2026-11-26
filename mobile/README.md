@@ -17,14 +17,15 @@ Ushbu papka Geters platformasining **Flutter** asosidagi mobil ilovasini o'z ich
 
 2. Ilovani ishga tushirish (emulator yoki ulangan qurilma):
    ```bash
-   # Android (internetdagi API)
+   # Android qurilmada USB debugging yoqilgan va adb qurilmani ko'rayotgan bo'lsin
+   adb reverse tcp:3000 tcp:3000
    flutter run --dart-define-from-file=config/dev-android.json
 
    # Desktop / iOS simulyator (lokal backend)
    flutter run --dart-define-from-file=config/dev.json
    ```
 
-   `--dart-define-from-file` berilmasa ham ilova `https://www.geters.uz/api` manzilidan foydalanadi. Lokal Android emulyator backendiga ulanish uchun `API_BASE_URL=http://10.0.2.2:3000/api` ni build vaqtida bering; jismoniy qurilmada `10.0.2.2` o'rniga kompyuterning LAN IP manzilini ishlating.
+   Avval web/API serverni `web` papkasida `pnpm dev` bilan ishga tushiring. `adb reverse` Android ilovasidagi `127.0.0.1:3000` so'rovlarini kompyuterdagi lokal serverga yo'naltiradi. `--dart-define-from-file` berilmasa ham debug build shu lokal API'dan foydalanadi.
 
 3. Statik tahlil (linter):
    ```bash
@@ -38,7 +39,7 @@ Ilova backend manzilini faqat build vaqtida oladi (`String.fromEnvironment`), ko
 | Fayl | Manzil | Qachon |
 |---|---|---|
 | `config/dev.json` | `http://127.0.0.1:3000/api` | desktop, iOS simulyator |
-| `config/dev-android.json` | `https://www.geters.uz/api` | Android qurilma va emulyator |
+| `config/dev-android.json` | `http://127.0.0.1:3000/api` | Android (`adb reverse` bilan) |
 | `config/prod.example.json` | `https://www.geters.uz/api` | namuna, `prod.json` ga nusxalanadi |
 | `config/prod.json` | haqiqiy production manzil | git'ga qo'shilmaydi |
 

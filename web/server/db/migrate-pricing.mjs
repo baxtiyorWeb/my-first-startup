@@ -80,13 +80,13 @@ async function migrate() {
       INSERT INTO subscription_plans (slug, name, description, price_monthly_uzs, price_yearly_uzs, features, limits, sort_order)
       VALUES
         ('free', 'Boshlang''ich', 'Hamjamiyatda ishtirok etish, postlar va Shorts ulashish uchun asosiy reja.', 0, 0,
-         '["Cheksiz o''qish va muhokamalar","Kuniga 10 tagacha post va Shorts","10 MB gacha rasm yuklash","Asosiy profil sahifasi"]'::jsonb,
+         '["Barcha maqola, video va yangiliklarni o''qish","Muhokamalar va Shorts''da qatnashish","Kuniga 10 tagacha post va Shorts","10 MB gacha rasm yuklash","Bilimlar bazasi va saqlanganlar"]'::jsonb,
          '{"maxMediaSizeMb":10,"maxDailyPosts":10,"hdShorts":false,"verifiedBadge":false,"analytics":false}'::jsonb, 0),
         ('pro', 'Geters Pro', 'Faol mualliflar, startap asoschilari va kontent yaratuvchilar uchun.', 49000, 470000,
-         '["50 MB gacha HD video va Shorts yuklash","Cheksiz post va maqolalar","Profil uchun Pro tasdiq belgisi","Kengaytirilgan ko''rishlar statistikasi","Ustuvor texnik yordam"]'::jsonb,
+         '["50 MB gacha HD video va Shorts yuklash","Kuniga 100 tagacha post va maqola","Profil uchun Pro tasdiq belgisi","Kengaytirilgan ko''rishlar statistikasi","Ustuvor texnik yordam","Yangi imkoniyatlarga erta kirish"]'::jsonb,
          '{"maxMediaSizeMb":50,"maxDailyPosts":100,"hdShorts":true,"verifiedBadge":true,"analytics":true}'::jsonb, 1),
         ('team', 'Startap Jamoa', 'Startaplar va texnologik jamoalar uchun kengaytirilgan imkoniyatlar.', 149000, 1430000,
-         '["Geters Pro barcha imkoniyatlari","Jamoaviy brend va loyiha sahifalari","5 tagacha jamoa a''zosi","Reklama va e''lonlarni biriktirish","Maxsus API va eksport"]'::jsonb,
+         '["Geters Pro barcha imkoniyatlari","100 MB gacha media yuklash","Kuniga 500 tagacha post va Shorts","Jamoa uchun kengaytirilgan analitika","Ustuvor qo''llab-quvvatlash"]'::jsonb,
          '{"maxMediaSizeMb":100,"maxDailyPosts":500,"hdShorts":true,"verifiedBadge":true,"analytics":true}'::jsonb, 2)
       ON CONFLICT (slug) DO NOTHING;
     `);

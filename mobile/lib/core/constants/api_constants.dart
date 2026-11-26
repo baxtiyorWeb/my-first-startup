@@ -7,10 +7,9 @@ abstract class ApiConstants {
   static const String _configuredBaseUrl =
       String.fromEnvironment('API_BASE_URL');
 
-  static const String _developmentBaseUrl = 'https://www.geters.uz/api';
+  static const String _developmentBaseUrl = 'http://127.0.0.1:3000/api';
 
-  /// Debug build konfiguratsiyasiz ishlasa, mobil ilova ishlab turgan API'dan
-  /// foydalanadi; lokal backend uchun [API_BASE_URL] ni alohida bering.
+  /// Debug build konfiguratsiyasiz lokal API'dan foydalanadi.
   static const String baseUrl =
       _configuredBaseUrl == '' ? _developmentBaseUrl : _configuredBaseUrl;
 
@@ -43,6 +42,8 @@ abstract class ApiConstants {
   static const String pricingEndpoint = '/pricing';
   static const String subscriptionCheckoutEndpoint = '/subscriptions/checkout';
   static const String subscriptionCancelEndpoint = '/subscriptions/cancel';
+  static const String subscriptionGooglePlaySyncEndpoint =
+      '/subscriptions/google-play/sync';
   static const String tagsEndpoint = '/tags';
   static const String tagsSuggestEndpoint = '/tags/suggest';
   static const String tagsTrendingEndpoint = '/tags/trending';

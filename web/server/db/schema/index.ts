@@ -587,6 +587,9 @@ export const subscriptionPlans = pgTable(
       .$type<{ maxMediaSizeMb: number; maxDailyPosts: number; hdShorts: boolean; verifiedBadge: boolean; analytics: boolean }>()
       .default({ maxMediaSizeMb: 10, maxDailyPosts: 10, hdShorts: false, verifiedBadge: false, analytics: false })
       .notNull(),
+    /** Google Play product ids used by the mobile app through RevenueCat. */
+    storeProductMonthlyId: varchar("store_product_monthly_id", { length: 160 }),
+    storeProductYearlyId: varchar("store_product_yearly_id", { length: 160 }),
     isActive: boolean("is_active").default(true).notNull(),
     sortOrder: integer("sort_order").default(0).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

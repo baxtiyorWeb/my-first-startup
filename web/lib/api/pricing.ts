@@ -9,6 +9,8 @@ export interface PricingPlanDto {
   priceYearlyUzs: number;
   currency: string;
   features: string[];
+  storeProductMonthlyId: string | null;
+  storeProductYearlyId: string | null;
   limits: {
     maxMediaSizeMb: number;
     maxDailyPosts: number;
@@ -35,6 +37,7 @@ export interface PricingOverviewResponse {
   plans: PricingPlanDto[];
   currentSubscription: SubscriptionStatusDto | null;
   providerConfigured: boolean;
+  googlePlayConfigured: boolean;
 }
 
 export interface CheckoutResponse {

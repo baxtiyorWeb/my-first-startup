@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, or, desc, asc } from "drizzle-orm";
 import { db } from "@/server/db";
 import {
   subscriptionPlans,
@@ -20,6 +20,12 @@ import {
   type SubscriptionStatusDto,
 } from "./pricing.defaults";
 import { createInpayPayment, isInpayConfigured } from "./inpay.client";
+import {
+  fetchRevenueCatEntitlement,
+  isRevenueCatConfigured,
+  revenueCatEntitlementId,
+  type RevenueCatWebhookEvent,
+} from "./revenuecat.client";
 
 export type { PlanDto, PricingOverviewDto, SubscriptionStatusDto };
 
@@ -47,6 +53,8 @@ export async function getPricingOverview(userId?: string): Promise<PricingOvervi
       priceYearlyUzs: p.priceYearlyUzs,
       currency: p.currency,
       features: Array.isArray(p.features) ? p.features : [],
+      storeProductMonthlyId: p.storeProductMonthlyId ?? null,
+      storeProductYearlyId: p.storeProductYearlyId ?? null,
       limits: p.limits,
     }));
   } catch (error) {
@@ -99,8 +107,10 @@ export async function getPricingOverview(userId?: string): Promise<PricingOvervi
     }
   }
 
+  const googlePlayConfigured = isRevenueCatConfigured();
   const providerConfigured =
     isInpayConfigured() ||
+    googlePlayConfigured ||
     Boolean(
       process.env.PAYMENT_WEBHOOK_SECRET &&
         (process.env.PAYME_MERCHANT_ID || process.env.CLICK_SERVICE_ID || process.env.STRIPE_SECRET_KEY)
@@ -115,6 +125,7 @@ export async function getPricingOverview(userId?: string): Promise<PricingOvervi
     })),
     currentSubscription: activeSub,
     providerConfigured,
+    googlePlayConfigured,
   };
 
   pricingCache.set(cacheKey, overview, 60_000);
@@ -483,5 +494,274 @@ export async function cancelActiveSubscription(userId: string) {
       throw unmigratedPricingError();
     }
     throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Google Play / RevenueCat
+// ---------------------------------------------------------------------------
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function storeIdempotencyKey(raw: string): string {
+  return `rc_${crypto.createHash("sha256").update(raw).digest("hex").slice(0, 56)}`;
+}
+
+async function findPlanByStoreProductId(productId: string) {
+  const [row] = await db
+    .select()
+    .from(subscriptionPlans)
+    .where(
+      and(
+        eq(subscriptionPlans.isActive, true),
+        or(
+          eq(subscriptionPlans.storeProductMonthlyId, productId),
+          eq(subscriptionPlans.storeProductYearlyId, productId)
+        )
+      )
+    )
+    .limit(1);
+
+  if (!row) return null;
+
+  return {
+    plan: row,
+    billingCycle: (row.storeProductYearlyId === productId ? "yearly" : "monthly") as
+      | "monthly"
+      | "yearly",
+  };
+}
+
+/**
+ * Activates/renews a subscription bought through Google Play. The plan is
+ * resolved from the store product id configured in the database, and the price
+ * always comes from the plan row — never from the client.
+ */
+async function activateStoreSubscription(params: {
+  userId: string;
+  productId: string;
+  entitlementExpiresAt: Date | null;
+  providerTransactionId: string;
+  idempotencyKey: string;
+  cancelAtPeriodEnd: boolean;
+  autoRenew: boolean;
+  metadata: Record<string, unknown>;
+}) {
+  const mapping = await findPlanByStoreProductId(params.productId);
+  if (!mapping) {
+    throw AppError.badRequest(
+      `"${params.productId}" Google Play mahsuloti hech qanday tarifga bog'lanmagan`
+    );
+  }
+
+  const { plan, billingCycle } = mapping;
+  const now = new Date();
+  const periodEnd =
+    params.entitlementExpiresAt && params.entitlementExpiresAt.getTime() > now.getTime()
+      ? params.entitlementExpiresAt
+      : new Date(now.getTime() + (billingCycle === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1000);
+
+  const result = await db.transaction(async (tx) => {
+    const [existing] = await tx
+      .select()
+      .from(paymentTransactions)
+      .where(eq(paymentTransactions.idempotencyKey, params.idempotencyKey))
+      .limit(1);
+
+    // Duplicate webhook delivery / retried sync: keep the activated subscription.
+    if (existing?.status === "succeeded" && existing.subscriptionId) {
+      return { subscriptionId: existing.subscriptionId, alreadyProcessed: true };
+    }
+
+    await tx
+      .update(userSubscriptions)
+      .set({ status: "cancelled", autoRenew: false, updatedAt: now })
+      .where(
+        and(eq(userSubscriptions.userId, params.userId), eq(userSubscriptions.status, "active"))
+      );
+
+    const [subscription] = await tx
+      .insert(userSubscriptions)
+      .values({
+        userId: params.userId,
+        planId: plan.id,
+        status: "active",
+        billingCycle,
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
+        cancelAtPeriodEnd: params.cancelAtPeriodEnd,
+        autoRenew: params.autoRenew,
+      })
+      .returning({ id: userSubscriptions.id });
+
+    const transactionValues = {
+      userId: params.userId,
+      subscriptionId: subscription.id,
+      planId: plan.id,
+      provider: "revenuecat",
+      providerTransactionId: params.providerTransactionId.slice(0, 160),
+      amount: billingCycle === "yearly" ? plan.priceYearlyUzs : plan.priceMonthlyUzs,
+      currency: plan.currency,
+      status: "succeeded",
+      metadata: {
+        ...params.metadata,
+        productId: params.productId,
+        billingCycle,
+      },
+      updatedAt: now,
+    };
+
+    if (existing) {
+      await tx
+        .update(paymentTransactions)
+        .set(transactionValues)
+        .where(eq(paymentTransactions.id, existing.id));
+    } else {
+      await tx.insert(paymentTransactions).values({
+        ...transactionValues,
+        idempotencyKey: params.idempotencyKey,
+      });
+    }
+
+    return { subscriptionId: subscription.id, alreadyProcessed: false };
+  });
+
+  invalidatePricingCaches(params.userId);
+  return {
+    ...result,
+    planSlug: plan.slug,
+    planName: plan.name,
+    billingCycle,
+    currentPeriodEnd: periodEnd.toISOString(),
+  };
+}
+
+/** Reconciles the local entitlement with RevenueCat after a mobile purchase. */
+export async function syncRevenueCatSubscription(userId: string) {
+  if (!isRevenueCatConfigured()) {
+    throw new AppError("INTERNAL_ERROR", "Google Play to'lovlari hali sozlanmagan.", 503);
+  }
+
+  const entitlement = await fetchRevenueCatEntitlement(userId);
+  if (!entitlement?.productIdentifier || !entitlement.isActive) {
+    return {
+      active: false,
+      planSlug: null as string | null,
+      currentPeriodEnd: null as string | null,
+      message: "Google Play'da faol obuna topilmadi",
+    };
+  }
+
+  const result = await activateStoreSubscription({
+    userId,
+    productId: entitlement.productIdentifier,
+    entitlementExpiresAt: entitlement.expiresDate ? new Date(entitlement.expiresDate) : null,
+    providerTransactionId: `google_play:${entitlement.purchaseDate ?? entitlement.productIdentifier}`,
+    idempotencyKey: storeIdempotencyKey(
+      `sync:${userId}:${entitlement.productIdentifier}:${entitlement.expiresDate ?? "lifetime"}`
+    ),
+    cancelAtPeriodEnd: false,
+    autoRenew: true,
+    metadata: {
+      source: "revenuecat_sync",
+      entitlementId: revenueCatEntitlementId(),
+    },
+  });
+
+  return {
+    active: true,
+    planSlug: result.planSlug,
+    currentPeriodEnd: result.currentPeriodEnd,
+    message: result.alreadyProcessed ? "Obuna allaqachon faol" : "Obuna faollashtirildi",
+  };
+}
+
+/** Applies a RevenueCat webhook event to the local entitlement state. */
+export async function handleRevenueCatWebhookEvent(event: RevenueCatWebhookEvent) {
+  // Anonymous RevenueCat ids belong to purchases made before the app logged in.
+  if (!UUID_PATTERN.test(event.appUserId)) {
+    return { ignored: true, reason: "anonymous_app_user" };
+  }
+
+  const userId = event.appUserId;
+  const now = new Date();
+  const expiration = event.expirationAtMs ? new Date(event.expirationAtMs) : null;
+
+  switch (event.type) {
+    case "INITIAL_PURCHASE":
+    case "RENEWAL":
+    case "PRODUCT_CHANGE":
+    case "UNCANCELLATION":
+    case "NON_RENEWING_PURCHASE":
+    case "SUBSCRIPTION_EXTENDED":
+    case "TEMPORARY_ENTITLEMENT_GRANT": {
+      if (!event.productId) return { ignored: true, reason: "missing_product_id" };
+
+      try {
+        const result = await activateStoreSubscription({
+          userId,
+          productId: event.productId,
+          entitlementExpiresAt: expiration,
+          providerTransactionId: `revenuecat:${event.id}`,
+          idempotencyKey: storeIdempotencyKey(`event:${event.id}`),
+          cancelAtPeriodEnd: false,
+          autoRenew: true,
+          metadata: {
+            source: "revenuecat_webhook",
+            eventType: event.type,
+            store: event.store,
+            environment: event.environment,
+          },
+        });
+
+        return { ignored: false, status: "succeeded", ...result };
+      } catch (error) {
+        if (error instanceof AppError && error.statusCode === 400) {
+          console.error("[revenuecat-webhook] product is not mapped to a plan", {
+            productId: event.productId,
+            eventType: event.type,
+          });
+          return { ignored: true, reason: "product_not_mapped" };
+        }
+        throw error;
+      }
+    }
+
+    case "CANCELLATION": {
+      await db
+        .update(userSubscriptions)
+        .set({ cancelAtPeriodEnd: true, autoRenew: false, updatedAt: now })
+        .where(
+          and(eq(userSubscriptions.userId, userId), eq(userSubscriptions.status, "active"))
+        );
+      invalidatePricingCaches(userId);
+      return { ignored: false, status: "cancellation_scheduled" };
+    }
+
+    case "EXPIRATION": {
+      await db
+        .update(userSubscriptions)
+        .set({ status: "cancelled", autoRenew: false, updatedAt: now })
+        .where(
+          and(eq(userSubscriptions.userId, userId), eq(userSubscriptions.status, "active"))
+        );
+      invalidatePricingCaches(userId);
+      return { ignored: false, status: "expired" };
+    }
+
+    case "BILLING_ISSUE": {
+      await db
+        .update(userSubscriptions)
+        .set({ autoRenew: false, updatedAt: now })
+        .where(
+          and(eq(userSubscriptions.userId, userId), eq(userSubscriptions.status, "active"))
+        );
+      invalidatePricingCaches(userId);
+      return { ignored: false, status: "billing_issue" };
+    }
+
+    default:
+      return { ignored: true, type: event.type };
   }
 }

@@ -9,6 +9,9 @@ export interface PlanDto {
   priceYearlyUzs: number;
   currency: string;
   features: string[];
+  /** Google Play product id used by the mobile app (RevenueCat). */
+  storeProductMonthlyId: string | null;
+  storeProductYearlyId: string | null;
   limits: {
     maxMediaSizeMb: number;
     maxDailyPosts: number;
@@ -35,6 +38,8 @@ export interface PricingOverviewDto {
   plans: PlanDto[];
   currentSubscription: SubscriptionStatusDto | null;
   providerConfigured: boolean;
+  /** True when Google Play (RevenueCat) purchases are enabled server-side. */
+  googlePlayConfigured: boolean;
 }
 
 export const DEFAULT_PLANS: Omit<PlanDto, "isCurrent">[] = [
@@ -46,11 +51,14 @@ export const DEFAULT_PLANS: Omit<PlanDto, "isCurrent">[] = [
     priceMonthlyUzs: 0,
     priceYearlyUzs: 0,
     currency: "UZS",
+    storeProductMonthlyId: null,
+    storeProductYearlyId: null,
     features: [
-      "Cheksiz o'qish va muhokamalar",
+      "Barcha maqola, video va yangiliklarni o'qish",
+      "Muhokamalar va Shorts'da qatnashish",
       "Kuniga 10 tagacha post va Shorts",
       "10 MB gacha rasm yuklash",
-      "Asosiy profil sahifasi",
+      "Bilimlar bazasi va saqlanganlar",
     ],
     limits: {
       maxMediaSizeMb: 10,
@@ -68,12 +76,15 @@ export const DEFAULT_PLANS: Omit<PlanDto, "isCurrent">[] = [
     priceMonthlyUzs: 49000,
     priceYearlyUzs: 470000,
     currency: "UZS",
+    storeProductMonthlyId: "geters_pro_monthly",
+    storeProductYearlyId: "geters_pro_yearly",
     features: [
       "50 MB gacha HD video va Shorts yuklash",
-      "Cheksiz post va maqolalar",
+      "Kuniga 100 tagacha post va maqola",
       "Profil uchun Pro tasdiq belgisi",
       "Kengaytirilgan ko'rishlar statistikasi",
       "Ustuvor texnik yordam",
+      "Yangi imkoniyatlarga erta kirish",
     ],
     limits: {
       maxMediaSizeMb: 50,
@@ -91,12 +102,14 @@ export const DEFAULT_PLANS: Omit<PlanDto, "isCurrent">[] = [
     priceMonthlyUzs: 149000,
     priceYearlyUzs: 1430000,
     currency: "UZS",
+    storeProductMonthlyId: "geters_team_monthly",
+    storeProductYearlyId: "geters_team_yearly",
     features: [
       "Geters Pro barcha imkoniyatlari",
-      "Jamoaviy brend va loyiha sahifalari",
-      "5 tagacha jamoa a'zosi",
-      "Reklama va e'lonlarni biriktirish",
-      "Maxsus API va eksport",
+      "100 MB gacha media yuklash",
+      "Kuniga 500 tagacha post va Shorts",
+      "Jamoa uchun kengaytirilgan analitika",
+      "Ustuvor qo'llab-quvvatlash",
     ],
     limits: {
       maxMediaSizeMb: 100,

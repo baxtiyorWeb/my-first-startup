@@ -158,6 +158,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
         builder: (_) => PricingScreen(
           repository:
               PricingRepository(apiClient: widget.authController.apiClient),
+          comingSoonMode: false,
+          userId: widget.authController.isAuthenticated
+              ? widget.authController.currentUser.id
+              : null,
         ),
       ),
     );

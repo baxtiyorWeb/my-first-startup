@@ -12,9 +12,6 @@ import {
   Flame,
   Bookmark,
   Layers,
-  PenTool,
-  Folder,
-  BarChart3,
   HardDrive,
   Bell,
   Shield,
@@ -114,18 +111,6 @@ export function Sidebar() {
       badge: unreadNotificationsCount,
     },
     { label: "Tariflar", rawHref: "/dashboard/pricing", icon: Shield, badge: 0 },
-  ];
-
-  // Creator Studio navigation items — SEO CMS Publishing
-  const creatorStudioItems: Array<{
-    label: string;
-    rawHref: string;
-    icon: React.ElementType;
-    pill?: string;
-  }> = [
-    { label: "SEO Studio (Yozish)", rawHref: "/dashboard/create", icon: PenTool, pill: "SEO" },
-    { label: "Mening kontentim", rawHref: "/dashboard/profile", icon: Folder },
-    { label: "Statistika", rawHref: "/dashboard/profile?tab=stats", icon: BarChart3 },
   ];
 
   const userRole = (session.user?.role || "").toUpperCase();
@@ -270,57 +255,6 @@ export function Sidebar() {
 
             {/* Ajratuvchi chiziq (Figma node 11:219) */}
             <div className="h-px bg-slate-200 dark:bg-[#2f3336] mx-2" />
-
-            {/* Creator Studio Section (Figma node 11:218) */}
-            <div className="space-y-1">
-              {!isCollapsed && (
-                <p className="px-3 py-1 text-[11px] font-semibold tracking-wider text-slate-400 dark:text-[#71767b] uppercase font-['Inter:Regular']">
-                  Creator Studio
-                </p>
-              )}
-              {creatorStudioItems.map((item) => {
-                const isActive = normalizedPath.startsWith(item.rawHref);
-                const IconComponent = item.icon;
-
-                return (
-                  <div key={item.rawHref} className="relative group">
-                    <Link
-                      href={localePath(item.rawHref)}
-                      className={`h-[42px] flex items-center gap-3 px-3 rounded-[12px] text-[13px] sm:text-[14px] transition-colors cursor-pointer focus-visible:outline-none ${
-                        isActive
-                          ? "bg-blue-50 dark:bg-[#0e2c3f] text-blue-600 dark:text-[#1d9bf0] font-semibold border border-blue-200/80 dark:border-[#1b4a63]"
-                          : "text-slate-600 dark:text-[#d6d9db] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#16181c] font-medium"
-                      } ${isCollapsed ? "justify-center px-0" : ""}`}
-                      aria-label={item.label}
-                    >
-                      <div className="relative shrink-0 flex items-center justify-center size-[20px]">
-                        <IconComponent size={17} />
-                      </div>
-
-                      {!isCollapsed && (
-                        <span className="flex-1 overflow-hidden whitespace-nowrap flex items-center justify-between min-w-0">
-                          <span className="truncate">{item.label}</span>
-                          {item.pill && (
-                            <span className="px-2 py-0.5 rounded-[11px] bg-[#0e2c3f] text-[#1d9bf0] border border-[#1b4a63] text-[10px] font-bold leading-none">
-                              {item.pill}
-                            </span>
-                          )}
-                        </span>
-                      )}
-                    </Link>
-
-                    {isCollapsed && (
-                      <div
-                        role="tooltip"
-                        className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 z-50 pointer-events-none px-2.5 py-1 rounded-md bg-slate-900 dark:bg-[#000000] border border-slate-700 dark:border-[#2f3336] text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"
-                      >
-                        {item.label}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
 
             {/* Kontent saqlash hajmi (Storage widget - Figma node 11:252) */}
             {!isCollapsed ? (

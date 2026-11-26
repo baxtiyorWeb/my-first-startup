@@ -5,16 +5,24 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/app_button.dart';
 import '../data/pricing_repository.dart';
+import '../data/revenuecat_service.dart';
 import 'widgets/pricing_coming_soon_overlay.dart';
 
 class PricingScreen extends StatefulWidget {
   final PricingRepository repository;
   final bool comingSoonMode;
+  final RevenueCatService? revenueCat;
+
+  /// Signed-in user id. Required for Google Play purchases because RevenueCat
+  /// identifies the customer by the same id the backend verifies.
+  final String? userId;
 
   const PricingScreen({
     super.key,
     required this.repository,
     this.comingSoonMode = true,
+    this.revenueCat,
+    this.userId,
   });
 
   @override
@@ -22,6 +30,8 @@ class PricingScreen extends StatefulWidget {
 }
 
 class _PricingScreenState extends State<PricingScreen> {
+  late final RevenueCatService _revenueCat =
+      widget.revenueCat ?? RevenueCatService();
   String _billingCycle = 'monthly';
   PricingOverview? _overview;
   bool _isLoading = true;
@@ -55,8 +65,22 @@ class _PricingScreenState extends State<PricingScreen> {
     }
   }
 
+  bool get _usesGooglePlay =>
+      !widget.comingSoonMode &&
+      widget.userId != null &&
+      _revenueCat.isConfigured &&
+      (_overview?.googlePlayConfigured ?? false);
+
   Future<void> _selectPlan(PricingPlan plan) async {
     if (widget.comingSoonMode) return;
+
+    final price =
+        _billingCycle == 'yearly' ? plan.priceYearlyUzs : plan.priceMonthlyUzs;
+    if (price > 0 && _usesGooglePlay) {
+      await _purchaseWithGooglePlay(plan);
+      return;
+    }
+
     setState(() => _busySlug = plan.slug);
     try {
       final result = await widget.repository.checkout(
@@ -125,6 +149,69 @@ class _PricingScreenState extends State<PricingScreen> {
             child: const Text('Yopish'),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _purchaseWithGooglePlay(PricingPlan plan) async {
+    final userId = widget.userId;
+    if (userId == null) return;
+
+    setState(() => _busySlug = plan.slug);
+    try {
+      final purchase = await _revenueCat.purchase(
+        appUserId: userId,
+        plan: plan,
+        billingCycle: _billingCycle,
+      );
+      if (!purchase.active) {
+        throw StateError(
+          "To'lov tasdiqlanmadi. Qayta urinib ko'ring yoki xaridlarni tiklang.",
+        );
+      }
+
+      final sync = await widget.repository.syncGooglePlay();
+      if (!mounted) return;
+      _showMessage(sync.message);
+      await _load();
+    } on StorePurchaseCancelled {
+      // Foydalanuvchi Google Play oynasini yopdi — xato ko'rsatilmaydi.
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage(e.toString(), isError: true);
+    } finally {
+      if (mounted) setState(() => _busySlug = null);
+    }
+  }
+
+  Future<void> _restorePurchases() async {
+    final userId = widget.userId;
+    if (userId == null) return;
+
+    setState(() => _busySlug = 'restore');
+    try {
+      await _revenueCat.restore(appUserId: userId);
+      final sync = await widget.repository.syncGooglePlay();
+      if (!mounted) return;
+      _showMessage(sync.message);
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage(e.toString(), isError: true);
+    } finally {
+      if (mounted) setState(() => _busySlug = null);
+    }
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: isError ? const TextStyle(color: Colors.white) : null,
+        ),
+        backgroundColor: isError ? AppColors.dangerSurface : null,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -219,6 +306,34 @@ class _PricingScreenState extends State<PricingScreen> {
               onCancel: _cancelSub,
             ),
           ...plans.map((plan) => _buildPlanCard(plan, isDark)),
+          if (_usesGooglePlay)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 24),
+              child: Column(
+                children: [
+                  AppButton(
+                    text: 'Xaridlarni tiklash',
+                    variant: ButtonVariant.secondary,
+                    isFullWidth: true,
+                    isLoading: _busySlug == 'restore',
+                    onPressed:
+                        _busySlug == null ? _restorePurchases : null,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "To'lov Google Play orqali amalga oshiriladi. "
+                    "Obuna hisobingizga bog'lanadi va boshqa qurilmalarda ham ishlaydi.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       );
 

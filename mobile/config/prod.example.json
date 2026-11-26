@@ -1,3 +1,4 @@
 {
-  "API_BASE_URL": "https://www.geters.uz/api"
+  "API_BASE_URL": "https://www.geters.uz/api",
+  "REVENUECAT_GOOGLE_API_KEY": "goog_your_revenuecat_google_sdk_key"
 }
