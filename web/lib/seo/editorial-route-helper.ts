@@ -33,11 +33,11 @@ export async function generateEditorialListMetadata(
     video: {
       title:
         typedLocale === "uz"
-          ? "Video Darsliklar va Amaliy Kurslar — Geters"
+          ? "Videolar — Geters"
           : typedLocale === "ru"
-          ? "Видеоуроки по программированию — Geters"
-          : "Programming Video Tutorials & Courses — Geters",
-      desc: "Real loyihalar asosidagi bepul video darsliklar, bo'limlar va to'liq kod konspektlari.",
+          ? "Видео — Geters"
+          : "Videos — Geters",
+      desc: "Geters platformasidagi video materiallar.",
     },
     news: {
       title:

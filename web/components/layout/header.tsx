@@ -12,7 +12,7 @@ import {
   SettingsIcon,
   BookmarkIcon,
 } from "@/components/icons";
-import { LogOut, ChevronDown, Shield } from "lucide-react";
+import { LogOut, ChevronDown, Shield, MessageCircle } from "lucide-react";
 import { useShell } from "./shell-context";
 import { SearchModal } from "@/components/search/search-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -21,6 +21,7 @@ import { toast } from "@/components/ui/toast";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { useMessages } from "@/components/messages/messages-context";
 
 interface HeaderProps {
   title?: string;
@@ -33,6 +34,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   const pathname = usePathname();
   const { session, logout } = useAuth();
   const { t, localePath } = useI18n();
+  const { totalUnreadCount } = useMessages();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -224,6 +226,32 @@ export function Header({ title, subtitle }: HeaderProps) {
                   className="stroke-[2.5] stroke-white no-gradient"
                 />
                 <span>Kontent yozish</span>
+              </Link>
+            )}
+
+            {/* Messages Button (Mobile & Desktop Web) */}
+            {session.isAuthenticated && (
+              <Link
+                href={localePath("/dashboard/messages")}
+                aria-label={t("nav.messages") || "Xabarlar"}
+                title={t("nav.messages") || "Xabarlar"}
+                aria-current={
+                  normalizedPath.startsWith("/dashboard/messages")
+                    ? "page"
+                    : undefined
+                }
+                className={`relative size-[38px] sm:size-[40px] rounded-[13px] border transition-colors active:scale-95 flex items-center justify-center shrink-0 cursor-pointer ${
+                  normalizedPath.startsWith("/dashboard/messages")
+                    ? "bg-[#1d9bf0]/10 dark:bg-[#1d9bf0]/15 border-[#1d9bf0]/40 text-[#1d9bf0]"
+                    : "bg-slate-100 dark:bg-[#000000] border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200 dark:hover:bg-[#202327] text-slate-600 dark:text-[#cfd9de] hover:text-slate-900 dark:hover:text-white"
+                }`}
+              >
+                <MessageCircle className="w-[18px] h-[18px]" />
+                {totalUnreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#1d9bf0] text-white text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000] shadow-2xs animate-in zoom-in-75">
+                    {totalUnreadCount > 9 ? "9+" : totalUnreadCount}
+                  </span>
+                )}
               </Link>
             )}
 

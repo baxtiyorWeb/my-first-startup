@@ -4,11 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/context";
+import { useAuth } from "@/components/auth/auth-context";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
-import { BookOpen, Newspaper, Layers, PenTool } from "lucide-react";
+import { BookOpen, Newspaper, Layers, PenTool, MessageCircle } from "lucide-react";
 
 export function PublicNavbar() {
   const { locale, localePath } = useI18n();
+  const { session } = useAuth();
   const pathname = usePathname();
 
   const navLinks = [
@@ -85,6 +87,17 @@ export function PublicNavbar() {
         {/* Actions */}
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
+
+          {session.isAuthenticated && (
+            <Link
+              href={localePath("/dashboard/messages")}
+              aria-label={locale === "uz" ? "Xabarlar" : locale === "ru" ? "Сообщения" : "Messages"}
+              title={locale === "uz" ? "Xabarlar" : locale === "ru" ? "Сообщения" : "Messages"}
+              className="inline-flex items-center justify-center size-8 sm:size-9 rounded-lg bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] text-slate-700 dark:text-slate-200 hover:text-[#1d9bf0] hover:border-[#1d9bf0]/40 transition-colors shrink-0"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </Link>
+          )}
 
           <Link
             href={localePath("/dashboard")}

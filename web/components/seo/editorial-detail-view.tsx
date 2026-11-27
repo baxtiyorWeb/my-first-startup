@@ -59,10 +59,10 @@ export function EditorialDetailView({
   const sectionLabel =
     item.contentKind === "video"
       ? locale === "uz"
-        ? "Video Darsliklar"
+        ? "Videolar"
         : locale === "ru"
-        ? "Видеоуроки"
-        : "Video Tutorials"
+        ? "Видео"
+        : "Videos"
       : item.contentKind === "news"
       ? locale === "uz"
         ? "IT Yangiliklar"
@@ -345,11 +345,11 @@ export function EditorialDetailView({
                 dangerouslySetInnerHTML={{ __html: htmlWithIds }}
               />
 
-              {/* Transcript / Key Notes for Video Tutorials */}
+              {/* Transcript / Key Notes */}
               {item.transcript && (
                 <div className="mt-8 pt-6 border-t border-slate-200/80 dark:border-[#2f3336] space-y-3">
                   <h2 className="text-lg font-bold text-slate-950 dark:text-white">
-                    Darslik Konspekti &amp; Transkript
+                    Konspekt &amp; Transkript
                   </h2>
                   <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
                     {item.transcript}

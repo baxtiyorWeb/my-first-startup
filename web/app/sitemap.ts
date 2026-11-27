@@ -20,7 +20,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const sectionPaths: Array<{ path: string; priority: number; freq: "hourly" | "daily" | "weekly" }> = [
     { path: "", priority: 1.0, freq: "daily" },
     { path: "/articles", priority: 0.95, freq: "daily" },
-    { path: "/videos", priority: 0.95, freq: "daily" },
     { path: "/news", priority: 0.95, freq: "hourly" },
     { path: "/hub", priority: 0.9, freq: "weekly" },
     { path: "/glossary", priority: 0.85, freq: "weekly" },
@@ -42,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // 2. Dinamik Bazadagi Maqolalar, Video Darsliklar va Yangiliklar (Canonical Locale)
+  // 2. Dinamik Bazadagi Maqolalar va Yangiliklar (Canonical Locale)
   const { contentItems, authorHandles } = await getIndexableSitemapRecords();
 
   for (const item of contentItems) {

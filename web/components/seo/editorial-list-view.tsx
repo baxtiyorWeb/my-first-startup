@@ -61,19 +61,19 @@ export function EditorialListView({
       Icon: BookOpen,
     },
     video: {
-      badge: "Video Darsliklar",
+      badge: "Videolar",
       title:
         locale === "uz"
-          ? "Video Darsliklar va Amaliy Kurslar"
+          ? "Videolar"
           : locale === "ru"
-          ? "Видеоуроки и практические курсы"
-          : "Developer Video Tutorials & Walkthroughs",
+          ? "Видео"
+          : "Videos",
       subtitle:
         locale === "uz"
-          ? "Real loyihalar misolida qadamma-qadam video darslar, vaqt kodlari va konspektlar."
+          ? "Platformadagi video materiallar."
           : locale === "ru"
-          ? "Пошаговые видеоуроки на реальных проектах с таймкодами и конспектами."
-          : "Step-by-step coding tutorials with searchable chapters, notes, and source code.",
+          ? "Видеоматериалы платформы."
+          : "Platform video content.",
       Icon: PlayCircle,
     },
     news: {
@@ -227,7 +227,7 @@ export function EditorialListView({
             </p>
             <div className="pt-2">
               <Link
-                href={`/${locale}/dashboard/create?kind=${kind}`}
+                href={kind === "video" ? `/${locale}/dashboard/create` : `/${locale}/dashboard/create?kind=${kind}`}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold transition-colors"
               >
                 <PenTool className="w-3.5 h-3.5" />

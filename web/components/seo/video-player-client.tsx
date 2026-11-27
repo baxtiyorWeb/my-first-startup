@@ -100,7 +100,7 @@ export function VideoPlayerClient({
         <div className="rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-4 sm:p-5 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
             <Clock className="w-4 h-4 text-[#1d9bf0]" />
-            <span>Video darslik bo‘limlari (Key Moments)</span>
+            <span>Video bo‘limlari (Key Moments)</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {chapters.map((ch, idx) => (

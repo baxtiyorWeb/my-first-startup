@@ -5,7 +5,7 @@ export const runtime = "edge";
 
 const KIND_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   article: { label: "MAQOLA & QO'LLANMA", color: "#1d9bf0", bg: "rgba(57,149,255,0.16)" },
-  video: { label: "VIDEO DARSLIK", color: "#00ba7c", bg: "rgba(16,185,129,0.16)" },
+  video: { label: "VIDEO", color: "#00ba7c", bg: "rgba(16,185,129,0.16)" },
   news: { label: "TEXNOLOGIYA YANGILIGI", color: "#ffd400", bg: "rgba(245,158,11,0.16)" },
   hub: { label: "BILIMLAR BAZASI", color: "#1d9bf0", bg: "rgba(57,149,255,0.16)" },
 };
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
                 Geters.uz
               </span>
               <span style={{ fontSize: "13px", color: "#8b98a5" }}>
-                Bilim. Video Darsliklar. Yangiliklar.
+                Bilim. Maqolalar. Yangiliklar.
               </span>
             </div>
           </div>

@@ -18,7 +18,7 @@ function getHref(item: PublicContentItem, locale: Locale): string {
 function getKindMeta(kind: PublicContentItem["contentKind"], locale: Locale) {
   if (kind === "video") {
     return {
-      label: locale === "uz" ? "Video darslik" : locale === "ru" ? "Видеоурок" : "Video",
+      label: locale === "uz" ? "Video" : locale === "ru" ? "Видео" : "Video",
       cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
       Icon: Video,
     };

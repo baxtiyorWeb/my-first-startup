@@ -50,7 +50,7 @@ function StudioEditorWorkspace() {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const initialKind: ContentKind =
-    kindParam === "video" || kindParam === "news" || kindParam === "article" || kindParam === "thought"
+    kindParam === "news" || kindParam === "article" || kindParam === "thought"
       ? kindParam
       : "article";
   const [contentKind, setContentKind] = useState<ContentKind>(initialKind);
@@ -552,7 +552,7 @@ function StudioEditorWorkspace() {
               {editId ? "Materialni tahrirlash" : "Yangi post"}
             </h1>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Maqola, video darslik yoki yangilik yarating
+              Maqola yoki yangilik yarating
             </p>
           </div>
         </div>
@@ -782,7 +782,7 @@ function StudioEditorWorkspace() {
                 onKeyUp={checkSelection}
                 onMouseUp={checkSelection}
                 onPaste={handlePaste}
-                data-placeholder="Chuqur tahlil, darslik konspekti yoki IT yangilik matnini shu yerga yozing. H2/H3 sarlavhalardan foydalansangiz avtomatik Mundarija shakllanadi..."
+                data-placeholder="Chuqur tahlil, amaliy qo‘llanma yoki IT yangilik matnini shu yerga yozing. H2/H3 sarlavhalardan foydalansangiz avtomatik Mundarija shakllanadi..."
                 className="gogetters-rich-editor p-4 sm:p-6 text-sm sm:text-base text-slate-900 dark:text-slate-100 cursor-text min-h-[340px] leading-relaxed"
               />
               <p className="px-4 sm:px-6 pb-3 text-[11px] text-slate-400 dark:text-slate-500">

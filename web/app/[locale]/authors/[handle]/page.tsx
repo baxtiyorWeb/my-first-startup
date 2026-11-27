@@ -32,7 +32,7 @@ export async function generateMetadata({
   const cleanHandle = author.handle.replace(/^@/, "");
   const canonical = getCanonicalUrl(`/authors/${cleanHandle}`, locale as Locale);
   const title = `${author.name} (@${cleanHandle}) — Geters Muallifi`;
-  const description = author.bio || `${author.role} — Geters platformasidagi maqola va video darsliklar muallifi.`;
+  const description = author.bio || `${author.role} — Geters platformasidagi maqola va yangiliklar muallifi.`;
 
   return {
     title,
@@ -177,7 +177,7 @@ export default async function PublicAuthorPage({
         {/* Authored Articles / Videos / News */}
         <section className="space-y-4">
           <h2 className="text-lg font-bold text-slate-950 dark:text-white">
-            Muallifning maqola va video darsliklari ({items.length})
+            Muallifning maqola va nashrlari ({items.length})
           </h2>
 
           {items.length === 0 ? (
