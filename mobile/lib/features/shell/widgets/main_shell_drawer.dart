@@ -21,6 +21,7 @@ class MainShellDrawer extends StatelessWidget {
   final MessagesController messagesController;
   final ValueChanged<int> onSelectTab;
   final VoidCallback onOpenMessages;
+  final VoidCallback onOpenCommunity;
   final VoidCallback onOpenPricing;
   final ValueChanged<String> onOpenPostDetail;
   final ValueChanged<Author> onOpenAuthorProfile;
@@ -35,6 +36,7 @@ class MainShellDrawer extends StatelessWidget {
     required this.messagesController,
     required this.onSelectTab,
     required this.onOpenMessages,
+    required this.onOpenCommunity,
     required this.onOpenPricing,
     required this.onOpenPostDetail,
     required this.onOpenAuthorProfile,
@@ -109,6 +111,15 @@ class MainShellDrawer extends StatelessWidget {
                         onTap: () {
                           Navigator.of(context).pop();
                           onOpenMessages();
+                        },
+                      ),
+                      _DrawerTile(
+                        icon: Icons.groups_rounded,
+                        label: 'Guruh',
+                        isDark: isDark,
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          onOpenCommunity();
                         },
                       ),
                       _DrawerTile(

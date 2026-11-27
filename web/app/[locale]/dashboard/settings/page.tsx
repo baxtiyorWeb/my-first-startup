@@ -681,7 +681,7 @@ export default function SettingsPage() {
                   className="w-full text-left p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xs hover:border-slate-400 dark:hover:border-slate-700 transition-all flex items-center justify-between group active:scale-[0.99]"
                 >
                   <div className="flex items-start gap-3.5 pr-2">
-                    <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 group-hover:bg-slate-900 group-hover:text-white dark:group-hover:bg-slate-100 dark:group-hover:text-slate-900 transition-colors shrink-0">
+                    <div className="p-2.5 rounded-lg bg-[#f7f9f9] dark:bg-[#16181c] text-[#0d9488] dark:text-[#2dd4bf] group-hover:bg-[#0d9488] group-hover:text-white dark:group-hover:bg-[#2dd4bf] dark:group-hover:text-[#0a0d14] transition-colors shrink-0">
                       <IconComp size={18} />
                     </div>
                     <div>
@@ -736,8 +736,8 @@ export default function SettingsPage() {
                 onClick={() => selectTab(item.id as SettingsTab)}
                 className={`w-full text-left p-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-between cursor-pointer ${
                   isSelected
-                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                    ? "bg-[#e6faf7] dark:bg-[#0c272c] text-[#0d9488] dark:text-[#2dd4bf] border border-[#14b8a6]/35"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-transparent"
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -945,7 +945,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={handleSettingsRandomAvatar}
-                  className="px-3 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-950/50 border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/60 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  className="px-3 py-1.5 rounded-lg bg-[#e6faf7] dark:bg-[#0c272c] border border-[#14b8a6]/35 text-[#0d9488] dark:text-[#2dd4bf] hover:bg-[#ccf5ef] dark:hover:bg-[#14b8a6]/20 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Dice5 size={13} />
                   <span>{t("settings.tabs.account.randomAvatar")}</span>
@@ -1102,7 +1102,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold transition-all cursor-pointer disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white dark:bg-[#2dd4bf] dark:hover:bg-[#14b8a6] dark:text-[#0a0d14] text-xs font-bold transition-all cursor-pointer disabled:opacity-60"
               >
                 {isSubmitting ? (
                   <>
@@ -1147,7 +1147,7 @@ export default function SettingsPage() {
                   onClick={() => setIsPrivate(false)}
                   className={`p-3 rounded-lg border text-xs text-left cursor-pointer transition-all ${
                     !isPrivate
-                      ? "border-slate-900 dark:border-slate-100 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-slate-100 ring-1 ring-slate-900 dark:ring-slate-100"
+                      ? "border-[#0d9488] dark:border-[#2dd4bf] bg-[#e6faf7] dark:bg-[#0c272c] font-semibold text-[#0d9488] dark:text-[#2dd4bf] ring-1 ring-[#0d9488]/30 dark:ring-[#2dd4bf]/30"
                       : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                   }`}
                 >
@@ -1163,7 +1163,7 @@ export default function SettingsPage() {
                   onClick={() => setIsPrivate(true)}
                   className={`p-3 rounded-lg border text-xs text-left cursor-pointer transition-all ${
                     isPrivate
-                      ? "border-slate-900 dark:border-slate-100 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-slate-100 ring-1 ring-slate-900 dark:ring-slate-100"
+                      ? "border-[#0d9488] dark:border-[#2dd4bf] bg-[#e6faf7] dark:bg-[#0c272c] font-semibold text-[#0d9488] dark:text-[#2dd4bf] ring-1 ring-[#0d9488]/30 dark:ring-[#2dd4bf]/30"
                       : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                   }`}
                 >
@@ -1198,7 +1198,7 @@ export default function SettingsPage() {
                     onClick={() => setDmPermission(opt.id as any)}
                     className={`p-2.5 rounded-lg border text-xs text-left cursor-pointer transition-all ${
                       dmPermission === opt.id
-                        ? "border-slate-900 dark:border-slate-100 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-slate-100 ring-1 ring-slate-900 dark:ring-slate-100"
+                        ? "border-[#0d9488] dark:border-[#2dd4bf] bg-[#e6faf7] dark:bg-[#0c272c] font-semibold text-[#0d9488] dark:text-[#2dd4bf] ring-1 ring-[#0d9488]/30 dark:ring-[#2dd4bf]/30"
                         : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
@@ -1273,7 +1273,7 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white dark:bg-[#2dd4bf] dark:hover:bg-[#14b8a6] dark:text-[#0a0d14] text-xs font-bold cursor-pointer disabled:opacity-60"
               >
                 {isSubmitting ? (
                   <>
@@ -1373,7 +1373,7 @@ export default function SettingsPage() {
                 <button
                   type="submit"
                   disabled={isChangingPassword}
-                  className="px-3.5 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer disabled:opacity-50"
+                  className="px-4 py-1.5 rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white dark:bg-[#2dd4bf] dark:hover:bg-[#14b8a6] dark:text-[#0a0d14] text-xs font-bold cursor-pointer disabled:opacity-50"
                 >
                   {isChangingPassword
                     ? t("settings.savingChanges")
@@ -1793,7 +1793,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={handleSaveNotifications}
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white dark:bg-[#2dd4bf] dark:hover:bg-[#14b8a6] dark:text-[#0a0d14] text-xs font-bold cursor-pointer disabled:opacity-60"
               >
                 {isSubmitting ? (
                   <>
@@ -1842,7 +1842,7 @@ export default function SettingsPage() {
                       onClick={() => handleThemeChange(th.id as any)}
                       className={`p-3 rounded-lg border text-xs cursor-pointer flex items-center gap-2.5 transition-all ${
                         isSel
-                          ? "border-slate-900 dark:border-slate-100 bg-white dark:bg-slate-900 font-semibold text-slate-950 dark:text-white ring-1 ring-slate-900 dark:ring-slate-100 shadow-xs"
+                          ? "border-[#0d9488] dark:border-[#2dd4bf] bg-[#e6faf7] dark:bg-[#0c272c] font-semibold text-[#0d9488] dark:text-[#2dd4bf] ring-1 ring-[#0d9488]/30 dark:ring-[#2dd4bf]/30"
                           : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                       }`}
                     >
@@ -1871,7 +1871,7 @@ export default function SettingsPage() {
                       onClick={() => switchLocale(loc)}
                       className={`p-3 rounded-lg border text-xs cursor-pointer flex items-center justify-between transition-all ${
                         isSelected
-                          ? "border-slate-900 dark:border-slate-100 bg-white dark:bg-slate-900 font-semibold text-slate-950 dark:text-white ring-1 ring-slate-900 dark:ring-slate-100"
+                          ? "border-[#0d9488] dark:border-[#2dd4bf] bg-[#e6faf7] dark:bg-[#0c272c] font-semibold text-[#0d9488] dark:text-[#2dd4bf] ring-1 ring-[#0d9488]/30 dark:ring-[#2dd4bf]/30"
                           : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                       }`}
                     >
@@ -1905,7 +1905,7 @@ export default function SettingsPage() {
                       }}
                       className={`p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-colors ${
                         alphabet === alph
-                          ? "border-slate-900 dark:border-slate-100 bg-white dark:bg-slate-900 font-semibold text-slate-900 dark:text-slate-100"
+                          ? "border-[#0d9488] dark:border-[#2dd4bf] bg-[#e6faf7] dark:bg-[#0c272c] font-semibold text-[#0d9488] dark:text-[#2dd4bf]"
                           : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                       }`}
                     >
@@ -1931,7 +1931,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={handleExportData}
                   disabled={isExporting}
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white dark:bg-[#2dd4bf] dark:hover:bg-[#14b8a6] dark:text-[#0a0d14] text-xs font-bold cursor-pointer disabled:opacity-50"
                 >
                   {isExporting ? (
                     <>

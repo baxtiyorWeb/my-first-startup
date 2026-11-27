@@ -8,6 +8,8 @@ import '../feed/models/author.dart';
 import '../feed/presentation/create_post_screen.dart';
 import '../feed/presentation/feed_screen.dart';
 import '../feed/presentation/post_detail_screen.dart';
+import '../community/data/community_repository.dart';
+import '../community/presentation/community_screen.dart';
 import '../messages/data/messages_controller.dart';
 import '../messages/presentation/messages_screen.dart';
 import '../notifications/data/notifications_controller.dart';
@@ -143,6 +145,20 @@ class _MainShellScreenState extends State<MainShellScreen> {
     );
   }
 
+  void _openCommunity() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CommunityScreen(
+          repository: CommunityRepository(
+            apiClient: widget.authController.apiClient,
+          ),
+          currentUserId: widget.authController.currentUser.id,
+          currentUserName: widget.authController.currentUser.name,
+        ),
+      ),
+    );
+  }
+
   void _openNotifications() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -235,6 +251,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
           messagesController: widget.messagesController,
           onSelectTab: _onTabSelected,
           onOpenMessages: _openMessages,
+          onOpenCommunity: _openCommunity,
           onOpenPricing: _openPricing,
           onOpenPostDetail: _openPostDetail,
           onOpenAuthorProfile: _openAuthorProfile,

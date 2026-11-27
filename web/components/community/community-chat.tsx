@@ -21,9 +21,14 @@ import {
   FileText,
   Plus,
   ArrowUp,
+  Menu,
+  Pin,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { useShell } from "@/components/layout/shell-context";
 import { CommunityComposer } from "./community-composer";
 import { CommunityInfo } from "./community-info";
 import { useCommunity } from "./use-community";
@@ -66,6 +71,7 @@ function dateLabel(iso: string): string {
 
 export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
   const community = useCommunity(viewer);
+  const { toggleSidebar, toggleMobileNav } = useShell();
   const [replyTo, setReplyTo] = useState<CommunityMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
   const [reactionFor, setReactionFor] = useState<string | null>(null);
@@ -76,11 +82,27 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
   const [searchInput, setSearchInput] = useState("");
   const [newCount, setNewCount] = useState(0);
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
   const previousCount = useRef(0);
   const initialScrolled = useRef(false);
+
+  // Ctrl+K / Cmd+K focuses the inline community search bar
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        if (window.innerWidth < 768) {
+          setSearchOpen(true);
+        }
+        requestAnimationFrame(() => searchInputRef.current?.focus());
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const visibleMessages = community.searchResults ?? community.messages;
 
@@ -131,11 +153,13 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
 
   // Read receipts for the newest visible message
   const lastMessage = community.messages[community.messages.length - 1];
+  const markRead = community.markRead;
+  const activeSearch = community.searchResults !== null;
   useEffect(() => {
-    if (!lastMessage || community.searchResults !== null) return;
+    if (!lastMessage || activeSearch) return;
     if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-    community.markRead(lastMessage.id);
-  }, [lastMessage?.id, community.searchResults, community.markRead, lastMessage]);
+    markRead(lastMessage.id);
+  }, [lastMessage, activeSearch, markRead]);
 
   const handleScroll = () => {
     const element = scrollRef.current;
@@ -248,49 +272,96 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
   const overview = community.overview;
 
   return (
-    <div className="flex h-full min-h-0 w-full overflow-hidden bg-[#070a0f] text-zinc-100">
+    <div className="flex h-full min-h-0 w-full overflow-hidden bg-white dark:bg-[#070a0f] text-[#0f1419] dark:text-zinc-100">
       <section className="flex min-w-0 flex-1 flex-col">
-        {/* Header */}
-        <header className="flex h-[64px] shrink-0 items-center justify-between gap-2 border-b border-white/[0.06] px-3 sm:px-5">
+        {/* Top Community Header */}
+        <header className="flex h-[64px] shrink-0 items-center justify-between gap-3 border-b border-[#cfd9de] dark:border-white/[0.06] bg-white dark:bg-[#070a0f] px-3 sm:px-5">
           <div className="flex min-w-0 items-center gap-2.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-teal-500/25 bg-[#0b0e14]">
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.innerWidth < 768) {
+                  toggleMobileNav();
+                } else {
+                  toggleSidebar();
+                }
+              }}
+              aria-label="Menyuni almashtirish"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#536471] dark:text-zinc-400 transition-colors hover:bg-[#eff3f4] dark:hover:bg-white/[0.06] hover:text-[#0f1419] dark:hover:text-white cursor-pointer"
+            >
+              <Menu size={18} />
+            </button>
+
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#cfd9de] dark:border-[#2dd4bf]/25 bg-[#0b0e14]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Geters Community" className="h-7 w-7 object-contain" />
+              <img src="/logo.png" alt="Geters Community" className="h-6 w-6 object-contain" />
             </div>
+
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h1 className="truncate text-[14px] font-bold text-white">
+                <h1 className="truncate text-[14.5px] font-bold text-[#0f1419] dark:text-white leading-tight">
                   {overview?.community.name || "Geters Community"}
                 </h1>
-                {overview?.community.verified && (
-                  <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-teal-400 text-[8px] font-black text-slate-950">
-                    ✓
-                  </span>
-                )}
-                <span
-                  className={`ml-1 hidden items-center gap-1 text-[10px] sm:flex ${
-                    community.isConnected ? "text-emerald-400" : "text-amber-400"
-                  }`}
-                  title={community.isConnected ? "Haqiqiy vaqtda ulangan" : "Qayta ulanmoqda"}
-                >
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      community.isConnected ? "bg-emerald-400" : "bg-amber-400"
-                    }`}
-                  />
-                  {community.isConnected ? "Jonli" : "Ulanmoqda"}
-                </span>
+                {overview?.community.verified && <VerifiedBadge size={15} />}
               </div>
-              <p className="truncate text-[11px] text-zinc-500">
-                {overview
-                  ? `${overview.memberCount.toLocaleString("uz-UZ")} a'zo · ${
-                      overview.onlineCount
-                    } onlayn · Ommaviy guruh`
-                  : "Yuklanmoqda..."}
+              <p className="truncate text-[11px] text-[#536471] dark:text-zinc-400 flex items-center gap-1.5">
+                <span>
+                  {overview
+                    ? `${overview.memberCount.toLocaleString("uz-UZ")} a'zo · Ommaviy guruh`
+                    : "Yuklanmoqda..."}
+                </span>
+                <span
+                  className={`inline-block h-1.5 w-1.5 rounded-full ${
+                    community.isConnected ? "bg-[#0d9488] dark:bg-[#2dd4bf]" : "bg-amber-400"
+                  }`}
+                  title={community.isConnected ? "Jonli ulangan" : "Ulanmoqda"}
+                />
               </p>
             </div>
           </div>
 
+          {/* Center Inline Search Pill (Desktop) */}
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              community.runSearch(searchInput);
+            }}
+            className="hidden md:flex flex-1 max-w-[360px] items-center gap-2 rounded-full border border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-[#0f141b] px-3.5 h-9 focus-within:border-[#0d9488] dark:focus-within:border-[#2dd4bf]/45 transition-colors"
+          >
+            <Search size={14} className="shrink-0 text-[#8b98a5] dark:text-zinc-500" />
+            <input
+              ref={searchInputRef}
+              value={searchInput}
+              onChange={(event) => {
+                setSearchInput(event.target.value);
+                if (!event.target.value.trim() && community.searchResults !== null) {
+                  community.clearSearch();
+                }
+              }}
+              placeholder="Guruh ichida qidirish..."
+              aria-label="Guruh ichida qidirish"
+              className="w-full bg-transparent text-[12.5px] text-[#0f1419] dark:text-zinc-100 placeholder:text-[#8b98a5] dark:placeholder:text-zinc-500 focus:outline-none"
+            />
+            {searchInput ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInput("");
+                  community.clearSearch();
+                }}
+                aria-label="Qidiruvni tozalash"
+                className="text-[#536471] dark:text-zinc-400 hover:text-[#0f1419] dark:hover:text-white cursor-pointer"
+              >
+                <X size={13} />
+              </button>
+            ) : (
+              <kbd className="shrink-0 rounded-md border border-[#cfd9de] dark:border-white/[0.08] bg-white dark:bg-white/[0.04] px-1.5 py-0.5 font-mono text-[10px] text-[#536471] dark:text-zinc-400">
+                Ctrl + K
+              </kbd>
+            )}
+          </form>
+
+          {/* Right Header Actions */}
           <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
@@ -303,7 +374,7 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
               }}
               aria-label="Xabarlarni qidirish"
               title="Qidirish"
-              className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
+              className="md:hidden rounded-xl p-2 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-[#eff3f4] dark:hover:bg-white/[0.06] hover:text-[#0f1419] dark:hover:text-white cursor-pointer"
             >
               <Search size={17} />
             </button>
@@ -312,7 +383,7 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
               onClick={() => setInfoOpen(true)}
               aria-label="A'zolar va guruh ma'lumoti"
               title="A'zolar"
-              className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white xl:hidden"
+              className="rounded-xl p-2 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-[#eff3f4] dark:hover:bg-white/[0.06] hover:text-[#0f1419] dark:hover:text-white cursor-pointer"
             >
               <Users size={17} />
             </button>
@@ -321,8 +392,8 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
               onClick={() => community.toggleMute()}
               aria-label={overview?.isMuted ? "Bildirishnomalarni yoqish" : "Bildirishnomalarni o'chirish"}
               title={overview?.isMuted ? "Bildirishnomalar o'chirilgan" : "Bildirishnomalar yoqilgan"}
-              className={`rounded-lg p-2 transition-colors hover:bg-white/5 ${
-                overview?.isMuted ? "text-amber-400" : "text-zinc-400 hover:text-white"
+              className={`rounded-xl p-2 transition-colors hover:bg-[#eff3f4] dark:hover:bg-white/[0.06] cursor-pointer ${
+                overview?.isMuted ? "text-amber-500 dark:text-amber-400" : "text-[#536471] dark:text-zinc-400 hover:text-[#0f1419] dark:hover:text-white"
               }`}
             >
               {overview?.isMuted ? <BellOff size={17} /> : <Bell size={17} />}
@@ -333,27 +404,27 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                 onClick={() => setMenuOpen((prev) => !prev)}
                 aria-label="Qo'shimcha amallar"
                 title="Boshqa"
-                className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
+                className="rounded-xl p-2 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-[#eff3f4] dark:hover:bg-white/[0.06] hover:text-[#0f1419] dark:hover:text-white cursor-pointer"
               >
                 <MoreVertical size={17} />
               </button>
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 top-10 z-40 w-56 overflow-hidden rounded-xl border border-white/10 bg-[#12161f] py-1 shadow-2xl">
+                  <div className="absolute right-0 top-10 z-40 w-56 overflow-hidden rounded-xl border border-[#cfd9de] dark:border-white/10 bg-white dark:bg-[#12161f] py-1 shadow-2xl">
                     <button
                       type="button"
                       onClick={copyLink}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] text-zinc-200 hover:bg-white/[0.06]"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] text-[#0f1419] dark:text-zinc-200 hover:bg-[#f7f9f9] dark:hover:bg-white/[0.06] cursor-pointer"
                     >
                       <Link2 size={14} /> Havolani nusxalash
                     </button>
                     <button
                       type="button"
                       onClick={markAllRead}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] text-zinc-200 hover:bg-white/[0.06]"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] text-[#0f1419] dark:text-zinc-200 hover:bg-[#f7f9f9] dark:hover:bg-white/[0.06] cursor-pointer"
                     >
-                      <CheckCheck size={14} /> Barchasini o'qilgan qilish
+                      <CheckCheck size={14} /> Barchasini o&apos;qilgan qilish
                     </button>
                     <button
                       type="button"
@@ -361,7 +432,7 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                         setMenuOpen(false);
                         community.refresh();
                       }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] text-zinc-200 hover:bg-white/[0.06]"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] text-[#0f1419] dark:text-zinc-200 hover:bg-[#f7f9f9] dark:hover:bg-white/[0.06] cursor-pointer"
                     >
                       <RotateCcw size={14} /> Xabarlarni yangilash
                     </button>
@@ -371,7 +442,7 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                         setMenuOpen(false);
                         setInfoOpen(true);
                       }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] text-zinc-200 hover:bg-white/[0.06] xl:hidden"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12px] text-[#0f1419] dark:text-zinc-200 hover:bg-[#f7f9f9] dark:hover:bg-white/[0.06] xl:hidden cursor-pointer"
                     >
                       <Users size={14} /> Guruh haqida
                     </button>
@@ -381,6 +452,32 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
             </div>
           </div>
         </header>
+
+        {/* Pinned Official Announcement Banner */}
+        {overview && (
+          <div className="shrink-0 px-3 pt-3 sm:px-6">
+            <button
+              type="button"
+              onClick={() => setInfoOpen(true)}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[#14b8a6]/35 bg-[#e6faf7] dark:bg-[#0c272c]/55 px-4 py-2.5 text-left transition-colors hover:border-[#0d9488]/50 dark:hover:border-[#2dd4bf]/45 hover:bg-[#ccf5ef]/70 dark:hover:bg-[#0c272c]/75 cursor-pointer"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0d9488]/15 dark:bg-[#2dd4bf]/15 text-[#0d9488] dark:text-[#2dd4bf]">
+                  <Pin size={14} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-bold text-[#0f1419] dark:text-white leading-tight">
+                    Rasmiy e&apos;lon
+                  </p>
+                  <p className="truncate text-[11.5px] text-[#536471] dark:text-zinc-300 mt-0.5">
+                    {overview.community.description}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight size={15} className="shrink-0 text-[#536471] dark:text-zinc-400" />
+            </button>
+          </div>
+        )}
 
         {/* Search bar */}
         {searchOpen && (
@@ -499,13 +596,13 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
 
               {groups.map((group) => (
                 <div key={`${group.label}_${group.items[0].id}`}>
-                  <div className="my-3 flex justify-center">
-                    <span className="rounded-full bg-white/[0.06] px-2.5 py-0.5 text-[10px] font-semibold text-zinc-400">
+                  <div className="my-4 flex justify-center">
+                    <span className="rounded-full border border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-[#11161d] px-3.5 py-1 text-[11px] font-semibold text-[#536471] dark:text-zinc-300">
                       {group.label}
                     </span>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {group.items.map((message) => {
                       const isHighlighted = highlightId === message.id;
                       const isEditing = editing?.id === message.id;
@@ -514,37 +611,30 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                         <div
                           key={message.id}
                           id={`msg-${message.id}`}
-                          className={`group flex items-start gap-2.5 rounded-2xl transition-colors sm:gap-3 ${
-                            isHighlighted ? "bg-teal-400/[0.08] ring-1 ring-teal-400/30" : ""
+                          className={`group flex items-start gap-3 rounded-2xl transition-colors ${
+                            isHighlighted ? "bg-[#0d9488]/10 dark:bg-[#2dd4bf]/10 p-1.5 ring-1 ring-[#0d9488]/35 dark:ring-[#2dd4bf]/35" : ""
                           }`}
                         >
                           <UserAvatar
                             name={message.sender.name}
                             avatarUrl={message.sender.avatarUrl}
-                            size="sm"
+                            size="md"
                           />
 
-                          <div className="min-w-0 flex-1">
+                          <div className="min-w-0 flex-1 max-w-[680px]">
                             <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="text-[12px] font-bold text-zinc-100">
+                              <span className="text-[13px] font-bold text-[#0f1419] dark:text-white">
                                 {message.sender.name}
                               </span>
-                              <span className="text-[10.5px] text-zinc-500">
-                                @{message.sender.handle.replace(/^@+/, "")}
-                              </span>
-                              <span className="text-[10px] text-zinc-600">
+                              {message.sender.verified && <VerifiedBadge size={14} />}
+                              <span className="text-[11px] text-[#536471] dark:text-zinc-500">
                                 {formatTime(message.createdAt)}
                               </span>
-                              {message.isMine && (
-                                <span className="rounded bg-teal-400/10 px-1 py-0.5 text-[9px] font-semibold text-teal-300">
-                                  siz
-                                </span>
-                              )}
                               {message.editedAt && (
-                                <span className="text-[9.5px] text-zinc-600">tahrirlangan</span>
+                                <span className="text-[10px] text-[#536471] dark:text-zinc-500">· tahrirlangan</span>
                               )}
                               {message.pending && (
-                                <Loader2 size={11} className="animate-spin text-zinc-500" />
+                                <Loader2 size={11} className="animate-spin text-[#536471] dark:text-zinc-400" />
                               )}
                               {message.failed && (
                                 <button
@@ -558,7 +648,7 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                                       );
                                     }
                                   }}
-                                  className="flex items-center gap-1 text-[10px] font-semibold text-rose-400 hover:underline"
+                                  className="flex items-center gap-1 text-[10.5px] font-semibold text-rose-500 dark:text-rose-400 hover:underline cursor-pointer"
                                 >
                                   <AlertCircle size={11} /> Qayta yuborish
                                 </button>
@@ -566,24 +656,27 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                             </div>
 
                             <div
-                              className={`mt-1 rounded-2xl rounded-tl-md border px-3 py-2 ${
+                              className={`mt-1.5 rounded-2xl rounded-tl-md border px-3.5 py-2.5 ${
                                 message.isMine
-                                  ? "border-teal-500/20 bg-teal-500/[0.07]"
-                                  : "border-white/[0.06] bg-[#12161f]"
+                                  ? "border-[#14b8a6]/40 dark:border-[#14b8a6]/35 bg-[#e6faf7] dark:bg-[#0b2326]"
+                                  : "border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-[#151a22]"
                               }`}
                             >
                               {message.replyTo && (
                                 <button
                                   type="button"
                                   onClick={() => jumpToMessage(message.replyTo!.id)}
-                                  className="mb-2 flex w-full items-start gap-2 rounded-lg border-l-2 border-teal-400/70 bg-black/20 px-2 py-1.5 text-left"
+                                  className="mb-2.5 flex w-full items-center gap-2.5 rounded-xl border border-[#cfd9de] dark:border-white/[0.06] border-l-2 border-l-[#0d9488] dark:border-l-[#2dd4bf] bg-white/80 dark:bg-[#101c20] px-2.5 py-2 text-left transition-colors hover:bg-white dark:hover:bg-[#142429] cursor-pointer"
                                 >
-                                  <Reply size={12} className="mt-0.5 shrink-0 text-teal-300" />
+                                  <UserAvatar
+                                    name={message.replyTo.senderName || "F"}
+                                    size="xs"
+                                  />
                                   <span className="min-w-0 flex-1">
-                                    <span className="block text-[10.5px] font-semibold text-teal-300">
-                                      {message.replyTo.senderName || "Foydalanuvchi"} ga javob
+                                    <span className="block text-[11px] font-bold text-[#0f1419] dark:text-white truncate">
+                                      {message.replyTo.senderName || "Foydalanuvchi"}
                                     </span>
-                                    <span className="line-clamp-2 block text-[11px] text-zinc-400">
+                                    <span className="line-clamp-1 block text-[11.5px] text-[#536471] dark:text-zinc-400">
                                       {message.replyTo.isDeleted
                                         ? "Xabar o'chirilgan"
                                         : message.replyTo.content ||
@@ -627,7 +720,7 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                                 </div>
                               ) : (
                                 message.content && (
-                                  <p className="whitespace-pre-wrap break-words text-[12.5px] leading-relaxed text-zinc-100">
+                                  <p className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-[#0f1419] dark:text-zinc-100">
                                     {message.content}
                                   </p>
                                 )
@@ -715,10 +808,10 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                                   type="button"
                                   onClick={() => handleReaction(message.id, reaction.emoji)}
                                   aria-label={`${reaction.emoji} reaksiyasi (${reaction.count})`}
-                                  className={`flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10.5px] transition-colors ${
+                                  className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors cursor-pointer ${
                                     reaction.reacted
-                                      ? "border-teal-400/40 bg-teal-400/15 text-teal-200"
-                                      : "border-white/[0.08] bg-white/[0.04] text-zinc-300 hover:border-white/20"
+                                      ? "border-[#0d9488]/45 dark:border-[#2dd4bf]/45 bg-[#e6faf7] dark:bg-[#0c272c] text-[#0d9488] dark:text-[#2dd4bf]"
+                                      : "border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-white/[0.04] text-[#0f1419] dark:text-zinc-300 hover:border-[#8b98a5] dark:hover:border-white/20"
                                   }`}
                                 >
                                   <span>{reaction.emoji}</span>
@@ -831,13 +924,15 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
         )}
 
         {community.typingLabel && (
-          <div className="flex shrink-0 items-center gap-2 px-4 pb-1 text-[10.5px] text-zinc-500">
-            <span className="flex gap-0.5">
-              <span className="h-1 w-1 animate-bounce rounded-full bg-zinc-400" />
-              <span className="h-1 w-1 animate-bounce rounded-full bg-zinc-400 [animation-delay:120ms]" />
-              <span className="h-1 w-1 animate-bounce rounded-full bg-zinc-400 [animation-delay:240ms]" />
+          <div className="flex shrink-0 items-center gap-2 px-4 pb-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#151a22] px-3 py-1 text-[11px] text-zinc-400">
+              <span className="flex gap-0.5">
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#2dd4bf]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#2dd4bf] [animation-delay:120ms]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#2dd4bf] [animation-delay:240ms]" />
+              </span>
+              <span>{community.typingLabel}</span>
             </span>
-            {community.typingLabel}
           </div>
         )}
 
@@ -850,7 +945,7 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
       </section>
 
       {overview && (
-        <div className="hidden w-[330px] shrink-0 border-l border-white/[0.06] xl:flex">
+        <div className="hidden w-[330px] shrink-0 border-l border-[#cfd9de] dark:border-white/[0.06] xl:flex">
           <CommunityInfo overview={overview} />
         </div>
       )}
@@ -865,7 +960,7 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
           onClick={() => setInfoOpen(false)}
         >
           <div
-            className="h-full w-full max-w-sm border-l border-white/10 bg-[#0b0e14]"
+            className="h-full w-full max-w-sm border-l border-[#cfd9de] dark:border-white/10 bg-[#f7f9f9] dark:bg-[#0b0e14]"
             onClick={(event) => event.stopPropagation()}
           >
             <CommunityInfo overview={overview} onClose={() => setInfoOpen(false)} />

@@ -444,6 +444,9 @@ class CommunityRepository {
   CommunityRepository({ApiClient? apiClient})
       : _apiClient = apiClient ?? ApiClient();
 
+  /// Bearer token used by the SSE stream and multipart uploads.
+  String? get apiToken => _apiClient.authToken;
+
   Future<CommunityOverview> getOverview() async {
     final decoded = await _apiClient.get('/community');
     final data = decoded['data'] as Map<String, dynamic>? ?? const {};

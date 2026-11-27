@@ -181,15 +181,15 @@ export function CommunityComposer({
   const canSend = hasPayload && !isSending && !isUploading;
 
   return (
-    <div className="border-t border-white/[0.06] bg-[#0b0e14] px-3 py-3 sm:px-4">
+    <div className="border-t border-[#cfd9de] dark:border-white/[0.06] bg-white dark:bg-[#0b0e14] px-3 py-3 sm:px-4">
       {replyTo && (
-        <div className="mb-2 flex items-start gap-2 rounded-xl border border-teal-500/25 bg-teal-500/[0.07] px-3 py-2">
-          <div className="mt-0.5 h-8 w-0.5 rounded-full bg-teal-400" />
+        <div className="mb-2 flex items-start gap-2 rounded-xl border border-[#14b8a6]/30 bg-[#e6faf7] dark:bg-teal-500/[0.07] px-3 py-2">
+          <div className="mt-0.5 h-8 w-0.5 rounded-full bg-[#0d9488] dark:bg-teal-400" />
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold text-teal-300">
+            <p className="text-[11px] font-semibold text-[#0d9488] dark:text-teal-300">
               {replyTo.sender.name} ga javob
             </p>
-            <p className="truncate text-[11.5px] text-zinc-400">
+            <p className="truncate text-[11.5px] text-[#536471] dark:text-zinc-400">
               {replyTo.content ||
                 (replyTo.attachments[0]
                   ? `📎 ${replyTo.attachments[0].name}`
@@ -200,7 +200,7 @@ export function CommunityComposer({
             type="button"
             onClick={onCancelReply}
             aria-label="Javobni bekor qilish"
-            className="rounded-md p-1 text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
+            className="rounded-md p-1 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-black/5 dark:hover:bg-white/5 hover:text-[#0f1419] dark:hover:text-white cursor-pointer"
           >
             <X size={14} />
           </button>
@@ -212,12 +212,12 @@ export function CommunityComposer({
           {attachments.map((attachment, index) => (
             <div
               key={`${attachment.url}_${index}`}
-              className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5"
+              className="flex items-center gap-2 rounded-lg border border-[#cfd9de] dark:border-white/10 bg-[#f7f9f9] dark:bg-white/[0.04] px-2.5 py-1.5"
             >
-              <span className="max-w-[180px] truncate text-[11.5px] text-zinc-300">
+              <span className="max-w-[180px] truncate text-[11.5px] text-[#0f1419] dark:text-zinc-300">
                 {attachment.name}
               </span>
-              <span className="text-[10px] text-zinc-500">
+              <span className="text-[10px] text-[#536471] dark:text-zinc-500">
                 {formatBytes(attachment.sizeBytes)}
               </span>
               <button
@@ -226,7 +226,7 @@ export function CommunityComposer({
                 onClick={() =>
                   setAttachments((prev) => prev.filter((_, i) => i !== index))
                 }
-                className="rounded p-0.5 text-zinc-500 hover:text-rose-400"
+                className="rounded p-0.5 text-[#536471] dark:text-zinc-500 hover:text-rose-500 cursor-pointer"
               >
                 <X size={12} />
               </button>
@@ -236,17 +236,17 @@ export function CommunityComposer({
           {uploading.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5"
+              className="flex items-center gap-2 rounded-lg border border-[#cfd9de] dark:border-white/10 bg-[#f7f9f9] dark:bg-white/[0.04] px-2.5 py-1.5"
             >
               {item.error ? (
-                <AlertCircle size={13} className="text-rose-400" />
+                <AlertCircle size={13} className="text-rose-500 dark:text-rose-400" />
               ) : (
-                <Loader2 size={13} className="animate-spin text-teal-400" />
+                <Loader2 size={13} className="animate-spin text-[#0d9488] dark:text-[#2dd4bf]" />
               )}
-              <span className="max-w-[160px] truncate text-[11.5px] text-zinc-300">
+              <span className="max-w-[160px] truncate text-[11.5px] text-[#0f1419] dark:text-zinc-300">
                 {item.name}
               </span>
-              <span className="text-[10px] text-zinc-500">
+              <span className="text-[10px] text-[#536471] dark:text-zinc-500">
                 {item.error ? "xato" : `${item.progress}%`}
               </span>
               {item.error && (
@@ -256,7 +256,7 @@ export function CommunityComposer({
                   onClick={() =>
                     setUploading((prev) => prev.filter((entry) => entry.id !== item.id))
                   }
-                  className="rounded p-0.5 text-zinc-500 hover:text-white"
+                  className="rounded p-0.5 text-[#536471] dark:text-zinc-500 hover:text-[#0f1419] dark:hover:text-white cursor-pointer"
                 >
                   <X size={12} />
                 </button>
@@ -266,33 +266,15 @@ export function CommunityComposer({
         </div>
       )}
 
-      <div className="relative flex items-end gap-1.5 rounded-2xl border border-white/[0.08] bg-[#12161f] px-2 py-1.5 focus-within:border-teal-500/40">
+      <div className="relative flex items-end gap-1.5 rounded-2xl border border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-[#0f141b] px-2.5 py-2 focus-within:border-[#0d9488] dark:focus-within:border-[#2dd4bf]/45 transition-colors">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           aria-label="Fayl biriktirish"
           title="Fayl biriktirish"
-          className="mb-1 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/5 hover:text-teal-300"
+          className="mb-1 rounded-lg p-1.5 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-[#0d9488] dark:hover:text-[#2dd4bf] cursor-pointer"
         >
-          <Paperclip size={17} />
-        </button>
-        <button
-          type="button"
-          onClick={() => imageInputRef.current?.click()}
-          aria-label="Rasm yuklash"
-          title="Rasm"
-          className="mb-1 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/5 hover:text-teal-300"
-        >
-          <ImagePlus size={17} />
-        </button>
-        <button
-          type="button"
-          onClick={() => videoInputRef.current?.click()}
-          aria-label="Video yuklash"
-          title="Video"
-          className="mb-1 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/5 hover:text-teal-300"
-        >
-          <Video size={17} />
+          <Paperclip size={18} />
         </button>
 
         <textarea
@@ -315,7 +297,7 @@ export function CommunityComposer({
           }}
           placeholder="Guruhga xabar yozing..."
           aria-label="Xabar matni"
-          className="max-h-[140px] min-h-[34px] flex-1 resize-none bg-transparent px-1 py-2 text-[13px] leading-relaxed text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
+          className="max-h-[140px] min-h-[36px] flex-1 resize-none bg-transparent px-1.5 py-2 text-[13.5px] leading-relaxed text-[#0f1419] dark:text-zinc-100 placeholder:text-[#8b98a5] dark:placeholder:text-zinc-500 focus:outline-none"
         />
 
         <div className="relative mb-1">
@@ -324,12 +306,12 @@ export function CommunityComposer({
             onClick={() => setShowEmoji((prev) => !prev)}
             aria-label="Emoji tanlash"
             title="Emoji"
-            className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-white/5 hover:text-teal-300"
+            className="rounded-lg p-1.5 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-[#0d9488] dark:hover:text-[#2dd4bf] cursor-pointer"
           >
-            <Smile size={17} />
+            <Smile size={18} />
           </button>
           {showEmoji && (
-            <div className="absolute bottom-10 right-0 z-30 grid w-64 grid-cols-7 gap-1 rounded-2xl border border-white/10 bg-[#12161f] p-2 shadow-2xl">
+            <div className="absolute bottom-11 right-0 z-30 grid w-64 grid-cols-7 gap-1 rounded-2xl border border-[#cfd9de] dark:border-white/10 bg-white dark:bg-[#12171f] p-2 shadow-2xl">
               {COMMUNITY_EMOJI_PICKER.map((emoji) => (
                 <button
                   key={emoji}
@@ -338,7 +320,7 @@ export function CommunityComposer({
                     setContent((prev) => `${prev}${emoji}`);
                     textareaRef.current?.focus();
                   }}
-                  className="rounded-lg p-1.5 text-lg transition-colors hover:bg-white/10"
+                  className="rounded-lg p-1.5 text-lg transition-colors hover:bg-[#eff3f4] dark:hover:bg-white/10 cursor-pointer"
                 >
                   {emoji}
                 </button>
@@ -349,10 +331,30 @@ export function CommunityComposer({
 
         <button
           type="button"
+          onClick={() => imageInputRef.current?.click()}
+          aria-label="Rasm yuklash"
+          title="Rasm"
+          className="mb-1 rounded-lg p-1.5 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-[#0d9488] dark:hover:text-[#2dd4bf] cursor-pointer"
+        >
+          <ImagePlus size={18} />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => videoInputRef.current?.click()}
+          aria-label="Video yuklash"
+          title="Video"
+          className="mb-1 rounded-lg p-1.5 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-[#0d9488] dark:hover:text-[#2dd4bf] cursor-pointer"
+        >
+          <Video size={18} />
+        </button>
+
+        <button
+          type="button"
           onClick={submit}
           disabled={!canSend || disabled}
           aria-label="Xabarni yuborish"
-          className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-400 text-slate-950 transition-colors hover:bg-teal-300 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+          className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0d9488] dark:bg-[#2dd4bf] text-white dark:text-[#0a0d14] transition-all hover:bg-[#0f766e] dark:hover:bg-[#14b8a6] active:scale-95 disabled:cursor-not-allowed disabled:bg-[#eff3f4] dark:disabled:bg-zinc-800 disabled:text-[#8b98a5] dark:disabled:text-zinc-500 cursor-pointer"
         >
           {isSending ? (
             <Loader2 size={16} className="animate-spin" />
