@@ -25,7 +25,7 @@ class AppAvatar extends StatelessWidget {
 
   // Dark enough for the white initials on top (all stops ≥ 4.5:1).
   static const List<List<Color>> _fallbackGradients = [
-    [Color(0xFF1577B8), Color(0xFF0F5C8F)],
+    [Color(0xFF0D9488), Color(0xFF115E59)],
     [Color(0xFF6346D9), Color(0xFF4E37B3)],
     [Color(0xFF008257), Color(0xFF006444)],
     [Color(0xFF3E4144), Color(0xFF0F1419)],

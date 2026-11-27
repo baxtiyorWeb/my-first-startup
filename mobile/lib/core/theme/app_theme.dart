@@ -34,13 +34,15 @@ abstract class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       splashFactory: InkRipple.splashFactory,
+      splashColor: AppColors.primary.withAlpha(48),
+      highlightColor: AppColors.primarySurface,
       pageTransitionsTheme: _transitionsTheme,
       colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
-        onPrimary: AppColors.onPrimary,
+        primary: AppColors.primaryActive,
+        onPrimary: Colors.white,
         primaryContainer: AppColors.primarySurface,
-        onPrimaryContainer: AppColors.primaryDark,
-        secondary: AppColors.slateAccent,
+        onPrimaryContainer: AppColors.primaryActive,
+        secondary: AppColors.primaryActive,
         onSecondary: Colors.white,
         surface: AppColors.surfaceLight,
         onSurface: AppColors.textPrimaryLight,
@@ -109,32 +111,78 @@ abstract class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           return states.contains(WidgetState.selected)
-              ? AppColors.primary
+              ? AppColors.primaryActive
               : AppColors.surfaceLightSubtle;
         }),
         trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceLightElevated,
-        selectedColor: AppColors.slateAccent,
+        selectedColor: AppColors.primaryActive,
+        labelStyle: const TextStyle(color: AppColors.textPrimaryLight),
+        secondaryLabelStyle: const TextStyle(color: Colors.white),
         side: const BorderSide(color: AppColors.borderLight),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusFull),
         ),
       ),
       textSelectionTheme: TextSelectionThemeData(
-        cursorColor: AppColors.primary,
-        selectionColor: AppColors.primary.withAlpha(56),
-        selectionHandleColor: AppColors.primary,
+        cursorColor: AppColors.primaryActive,
+        selectionColor: AppColors.primary.withAlpha(64),
+        selectionHandleColor: AppColors.primaryActive,
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.primary,
+        color: AppColors.primaryActive,
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.primaryActive,
+          overlayColor: AppColors.primarySurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
+          ),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryActive,
+          foregroundColor: Colors.white,
+          overlayColor: AppColors.primaryHover,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusFull),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primaryActive,
+          overlayColor: AppColors.primarySurface,
+          side: const BorderSide(color: AppColors.borderLight),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusFull),
+          ),
+        ),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return AppColors.primaryActive;
+            }
+            if (states.contains(WidgetState.pressed)) {
+              return AppColors.primarySurface;
+            }
+            return AppColors.surfaceLightElevated;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return Colors.white;
+            }
+            return AppColors.textPrimaryLight;
+          }),
+          side: const WidgetStatePropertyAll(
+            BorderSide(color: AppColors.borderLight),
           ),
         ),
       ),

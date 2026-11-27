@@ -70,6 +70,10 @@ class LiquidGlassContainer extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         customBorder: shape,
+        splashColor: AppColors.primary.withAlpha(56),
+        highlightColor: tintColor != null
+            ? AppColors.primaryHover.withAlpha(64)
+            : (isDark ? AppColors.primarySurfaceDark : AppColors.primarySurface),
         child: Padding(
           padding: padding ?? EdgeInsets.zero,
           child: child,

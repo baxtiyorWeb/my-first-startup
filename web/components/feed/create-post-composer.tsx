@@ -302,7 +302,7 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
                 handleSubmit();
               }
             }}
-            className="inline-flex items-center justify-center gap-1.5 bg-[#1d9bf0] hover:bg-[#1a8cd8] disabled:opacity-50 text-white font-semibold text-[13px] h-[36px] px-4 rounded-[11px] transition-all cursor-pointer shadow-xs active:scale-98"
+            className="inline-flex items-center justify-center gap-1.5 bg-[#2dd4bf] hover:bg-[#14b8a6] disabled:opacity-50 text-white font-semibold text-[13px] h-[36px] px-4 rounded-[11px] transition-all cursor-pointer shadow-xs active:scale-98"
           >
             {isSubmitting ? (
               <Loader2 size={14} className="animate-spin" />

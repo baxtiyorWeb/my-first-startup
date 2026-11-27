@@ -317,8 +317,8 @@ class _DrawerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeBg =
-        isDark ? AppColors.primarySurfaceDark : AppColors.surfaceLightElevated;
-    final activeColor = isDark ? AppColors.primaryLight : AppColors.slateAccent;
+        isDark ? AppColors.primarySurfaceDark : AppColors.primarySurface;
+    final activeColor = isDark ? AppColors.primaryLight : AppColors.primaryActive;
     final defaultColor =
         isDark ? AppColors.textSecondaryDark : AppColors.textPrimaryLight;
 
@@ -346,13 +346,13 @@ class _DrawerTile extends StatelessWidget {
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: isDark ? AppColors.primary : AppColors.primaryActive,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   '$badgeCount',
-                  style: const TextStyle(
-                    color: AppColors.onPrimary,
+                  style: TextStyle(
+                    color: isDark ? AppColors.onPrimary : Colors.white,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w700,
                   ),

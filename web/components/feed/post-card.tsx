@@ -356,7 +356,7 @@ export function PostCard({
         aria-label={`${post.author.name} posti`}
         className={`relative w-full rounded-2xl border transition-all duration-200 p-4 sm:p-5 mb-4 ${
           highlightActive
-            ? "animate-highlight-pulse bg-[#f7f9f9] dark:bg-[#16181c] border-[#1d9bf0]/50"
+            ? "animate-highlight-pulse bg-[#f7f9f9] dark:bg-[#16181c] border-[#2dd4bf]/50"
             : "bg-white dark:bg-[#000000] border-[#cfd9de] dark:border-[#2f3336] hover:border-[#8b98a5] dark:hover:border-[#3e4144]"
         }`}
       >
@@ -559,7 +559,7 @@ export function PostCard({
                       e.stopPropagation();
                       setIsContentExpanded((prev) => !prev);
                     }}
-                    className="mt-1 text-xs font-semibold text-blue-600 dark:text-[#1d9bf0] hover:underline cursor-pointer inline-flex items-center gap-0.5"
+                    className="mt-1 text-xs font-semibold text-blue-600 dark:text-[#2dd4bf] hover:underline cursor-pointer inline-flex items-center gap-0.5"
                   >
                     {isContentExpanded ? "Yashirish" : "Ko'proq o'qish"}
                   </button>
@@ -589,7 +589,7 @@ export function PostCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#16181c] text-blue-600 dark:text-[#1d9bf0] border border-slate-200/90 dark:border-[#2f3336] hover:border-slate-300 dark:hover:border-[#3e4144] transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-[#16181c] text-blue-600 dark:text-[#2dd4bf] border border-slate-200/90 dark:border-[#2f3336] hover:border-slate-300 dark:hover:border-[#3e4144] transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span>
@@ -719,7 +719,7 @@ export function PostCard({
             aria-label={isSaved ? t("post.saved") : t("post.save")}
             className={`flex items-center gap-1.5 text-[12px] font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded px-2 py-1 ${
               isSaved
-                ? "text-blue-600 dark:text-[#1d9bf0] font-semibold"
+                ? "text-blue-600 dark:text-[#2dd4bf] font-semibold"
                 : "text-slate-500 dark:text-[#e7e9ea] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#16181c]"
             }`}
           >

@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   UserMinus,
   CreditCard,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
 import { useI18n } from "@/lib/i18n/context";
@@ -77,6 +78,16 @@ export function AdminSidebar({
       title: locale === "uz" ? "To'lovlar" : locale === "ru" ? "Платежи" : "Payments",
       href: "/dashboard/admin/payments",
       icon: CreditCard,
+    },
+    {
+      title:
+        locale === "uz"
+          ? "Guruh moderatsiyasi"
+          : locale === "ru"
+          ? "Модерация чата"
+          : "Community Chat",
+      href: "/dashboard/admin/community",
+      icon: MessageSquare,
     },
     {
       title: locale === "uz" ? "AI Bot Dvigateli" : locale === "ru" ? "AI Bot Движок" : "AI Bot Engine",

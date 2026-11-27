@@ -145,7 +145,7 @@ export default function AdminReportsPage() {
                 onClick={() => setFilterType(tab.id)}
                 className={`h-9 px-3.5 rounded-[11px] text-xs font-semibold cursor-pointer transition-colors whitespace-nowrap ${
                   filterType === tab.id
-                    ? "bg-[#1d9bf0] text-white"
+                    ? "bg-[#2dd4bf] text-white"
                     : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-[#8b98a5] hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
@@ -203,7 +203,7 @@ export default function AdminReportsPage() {
                     </span>
 
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-[#8b98a5] text-[11px] font-semibold border border-slate-200/60 dark:border-[#2f3336]">
-                      {report.targetType === "post" && <FileText className="w-3 h-3 text-[#1d9bf0]" />}
+                      {report.targetType === "post" && <FileText className="w-3 h-3 text-[#2dd4bf]" />}
                       {report.targetType === "comment" && <MessageSquare className="w-3 h-3 text-emerald-500" />}
                       {report.targetType === "user" && <UserIcon className="w-3 h-3 text-amber-500" />}
                       <span className="capitalize">{report.targetType}</span>

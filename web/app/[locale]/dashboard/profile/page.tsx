@@ -317,7 +317,7 @@ function ProfileContent() {
             onClick={() => setActiveTab("posts")}
             className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === "posts"
-                ? "border-[#1d9bf0] text-[#1d9bf0] font-bold"
+                ? "border-[#2dd4bf] text-[#2dd4bf] font-bold"
                 : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-[#e7e9ea]"
             }`}
           >
@@ -330,7 +330,7 @@ function ProfileContent() {
             onClick={() => setActiveTab("discussions")}
             className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === "discussions"
-                ? "border-[#1d9bf0] text-[#1d9bf0] font-bold"
+                ? "border-[#2dd4bf] text-[#2dd4bf] font-bold"
                 : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-[#e7e9ea]"
             }`}
           >

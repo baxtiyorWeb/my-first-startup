@@ -168,7 +168,7 @@ export default function ExplorePage() {
         {/* Header Hero Banner */}
         <div className="p-5 sm:p-6 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] shadow-xs space-y-4">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-[#1d9bf0]">
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-[#2dd4bf]">
               <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span>{t("explore.badge") || "Kashf qilish & Hamjamiyat"}</span>
             </div>
@@ -190,7 +190,7 @@ export default function ExplorePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Mualliflar, loyihalar yoki tahlillardan qidirish..."
-                className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] focus:border-transparent transition-all"
+                className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2dd4bf] focus:border-transparent transition-all"
               />
               {searchQuery && (
                 <button
@@ -210,7 +210,7 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory("all")}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   activeCategory === "all"
-                    ? "bg-[#1d9bf0] text-white shadow-xs"
+                    ? "bg-[#2dd4bf] text-white shadow-xs"
                     : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200/70 dark:hover:bg-[#202327]"
                 }`}
               >
@@ -221,7 +221,7 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory("project")}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeCategory === "project"
-                    ? "bg-[#1d9bf0] text-white shadow-xs"
+                    ? "bg-[#2dd4bf] text-white shadow-xs"
                     : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200/70 dark:hover:bg-[#202327]"
                 }`}
               >
@@ -233,7 +233,7 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory("cofounder")}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeCategory === "cofounder"
-                    ? "bg-[#1d9bf0] text-white shadow-xs"
+                    ? "bg-[#2dd4bf] text-white shadow-xs"
                     : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200/70 dark:hover:bg-[#202327]"
                 }`}
               >
@@ -245,7 +245,7 @@ export default function ExplorePage() {
                 onClick={() => setActiveCategory("discussions")}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeCategory === "discussions"
-                    ? "bg-[#1d9bf0] text-white shadow-xs"
+                    ? "bg-[#2dd4bf] text-white shadow-xs"
                     : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200/70 dark:hover:bg-[#202327]"
                 }`}
               >
@@ -260,7 +260,7 @@ export default function ExplorePage() {
         <div className="space-y-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-600 dark:text-[#1d9bf0]" />
+              <Users className="w-4 h-4 text-blue-600 dark:text-[#2dd4bf]" />
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 {t("explore.activeAuthors") || "Faol mualliflar & ekspertlar"}
               </h2>
@@ -298,7 +298,7 @@ export default function ExplorePage() {
                     href={localePath(
                       `/dashboard/profile?handle=${encodeURIComponent(author.handle.replace(/^@/, ""))}`
                     )}
-                    className="p-4 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] hover:border-[#1d9bf0]/50 dark:hover:border-[#1d9bf0]/40 shadow-xs transition-all flex flex-col justify-between gap-3 group cursor-pointer"
+                    className="p-4 rounded-[16px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] hover:border-[#2dd4bf]/50 dark:hover:border-[#2dd4bf]/40 shadow-xs transition-all flex flex-col justify-between gap-3 group cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
@@ -309,12 +309,12 @@ export default function ExplorePage() {
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-[#1d9bf0] transition-colors">
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-[#2dd4bf] transition-colors">
                               {author.name}
                             </span>
                             {author.verified && (
                               <span
-                                className="size-3.5 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center shrink-0"
+                                className="size-3.5 rounded-full bg-[#2dd4bf] text-white flex items-center justify-center shrink-0"
                                 title="Tasdiqlangan mutaxassis"
                               >
                                 <Check size={8} strokeWidth={3} />
@@ -330,7 +330,7 @@ export default function ExplorePage() {
                         </div>
                       </div>
 
-                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-[#1d9bf0] shrink-0 transition-transform group-hover:translate-x-0.5 mt-1" />
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-[#2dd4bf] shrink-0 transition-transform group-hover:translate-x-0.5 mt-1" />
                     </div>
 
                     <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#202327]">
@@ -358,12 +358,12 @@ export default function ExplorePage() {
                           className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
                             isFollowing
                               ? "bg-slate-100 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"
-                              : "bg-[#1d9bf0] hover:bg-blue-600 text-white shadow-2xs"
+                              : "bg-[#2dd4bf] hover:bg-blue-600 text-white shadow-2xs"
                           }`}
                         >
                           {isFollowing ? (
                             <>
-                              <UserCheck className="w-3 h-3 text-[#1d9bf0]" />
+                              <UserCheck className="w-3 h-3 text-[#2dd4bf]" />
                               <span>Kuzatilmoqda</span>
                             </>
                           ) : (
@@ -386,7 +386,7 @@ export default function ExplorePage() {
         <div className="space-y-3.5 pt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-blue-600 dark:text-[#1d9bf0]" />
+              <MessageSquare className="w-4 h-4 text-blue-600 dark:text-[#2dd4bf]" />
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 {t("explore.featuredPerspectives") || "E’tiborga molik tahlillar & munozaralar"}
               </h2>
@@ -436,7 +436,7 @@ export default function ExplorePage() {
                           </span>
                           {item.author.verified && (
                             <span
-                              className="size-3 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center shrink-0"
+                              className="size-3 rounded-full bg-[#2dd4bf] text-white flex items-center justify-center shrink-0"
                               title="Tasdiqlangan"
                             >
                               <Check size={7} strokeWidth={3} />
@@ -467,7 +467,7 @@ export default function ExplorePage() {
                     {item.title && (
                       <Link
                         href={localePath(`/dashboard/posts/${item.id}`)}
-                        className="block font-bold text-base text-slate-950 dark:text-white hover:text-blue-600 dark:hover:text-[#1d9bf0] transition-colors leading-snug"
+                        className="block font-bold text-base text-slate-950 dark:text-white hover:text-blue-600 dark:hover:text-[#2dd4bf] transition-colors leading-snug"
                       >
                         {item.title}
                       </Link>
@@ -543,7 +543,7 @@ export default function ExplorePage() {
 
                     <Link
                       href={localePath(`/dashboard/posts/${item.id}`)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-[#1d9bf0] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-[#2dd4bf] hover:underline"
                     >
                       <span>Munozaraga o‘tish</span>
                       <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />

@@ -148,7 +148,7 @@ export function NotificationBell({ triggerClassName }: NotificationBellProps = {
       >
         <BellIcon size={18} className="text-current stroke-current" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#1d9bf0] text-[#0f1419] text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000]">
+          <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#2dd4bf] text-[#0f1419] text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000]">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -162,7 +162,7 @@ export function NotificationBell({ triggerClassName }: NotificationBellProps = {
                 Bildirishnomalar
               </h3>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-[#0e2c3f] text-blue-600 dark:text-[#1d9bf0] border border-blue-200/50 dark:border-[#1b4a63]">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-[#0c272c] text-blue-600 dark:text-[#2dd4bf] border border-blue-200/50 dark:border-[#134e4a]">
                   {unreadCount} ta yangi
                 </span>
               )}
@@ -172,7 +172,7 @@ export function NotificationBell({ triggerClassName }: NotificationBellProps = {
               <button
                 type="button"
                 onClick={handleMarkAllAsRead}
-                className="text-xs font-semibold text-blue-600 dark:text-[#1d9bf0] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-blue-600 dark:text-[#2dd4bf] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>O‘qilgan deb belgilash</span>

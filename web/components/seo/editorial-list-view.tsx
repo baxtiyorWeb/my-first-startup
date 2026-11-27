@@ -138,7 +138,7 @@ export function EditorialListView({
         <section className="rounded-[20px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-6 sm:p-8 shadow-xs space-y-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#1d9bf0]">
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2dd4bf]">
                 <copy.Icon className="w-4 h-4" />
                 <span>{copy.badge}</span>
               </div>
@@ -152,7 +152,7 @@ export function EditorialListView({
 
             <Link
               href={`/${locale}/dashboard/create`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold shadow-xs shrink-0 self-start transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2dd4bf] hover:bg-blue-600 text-white text-xs font-bold shadow-xs shrink-0 self-start transition-colors"
             >
               <PenTool className="w-3.5 h-3.5" />
               <span>Yangi qo‘shish</span>
@@ -168,7 +168,7 @@ export function EditorialListView({
                 name="q"
                 defaultValue={activeSearch}
                 placeholder="Kalit so'z yoki mavzu bo'yicha qidirish..."
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2dd4bf]"
               />
               {activeCategory !== "all" && (
                 <input type="hidden" name="category" value={activeCategory} />
@@ -180,8 +180,8 @@ export function EditorialListView({
                 href={buildFilterUrl("all", 1)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
                   activeCategory === "all" && !activeTag
-                    ? "bg-[#1d9bf0] text-white"
-                    : "bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] text-slate-600 dark:text-slate-300 hover:border-[#1d9bf0]/40"
+                    ? "bg-[#2dd4bf] text-white"
+                    : "bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] text-slate-600 dark:text-slate-300 hover:border-[#2dd4bf]/40"
                 }`}
               >
                 Barchasi ({total})
@@ -192,8 +192,8 @@ export function EditorialListView({
                   href={buildFilterUrl(cat.slug, 1)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
                     activeCategory === cat.slug
-                      ? "bg-[#1d9bf0] text-white"
-                      : "bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] text-slate-600 dark:text-slate-300 hover:border-[#1d9bf0]/40"
+                      ? "bg-[#2dd4bf] text-white"
+                      : "bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] text-slate-600 dark:text-slate-300 hover:border-[#2dd4bf]/40"
                   }`}
                 >
                   {cat.label} ({cat.count})
@@ -204,10 +204,10 @@ export function EditorialListView({
             {activeTag && (
               <div className="flex items-center gap-2 text-xs text-slate-500">
                 <span>Tanlangan teg:</span>
-                <span className="px-2.5 py-0.5 rounded-md bg-[#1d9bf0]/10 text-[#1d9bf0] font-bold">
+                <span className="px-2.5 py-0.5 rounded-md bg-[#2dd4bf]/10 text-[#2dd4bf] font-bold">
                   #{activeTag}
                 </span>
-                <Link href={`/${locale}/${seg}`} className="underline hover:text-[#1d9bf0]">
+                <Link href={`/${locale}/${seg}`} className="underline hover:text-[#2dd4bf]">
                   Tozalash
                 </Link>
               </div>
@@ -218,7 +218,7 @@ export function EditorialListView({
         {/* Grid Results */}
         {items.length === 0 ? (
           <div className="rounded-[20px] bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] p-12 text-center space-y-3">
-            <copy.Icon className="w-10 h-10 text-[#1d9bf0]/60 mx-auto" />
+            <copy.Icon className="w-10 h-10 text-[#2dd4bf]/60 mx-auto" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               Hozircha bu bo‘limda nashr qilingan kontent topilmadi
             </h2>
@@ -228,7 +228,7 @@ export function EditorialListView({
             <div className="pt-2">
               <Link
                 href={kind === "video" ? `/${locale}/dashboard/create` : `/${locale}/dashboard/create?kind=${kind}`}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2dd4bf] hover:bg-blue-600 text-white text-xs font-bold transition-colors"
               >
                 <PenTool className="w-3.5 h-3.5" />
                 <span>Birinchi materialni joylash</span>
@@ -252,7 +252,7 @@ export function EditorialListView({
             {page > 1 && (
               <Link
                 href={buildFilterUrl(activeCategory, page - 1)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] text-xs font-semibold hover:border-[#1d9bf0]"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] text-xs font-semibold hover:border-[#2dd4bf]"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 Oldingi
@@ -264,7 +264,7 @@ export function EditorialListView({
             {page < totalPages && (
               <Link
                 href={buildFilterUrl(activeCategory, page + 1)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] text-xs font-semibold hover:border-[#1d9bf0]"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] text-xs font-semibold hover:border-[#2dd4bf]"
               >
                 Keyingi
                 <ChevronRight className="w-3.5 h-3.5" />

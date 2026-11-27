@@ -243,12 +243,12 @@ export default async function LocaleHomePage({
         <main className="flex-1">
           {/* Hero Section */}
           <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 border-b border-slate-200/80 dark:border-[#2f3336]">
-            <div className="absolute inset-0 bg-gradient-to-b from-[#1d9bf0]/8 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#2dd4bf]/8 via-transparent to-transparent pointer-events-none" />
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
               <div className="text-center max-w-3xl mx-auto space-y-6">
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-950 dark:text-white leading-[1.15]">
                   {heroTexts.titleStart}{" "}
-                  <span className="bg-gradient-to-r from-blue-600 to-[#1d9bf0] dark:from-[#1d9bf0] dark:to-[#8ecdf8] bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-blue-600 to-[#2dd4bf] dark:from-[#2dd4bf] dark:to-[#5eead4] bg-clip-text text-transparent">
                     {heroTexts.titleHighlight}
                   </span>{" "}
                   {heroTexts.titleEnd}
@@ -261,7 +261,7 @@ export default async function LocaleHomePage({
                 <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                   <Link
                     href={`/${locale}/articles`}
-                    className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white shadow-md shadow-[#1d9bf0]/20 transition-all hover:scale-[1.02]"
+                    className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold rounded-xl bg-[#2dd4bf] hover:bg-blue-600 text-white shadow-md shadow-[#2dd4bf]/20 transition-all hover:scale-[1.02]"
                   >
                     <BookOpen className="h-4 w-4" />
                     <span>{heroTexts.exploreArticles}</span>
@@ -287,7 +287,7 @@ export default async function LocaleHomePage({
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
                   <div className="flex items-end justify-between gap-4">
                     <div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#1d9bf0]">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#2dd4bf]">
                         Maqolalar
                       </span>
                       <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white mt-1">
@@ -296,7 +296,7 @@ export default async function LocaleHomePage({
                     </div>
                     <Link
                       href={`/${locale}/articles`}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[#1d9bf0] hover:underline shrink-0"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#2dd4bf] hover:underline shrink-0"
                     >
                       <span>Barcha maqolalar</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -520,7 +520,7 @@ export default async function LocaleHomePage({
                         className="flex items-center justify-between p-4 rounded-xl border border-slate-200/90 dark:border-white/10 bg-white dark:bg-zinc-900/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 shadow-2xs hover:shadow-sm transition-all"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1d9bf0]/10 text-[#1d9bf0]">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2dd4bf]/10 text-[#2dd4bf]">
                             <Code2 className="h-5 w-5" />
                           </div>
                           <div>
@@ -578,14 +578,14 @@ export default async function LocaleHomePage({
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                   <Link
                     href={`/${locale}/dashboard/create`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-bold rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white shadow-md transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-bold rounded-xl bg-[#2dd4bf] hover:bg-blue-600 text-white shadow-md transition-all"
                   >
                     <span>{heroTexts.ctaBtn}</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
                     href={`/${locale}/hub`}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-[#2f3336] bg-white dark:bg-[#16181c] text-slate-900 dark:text-white hover:border-[#1d9bf0]/50 transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-[#2f3336] bg-white dark:bg-[#16181c] text-slate-900 dark:text-white hover:border-[#2dd4bf]/50 transition-all"
                   >
                     <span>Bilimlar Bazasi</span>
                   </Link>

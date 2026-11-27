@@ -90,15 +90,15 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               {dictionary.slogan}
             </p>
             <div className="flex items-center gap-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-              <a href="/rss.xml" className="hover:text-[#1d9bf0] transition-colors">
+              <a href="/rss.xml" className="hover:text-[#2dd4bf] transition-colors">
                 RSS Feed
               </a>
               <span>•</span>
-              <a href="/sitemap.xml" className="hover:text-[#1d9bf0] transition-colors">
+              <a href="/sitemap.xml" className="hover:text-[#2dd4bf] transition-colors">
                 Sitemap
               </a>
               <span>•</span>
-              <a href="/news-sitemap.xml" className="hover:text-[#1d9bf0] transition-colors">
+              <a href="/news-sitemap.xml" className="hover:text-[#2dd4bf] transition-colors">
                 News XML
               </a>
             </div>
@@ -113,7 +113,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/articles`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.articles}
                 </Link>
@@ -121,7 +121,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/news`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.news}
                 </Link>
@@ -138,7 +138,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/hub`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.technologies}
                 </Link>
@@ -146,7 +146,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/glossary`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.glossary}
                 </Link>
@@ -154,7 +154,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/cheatsheets`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.cheatsheets}
                 </Link>
@@ -162,7 +162,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/interview-prep`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.interviews}
                 </Link>
@@ -179,7 +179,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/privacy`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.privacy}
                 </Link>
@@ -187,7 +187,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/terms`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.terms}
                 </Link>
@@ -195,7 +195,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/guidelines`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.guidelines}
                 </Link>
@@ -203,7 +203,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/child-safety`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.childSafety}
                 </Link>
@@ -211,7 +211,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/account/delete`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.deleteAccount}
                 </Link>
@@ -219,7 +219,7 @@ export function PublicFooter({ locale }: { locale: Locale }) {
               <li>
                 <Link
                   href={`/${locale}/help`}
-                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#2dd4bf] transition-colors"
                 >
                   {dictionary.help}
                 </Link>

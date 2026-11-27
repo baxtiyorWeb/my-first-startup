@@ -265,7 +265,7 @@ export default function PricingPage() {
                 key={plan.id}
                 className={`flex flex-col rounded-2xl p-6 border transition-colors ${
                   isPro
-                    ? "bg-[#f7f9f9] dark:bg-[#16181c] border-[#1d9bf0] text-[#0f1419] dark:text-[#e7e9ea]"
+                    ? "bg-[#f7f9f9] dark:bg-[#16181c] border-[#2dd4bf] text-[#0f1419] dark:text-[#e7e9ea]"
                     : "bg-white dark:bg-[#000000] border-[#cfd9de] dark:border-[#2f3336] text-[#0f1419] dark:text-[#e7e9ea]"
                 }`}
               >
@@ -305,7 +305,7 @@ export default function PricingPage() {
                   onClick={() => handleSelectPlan(plan)}
                   className={`mt-6 w-full rounded-full py-2.5 text-xs font-bold transition-all active:scale-[0.98] disabled:opacity-45 cursor-pointer ${
                     isPro
-                      ? "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-[#0f1419]"
+                      ? "bg-[#2dd4bf] hover:bg-[#14b8a6] text-[#0f1419]"
                       : "bg-[#0f1419] hover:bg-[#272c30] text-white dark:bg-[#e7e9ea] dark:text-[#0f1419]"
                   }`}
                 >

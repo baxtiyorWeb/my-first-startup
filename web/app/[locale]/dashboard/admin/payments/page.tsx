@@ -312,7 +312,7 @@ export default function AdminPaymentsPage() {
                 onClick={() => setFilter(tab.id)}
                 className={`h-9 rounded-[11px] px-3.5 text-xs font-semibold transition-colors ${
                   filter === tab.id
-                    ? "bg-[#1d9bf0] text-white"
+                    ? "bg-[#2dd4bf] text-white"
                     : "bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-[#16181c] dark:text-[#8b98a5] dark:hover:text-white"
                 }`}
               >

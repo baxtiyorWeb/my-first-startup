@@ -36,11 +36,14 @@ function ShellLayoutInner({
   const { activeConversationId } = useMessages();
 
   const isMessagesPage = pathname.includes("/dashboard/messages");
+  const isCommunityPage = pathname.includes("/dashboard/community");
+  const isFullHeightPage = isMessagesPage || isCommunityPage;
   const isAdminPage = pathname.includes("/dashboard/admin");
 
   const isAuthRequired =
     pathname.endsWith("/dashboard/create") ||
     pathname.endsWith("/dashboard/settings") ||
+    isCommunityPage ||
     isAdminPage;
 
   useEffect(() => {
@@ -74,7 +77,7 @@ function ShellLayoutInner({
   return (
     <div
       className={`min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased ${
-        isMessagesPage ? "h-[100dvh] overflow-hidden" : ""
+        isFullHeightPage ? "h-[100dvh] overflow-hidden" : ""
       }`}
     >
       {/* Desktop Fixed Navigation */}
@@ -83,8 +86,8 @@ function ShellLayoutInner({
       {/* Main App Container: dynamically adjusts margin to match sidebar width smoothly */}
       <div
         className={`flex-1 flex flex-col min-w-0 transition-[margin-left] duration-250 ease-out ${
-          isMessagesPage
-            ? activeConversationId
+          isFullHeightPage
+            ? isMessagesPage && activeConversationId
               ? "pb-0 h-[100dvh] overflow-hidden"
               : "pb-[58px] md:pb-0 h-[100dvh] overflow-hidden"
             : "pb-[58px] md:pb-0"
@@ -106,33 +109,33 @@ function ShellLayoutInner({
           }
         `}</style>
 
-        {/* Dynamic Top Header: expands & collapses in sync with sidebar */}
-        <Header title={headerTitle} subtitle={headerSubtitle} />
+        {/* Dynamic Top Header: the chat page brings its own compact header */}
+        {!isCommunityPage && <Header title={headerTitle} subtitle={headerSubtitle} />}
 
         {/* Main Content Area: comfortable reading width & identical symmetrical margins */}
         <main
           id="main-content"
           tabIndex={-1}
           className={`flex-1 w-full focus:outline-none ${
-            isMessagesPage
+            isFullHeightPage
               ? "p-0 min-h-0 overflow-hidden flex flex-col"
               : "px-4 sm:px-5 lg:pl-6 lg:pr-6 py-4 sm:py-5"
           }`}
         >
           <div
             className={`w-full ${
-              isMessagesPage
+              isFullHeightPage
                 ? "h-full flex-1 min-h-0"
                 : "transition-[max-width] duration-200 ease-out"
             }`}
-            style={isMessagesPage ? undefined : { maxWidth: `var(--content-max-width, ${CONTENT_MAX_WIDTH}px)` }}
+            style={isFullHeightPage ? undefined : { maxWidth: `var(--content-max-width, ${CONTENT_MAX_WIDTH}px)` }}
           >
             {children}
           </div>
         </main>
 
-        {/* Dynamic Footer: Hidden on messages page to prevent unwanted double scroll */}
-        {!isMessagesPage && <Footer />}
+        {/* Dynamic Footer: Hidden on full-height chat pages to prevent double scroll */}
+        {!isFullHeightPage && <Footer />}
       </div>
 
       {/* Mobile Bottom Navigation (Authenticated): Hidden when inside chat detail */}

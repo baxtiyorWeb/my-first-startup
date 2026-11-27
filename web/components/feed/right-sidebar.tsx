@@ -20,10 +20,10 @@ export function TrendingTopicsWidget() {
   const { localePath } = useI18n();
 
   const [trends, setTrends] = useState([
-    { rank: 1, tag: "AI", count: "12.4K post", rankColor: "text-[#1d9bf0]" },
-    { rank: 2, tag: "Nextjs", count: "8.9K post", rankColor: "text-[#8ecdf8]" },
+    { rank: 1, tag: "AI", count: "12.4K post", rankColor: "text-[#2dd4bf]" },
+    { rank: 2, tag: "Nextjs", count: "8.9K post", rankColor: "text-[#5eead4]" },
     { rank: 3, tag: "Dasturlash", count: "7.1K post", rankColor: "text-[#ffd400]" },
-    { rank: 4, tag: "EdTech", count: "5.6K post", rankColor: "text-[#1d9bf0]" },
+    { rank: 4, tag: "EdTech", count: "5.6K post", rankColor: "text-[#2dd4bf]" },
     { rank: 5, tag: "Startap", count: "4.2K post", rankColor: "text-[#00ba7c]" },
   ]);
 
@@ -68,7 +68,7 @@ export function TrendingTopicsWidget() {
               >
                 {item.rank}
               </span>
-              <span className="font-semibold text-[13.5px] text-slate-800 dark:text-[#e7e9ea] group-hover:text-blue-600 dark:group-hover:text-[#1d9bf0] transition-colors truncate">
+              <span className="font-semibold text-[13.5px] text-slate-800 dark:text-[#e7e9ea] group-hover:text-blue-600 dark:group-hover:text-[#2dd4bf] transition-colors truncate">
                 #{item.tag}
               </span>
             </div>
@@ -231,7 +231,7 @@ export function SuggestedAuthorsWidget() {
                   {author.verified && (
                     <span
                       title="Tasdiqlangan muallif"
-                      className="bg-[#1d9bf0] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
+                      className="bg-[#2dd4bf] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
                     >
                       <Check size={9} className="text-white stroke-[2.5]" />
                     </span>
@@ -251,7 +251,7 @@ export function SuggestedAuthorsWidget() {
               className={`h-[30px] px-3 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1 disabled:opacity-60 ${
                 author.isFollowing
                   ? "bg-slate-100 dark:bg-[#202327] text-slate-700 dark:text-[#cfd9de] hover:bg-slate-200 dark:hover:bg-[#2f3336]"
-                  : "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white shadow-xs"
+                  : "bg-[#2dd4bf] hover:bg-[#14b8a6] text-white shadow-xs"
               }`}
             >
               {author.isFollowing ? (
@@ -282,7 +282,7 @@ export function CreatorMonetizationWidget() {
     <div
       data-node-id="11:688"
       data-name="Bilimlar Bazasi"
-      className="rounded-[16px] p-4.5 text-white relative overflow-hidden shadow-md bg-gradient-to-br from-[#000000] via-[#16181c] to-[#202327] border border-[#1b4a63]"
+      className="rounded-[16px] p-4.5 text-white relative overflow-hidden shadow-md bg-gradient-to-br from-[#000000] via-[#16181c] to-[#202327] border border-[#134e4a]"
     >
       <div className="absolute -right-8 -bottom-8 size-32 rounded-full bg-blue-500/10 blur-2xl pointer-events-none" />
 
@@ -300,7 +300,7 @@ export function CreatorMonetizationWidget() {
       <div className="flex flex-wrap gap-2">
         <Link
           href={localePath("/hub")}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[9px] bg-[#1d9bf0] hover:bg-blue-600 text-white font-semibold text-[11.5px] transition-colors shadow-xs"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[9px] bg-[#2dd4bf] hover:bg-blue-600 text-white font-semibold text-[11.5px] transition-colors shadow-xs"
         >
           <span>Hub‘ga o‘tish</span>
           <ArrowRight size={12} />

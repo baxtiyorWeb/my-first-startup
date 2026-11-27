@@ -1,21 +1,22 @@
 /**
  * Geters Unified Design System Tokens (Web ↔ Mobile 1:1 parity).
  *
- * Reference palette: Geters dark canvas (#000000), #16181C elevated surface,
- * #2F3336 hairline borders, and #1D9BF0 primary brand accent.
+ * Reference palette: Geters Emerald-Teal (#2DD4BF / #14B8A6 / #0C272C)
+ * paired with pure black canvas (#000000), deep obsidian chrome (#0A0D14),
+ * elevated cards (#16181C), and hairline borders (#2F3336).
  * Mirrors `mobile/lib/core/theme/app_colors.dart`, `app_tokens.dart`,
  * and `app_typography.dart`.
  */
 
 export const GETERS_COLORS = {
   brand: {
-    primary: "#1D9BF0",
-    primaryHover: "#1A8CD8",
-    primaryActive: "#1577B8",
-    primaryLight: "#4DB5F0",
-    onPrimary: "#0F1419",
-    primarySurfaceLight: "#E8F5FD",
-    primarySurfaceDark: "#10394F",
+    primary: "#2DD4BF",
+    primaryHover: "#14B8A6",
+    primaryActive: "#0D9488",
+    primaryLight: "#5EEAD4",
+    onPrimary: "#0A0D14",
+    primarySurfaceLight: "#E6FAF7",
+    primarySurfaceDark: "#0C272C",
     secondaryLight: "#0F1419",
     secondaryDark: "#E7E9EA",
   },
@@ -33,6 +34,7 @@ export const GETERS_COLORS = {
   },
   dark: {
     background: "#000000",
+    sidebar: "#0A0D14",
     surface: "#000000",
     surfaceElevated: "#16181C",
     surfaceSubtle: "#202327",
@@ -48,12 +50,12 @@ export const GETERS_COLORS = {
     warning: "#FFD400",
     error: "#F4212E",
     errorSurface: "#C4170F",
-    info: "#1D9BF0",
+    info: "#2DD4BF",
     like: "#F91880",
-    verified: "#1A8CD8",
+    verified: "#14B8A6",
   },
   avatarGradients: [
-    ["#1577B8", "#0F5C8F"],
+    ["#0D9488", "#115E59"],
     ["#6346D9", "#4E37B3"],
     ["#008257", "#006444"],
     ["#3E4144", "#0F1419"],

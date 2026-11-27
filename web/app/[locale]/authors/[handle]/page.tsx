@@ -121,7 +121,7 @@ export default async function PublicAuthorPage({
                 </h1>
                 {author.verified && (
                   <span
-                    className="size-5 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center"
+                    className="size-5 rounded-full bg-[#2dd4bf] text-white flex items-center justify-center"
                     title="Tasdiqlangan muallif"
                   >
                     <Check size={11} strokeWidth={3} />
@@ -132,7 +132,7 @@ export default async function PublicAuthorPage({
                 </span>
               </div>
 
-              <p className="text-sm font-semibold text-[#1d9bf0]">{author.role}</p>
+              <p className="text-sm font-semibold text-[#2dd4bf]">{author.role}</p>
 
               {author.bio && (
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
@@ -152,7 +152,7 @@ export default async function PublicAuthorPage({
                     href={author.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 hover:text-[#1d9bf0]"
+                    className="inline-flex items-center gap-1 hover:text-[#2dd4bf]"
                   >
                     <Globe className="w-3.5 h-3.5" />
                     {author.website.replace(/^https?:\/\//, "")}
@@ -168,7 +168,7 @@ export default async function PublicAuthorPage({
 
           <Link
             href={`/${typedLocale}/dashboard/profile?handle=${encodeURIComponent(cleanHandle)}`}
-            className="px-4 py-2.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold shrink-0 transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-[#2dd4bf] hover:bg-blue-600 text-white text-xs font-bold shrink-0 transition-colors"
           >
             Hamjamiyat profiliga o‘tish
           </Link>

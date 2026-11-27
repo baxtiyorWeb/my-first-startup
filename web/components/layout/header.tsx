@@ -193,7 +193,7 @@ export function Header({ title, subtitle }: HeaderProps) {
               title={`${t("common.search")} (Ctrl+K)`}
             >
               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                <div className="w-4 h-4 shrink-0 text-slate-400 dark:text-[#71767b] group-hover:text-[#1d9bf0] transition-colors flex items-center justify-center">
+                <div className="w-4 h-4 shrink-0 text-slate-400 dark:text-[#71767b] group-hover:text-[#2dd4bf] transition-colors flex items-center justify-center">
                   <SearchIcon size={16} />
                 </div>
                 <span className="hidden sm:inline text-[13px] text-slate-500 dark:text-[#cfd9de] truncate font-normal">
@@ -218,7 +218,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             {!normalizedPath.startsWith("/dashboard/create") && (
               <Link
                 href={localePath("/dashboard/create")}
-                className="hidden md:inline-flex items-center gap-1.5 h-[40px] px-4 rounded-full bg-[#1d9bf0] hover:bg-[#1a8cd8] active:scale-95 text-[#0f1419] text-[13px] font-bold cursor-pointer transition-all"
+                className="hidden md:inline-flex items-center gap-1.5 h-[40px] px-4 rounded-full bg-[#2dd4bf] hover:bg-[#14b8a6] active:scale-95 text-[#0f1419] text-[13px] font-bold cursor-pointer transition-all"
                 title="Kontent yozish"
               >
                 <PlusIcon
@@ -242,13 +242,13 @@ export function Header({ title, subtitle }: HeaderProps) {
                 }
                 className={`relative size-[38px] sm:size-[40px] rounded-xl border transition-colors active:scale-95 flex items-center justify-center shrink-0 cursor-pointer ${
                   normalizedPath.startsWith("/dashboard/messages")
-                    ? "bg-[#e8f5fd] dark:bg-[#10394f] border-[#1d9bf0]/40 text-[#1d9bf0]"
+                    ? "bg-[#e6faf7] dark:bg-[#0c272c] border-[#2dd4bf]/40 text-[#2dd4bf]"
                     : "bg-[#f7f9f9] dark:bg-[#000000] border-[#cfd9de] dark:border-[#2f3336] hover:bg-[#eff3f4] dark:hover:bg-[#16181c] text-[#536471] dark:text-[#cfd9de] hover:text-[#0f1419] dark:hover:text-[#e7e9ea]"
                 }`}
               >
                 <MessageCircle className="w-[18px] h-[18px]" />
                 {totalUnreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#1d9bf0] text-[#0f1419] text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000]">
+                  <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#2dd4bf] text-[#0f1419] text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000]">
                     {totalUnreadCount > 9 ? "9+" : totalUnreadCount}
                   </span>
                 )}
@@ -364,7 +364,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             ) : (
               <Link
                 href={localePath("/auth/login")}
-                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[#2dd4bf] hover:bg-[#14b8a6] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer shrink-0"
               >
                 <span>{t("nav.login")}</span>
               </Link>

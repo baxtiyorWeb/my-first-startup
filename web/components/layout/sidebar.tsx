@@ -18,6 +18,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Sparkles,
+  Users,
 } from "lucide-react";
 import {
   useShell,
@@ -122,6 +123,12 @@ export function Sidebar() {
       badge: 0,
     },
     {
+      label: "Guruh",
+      rawHref: "/dashboard/community",
+      icon: Users,
+      badge: 0,
+    },
+    {
       label: "Saqlanganlar",
       rawHref: "/dashboard/bookmarks",
       icon: Bookmark,
@@ -183,7 +190,7 @@ export function Sidebar() {
       <aside
         data-name="Yon menyu"
         aria-label="Asosiy navigatsiya"
-        className="hidden md:flex flex-col fixed top-0 left-0 bottom-0 z-30 bg-white dark:bg-[#000000] text-[#0f1419] dark:text-[#e7e9ea] border-r border-[#cfd9de] dark:border-[#2f3336] transition-all duration-300 ease-out select-none"
+        className="hidden md:flex flex-col fixed top-0 left-0 bottom-0 z-30 bg-white dark:bg-[#0a0d14] text-[#0f1419] dark:text-[#e7e9ea] border-r border-[#cfd9de] dark:border-[#2f3336] transition-all duration-300 ease-out select-none"
         style={{
           width: isCollapsed
             ? `${SIDEBAR_COLLAPSED_WIDTH}px`
@@ -268,7 +275,7 @@ export function Sidebar() {
 
                     {!isCollapsed && (
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[13.5px] font-bold text-[#0f1419] dark:text-[#e7e9ea] group-hover:text-[#1d9bf0] transition-colors truncate leading-tight">
+                        <span className="text-[13.5px] font-bold text-[#0f1419] dark:text-[#e7e9ea] group-hover:text-[#2dd4bf] transition-colors truncate leading-tight">
                           {displayName}
                         </span>
                         <span className="text-[11.5px] text-[#536471] dark:text-[#71767b] truncate leading-tight mt-0.5">
@@ -299,7 +306,7 @@ export function Sidebar() {
                     </div>
                     {!isCollapsed && (
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[13.5px] font-bold text-[#0f1419] dark:text-[#e7e9ea] group-hover:text-[#1d9bf0] transition-colors truncate leading-tight">
+                        <span className="text-[13.5px] font-bold text-[#0f1419] dark:text-[#e7e9ea] group-hover:text-[#2dd4bf] transition-colors truncate leading-tight">
                           Kirish
                         </span>
                         <span className="text-[11px] text-[#536471] dark:text-[#71767b] truncate leading-tight mt-0.5">
@@ -339,7 +346,7 @@ export function Sidebar() {
                       href={localePath(item.rawHref)}
                       className={`h-[42px] flex items-center gap-3 px-3 rounded-xl text-[13.5px] transition-all cursor-pointer focus-visible:outline-none ${
                         isActive
-                          ? "bg-[#e8f5fd] dark:bg-[#10394f] text-[#1d9bf0] font-semibold border border-[#1d9bf0]/30"
+                          ? "bg-[#e6faf7] dark:bg-[#0c272c] text-[#2dd4bf] font-semibold border border-[#2dd4bf]/30"
                           : "text-[#536471] dark:text-[#cfd9de] hover:text-[#0f1419] dark:hover:text-[#e7e9ea] hover:bg-[#f7f9f9] dark:hover:bg-[#16181c] font-medium border border-transparent"
                       } ${isCollapsed ? "justify-center px-0" : ""}`}
                       aria-label={item.label}
@@ -350,7 +357,7 @@ export function Sidebar() {
                           size={18}
                           className={
                             isActive
-                              ? "text-[#1d9bf0]"
+                              ? "text-[#2dd4bf]"
                               : "text-[#536471] dark:text-[#71767b] group-hover:text-[#0f1419] dark:group-hover:text-[#e7e9ea]"
                           }
                         />
@@ -360,7 +367,7 @@ export function Sidebar() {
                         <span className="flex-1 overflow-hidden whitespace-nowrap flex items-center justify-between min-w-0">
                           <span className="truncate">{item.label}</span>
                           {item.badge > 0 && (
-                            <span className="min-w-4 h-4 px-1.5 rounded-full bg-[#1d9bf0] text-[#0f1419] text-[10px] font-bold flex items-center justify-center leading-none">
+                            <span className="min-w-4 h-4 px-1.5 rounded-full bg-[#2dd4bf] text-[#0f1419] text-[10px] font-bold flex items-center justify-center leading-none">
                               {item.badge > 9 ? "9+" : item.badge}
                             </span>
                           )}
@@ -408,16 +415,16 @@ export function Sidebar() {
                     <Link
                       href={localePath(`/dashboard?hl=${cat.tag}`)}
                       className={`h-[38px] px-2.5 rounded-xl bg-[#f7f9f9] dark:bg-[#16181c] hover:bg-[#eff3f4] dark:hover:bg-[#202327] border border-[#cfd9de]/70 dark:border-[#2f3336] flex items-center gap-2.5 text-[13px] text-[#0f1419] dark:text-[#e7e9ea] transition-colors group cursor-pointer ${
-                        isCatActive ? "ring-1 ring-[#1d9bf0]/50 border-[#1d9bf0]/40" : ""
+                        isCatActive ? "ring-1 ring-[#2dd4bf]/50 border-[#2dd4bf]/40" : ""
                       } ${isCollapsed ? "justify-center px-0" : ""}`}
                     >
                       <span
-                        className="size-5 rounded-md bg-[#e8f5fd] dark:bg-[#10394f] text-[#1d9bf0] border border-[#1d9bf0]/25 flex items-center justify-center font-bold text-[11px] font-mono shrink-0"
+                        className="size-5 rounded-md bg-[#e6faf7] dark:bg-[#0c272c] text-[#2dd4bf] border border-[#2dd4bf]/25 flex items-center justify-center font-bold text-[11px] font-mono shrink-0"
                       >
                         #
                       </span>
                       {!isCollapsed && (
-                        <span className="font-medium truncate group-hover:text-[#1d9bf0] transition-colors">
+                        <span className="font-medium truncate group-hover:text-[#2dd4bf] transition-colors">
                           {cat.name}
                         </span>
                       )}
@@ -464,7 +471,7 @@ export function Sidebar() {
             {!isCollapsed ? (
               <div className="rounded-2xl p-4 border border-[#cfd9de] dark:border-[#2f3336] bg-[#f7f9f9] dark:bg-[#16181c] my-2">
                 <div className="flex items-center gap-2">
-                  <span className="size-7 rounded-lg bg-[#e8f5fd] dark:bg-[#10394f] text-[#1d9bf0] flex items-center justify-center shrink-0">
+                  <span className="size-7 rounded-lg bg-[#e6faf7] dark:bg-[#0c272c] text-[#2dd4bf] flex items-center justify-center shrink-0">
                     <Sparkles className="size-4" />
                   </span>
                   <h3 className="text-[14.5px] font-bold text-[#0f1419] dark:text-[#e7e9ea] tracking-tight">
@@ -477,7 +484,7 @@ export function Sidebar() {
 
                 <Link
                   href={localePath("/dashboard/pricing")}
-                  className="mt-3 w-full h-[36px] rounded-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-[#0f1419] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer"
+                  className="mt-3 w-full h-[36px] rounded-full bg-[#2dd4bf] hover:bg-[#14b8a6] text-[#0f1419] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   <Sparkles className="size-3.5" />
                   <span>Tariflarni ko‘rish</span>
@@ -487,7 +494,7 @@ export function Sidebar() {
               <div className="relative group flex justify-center py-1">
                 <Link
                   href={localePath("/dashboard/pricing")}
-                  className="size-9 rounded-xl bg-[#e8f5fd] dark:bg-[#10394f] border border-[#1d9bf0]/30 text-[#1d9bf0] flex items-center justify-center hover:bg-[#d1ecfb] dark:hover:bg-[#1d9bf0]/20 transition-colors"
+                  className="size-9 rounded-xl bg-[#e6faf7] dark:bg-[#0c272c] border border-[#2dd4bf]/30 text-[#2dd4bf] flex items-center justify-center hover:bg-[#ccf5ef] dark:hover:bg-[#2dd4bf]/20 transition-colors"
                 >
                   <Sparkles size={16} />
                 </Link>

@@ -4,10 +4,10 @@ import type { NextRequest } from "next/server";
 export const runtime = "edge";
 
 const KIND_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  article: { label: "MAQOLA & QO'LLANMA", color: "#1d9bf0", bg: "rgba(57,149,255,0.16)" },
+  article: { label: "MAQOLA & QO'LLANMA", color: "#2dd4bf", bg: "rgba(57,149,255,0.16)" },
   video: { label: "VIDEO", color: "#00ba7c", bg: "rgba(16,185,129,0.16)" },
   news: { label: "TEXNOLOGIYA YANGILIGI", color: "#ffd400", bg: "rgba(245,158,11,0.16)" },
-  hub: { label: "BILIMLAR BAZASI", color: "#1d9bf0", bg: "rgba(57,149,255,0.16)" },
+  hub: { label: "BILIMLAR BAZASI", color: "#2dd4bf", bg: "rgba(57,149,255,0.16)" },
 };
 
 export async function GET(req: NextRequest) {
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#1d9bf0",
+                color: "#2dd4bf",
                 fontSize: "24px",
                 fontWeight: 800,
               }}
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
             style={{
               fontSize: "15px",
               fontWeight: 700,
-              color: "#1d9bf0",
+              color: "#2dd4bf",
               letterSpacing: "0.08em",
             }}
           >
@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
                 width: "36px",
                 height: "36px",
                 borderRadius: "999px",
-                backgroundColor: "#1d9bf0",
+                backgroundColor: "#2dd4bf",
                 color: "#ffffff",
                 display: "flex",
                 alignItems: "center",
@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
 
           <div style={{ display: "flex", alignItems: "center", gap: "20px", fontSize: "18px", color: "#8b98a5" }}>
             {meta ? <span>{meta}</span> : null}
-            <span style={{ color: "#1d9bf0", fontWeight: 700 }}>geters.uz</span>
+            <span style={{ color: "#2dd4bf", fontWeight: 700 }}>geters.uz</span>
           </div>
         </div>
       </div>

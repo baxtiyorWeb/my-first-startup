@@ -39,8 +39,8 @@ class AppButton extends StatelessWidget {
 
     switch (variant) {
       case ButtonVariant.primary:
-        tintColor = AppColors.primary;
-        fg = AppColors.onPrimary;
+        tintColor = isDark ? AppColors.primary : AppColors.primaryActive;
+        fg = isDark ? AppColors.onPrimary : Colors.white;
         break;
       case ButtonVariant.secondary:
         tintColor = null;
@@ -48,7 +48,7 @@ class AppButton extends StatelessWidget {
         break;
       case ButtonVariant.outline:
         tintColor = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-        fg = isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+        fg = isDark ? AppColors.textPrimaryDark : AppColors.primaryActive;
         borderColor = isDark ? AppColors.borderDarkElevated : AppColors.borderLight;
         break;
       case ButtonVariant.danger:
@@ -57,7 +57,7 @@ class AppButton extends StatelessWidget {
         break;
       case ButtonVariant.ghost:
         tintColor = null;
-        fg = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+        fg = isDark ? AppColors.textSecondaryDark : AppColors.primaryActive;
         borderColor = Colors.transparent;
         break;
     }
@@ -122,6 +122,9 @@ class AppButton extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: isLoading ? null : onPressed,
+              splashColor: AppColors.primary.withAlpha(48),
+              highlightColor:
+                  isDark ? AppColors.primarySurfaceDark : AppColors.primarySurface,
               borderRadius: BorderRadius.circular(AppTheme.radiusFull),
               child: Padding(
                 padding: padding,

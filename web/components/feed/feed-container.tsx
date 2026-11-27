@@ -237,7 +237,7 @@ export function FeedContainer() {
               setIsLoading(true);
               fetchFeed();
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1d9bf0] text-white text-xs font-semibold hover:bg-[#1a8cd8] cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#2dd4bf] text-white text-xs font-semibold hover:bg-[#14b8a6] cursor-pointer transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>{t("common.retry")}</span>

@@ -20,7 +20,7 @@ class BadgeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final selectedBg = isDark ? AppColors.primary : AppColors.slateAccent;
+    final selectedBg = isDark ? AppColors.primary : AppColors.primaryActive;
 
     final bg = isSelected
         ? selectedBg
@@ -77,6 +77,9 @@ class BadgeChip extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         customBorder: shape,
+        splashColor: AppColors.primary.withAlpha(48),
+        highlightColor:
+            isDark ? AppColors.primarySurfaceDark : AppColors.primarySurface,
         child: content,
       ),
     );

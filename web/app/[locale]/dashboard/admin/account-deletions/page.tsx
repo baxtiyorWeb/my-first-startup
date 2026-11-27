@@ -159,7 +159,7 @@ export default function AdminAccountDeletionsPage() {
                 onClick={() => setFilter(tab.id)}
                 className={`h-9 px-3.5 rounded-[11px] text-xs font-semibold cursor-pointer transition-colors ${
                   filter === tab.id
-                    ? "bg-[#1d9bf0] text-white"
+                    ? "bg-[#2dd4bf] text-white"
                     : "bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-[#8b98a5] hover:text-slate-900 dark:hover:text-white"
                 }`}
               >

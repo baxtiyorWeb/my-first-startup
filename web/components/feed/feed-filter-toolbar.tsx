@@ -80,7 +80,7 @@ export function FeedFilterToolbar({
               type="button"
               onClick={() => onTabChange(tab.id)}
               className={`h-[40px] px-2.5 sm:px-3 rounded-[14px] flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${isActive
-                  ? "bg-[#1d9bf0] text-white shadow-xs"
+                  ? "bg-[#2dd4bf] text-white shadow-xs"
                   : "bg-white dark:bg-[#16181c] text-slate-700 dark:text-[#cfd9de] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#202327] border border-slate-200/90 dark:border-[#2f3336]"
                 }`}
             >
@@ -118,13 +118,13 @@ export function FeedFilterToolbar({
                     setIsSortOpen(false);
                   }}
                   className={`w-full px-3 py-2 text-left flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-[#202327] transition-colors ${sortBy === opt.id
-                      ? "text-[#1d9bf0] font-semibold"
+                      ? "text-[#2dd4bf] font-semibold"
                       : "text-slate-700 dark:text-[#cfd9de]"
                     }`}
                 >
                   <span>{opt.label}</span>
                   {sortBy === opt.id && (
-                    <Check size={14} className="text-[#1d9bf0]" />
+                    <Check size={14} className="text-[#2dd4bf]" />
                   )}
                 </button>
               ))}

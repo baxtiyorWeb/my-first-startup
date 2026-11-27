@@ -409,7 +409,7 @@ function PostDetailInner({
           </p>
           <Link
             href={localePath("/dashboard")}
-            className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl bg-[#1d9bf0] text-white hover:bg-[#1a8cd8] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl bg-[#2dd4bf] text-white hover:bg-[#14b8a6] transition-colors cursor-pointer"
           >
             <ArrowLeft size={14} />
             <span>{t("create.backToDashboard") || "Lentaga qaytish"}</span>
@@ -462,14 +462,14 @@ function PostDetailInner({
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <Link
                     href={localePath(`/dashboard/profile?handle=${encodeURIComponent(post.author.handle?.replace(/^@+/, ""))}`)}
-                    className="text-sm sm:text-[15px] font-bold text-slate-900 dark:text-[#e7e9ea] hover:text-[#1d9bf0] transition-colors truncate"
+                    className="text-sm sm:text-[15px] font-bold text-slate-900 dark:text-[#e7e9ea] hover:text-[#2dd4bf] transition-colors truncate"
                   >
                     {post.author.name}
                   </Link>
                   {post.author.verified && (
                     <span
                       title={t("feed.verifiedTooltip") || "Tasdiqlangan muallif"}
-                      className="bg-[#1d9bf0] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
+                      className="bg-[#2dd4bf] rounded-[4px] size-[13px] flex items-center justify-center shrink-0"
                     >
                       <Check size={9} className="text-white stroke-[2.5]" />
                     </span>
@@ -517,7 +517,7 @@ function PostDetailInner({
                   className={`h-[32px] px-3 rounded-[12px] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     isFollowingAuthor
                       ? "bg-slate-100 dark:bg-[#202327] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-[#cfd9de] hover:bg-slate-200"
-                      : "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white shadow-xs"
+                      : "bg-[#2dd4bf] hover:bg-[#14b8a6] text-white shadow-xs"
                   }`}
                 >
                   {isFollowingAuthor ? (
@@ -620,11 +620,11 @@ function PostDetailInner({
             <div className="mb-4 p-3.5 rounded-[12px] bg-slate-50 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-[#e7e9ea]">
-                  <Rocket size={14} className="text-[#1d9bf0]" />
+                  <Rocket size={14} className="text-[#2dd4bf]" />
                   <span>Startap / Loyiha:</span>
                 </span>
                 {post.projectStage && (
-                  <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-blue-50 dark:bg-blue-950/60 text-[#1d9bf0] border border-[#1d9bf0]/20">
+                  <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-blue-50 dark:bg-blue-950/60 text-[#2dd4bf] border border-[#2dd4bf]/20">
                     Bosqich: {post.projectStage}
                   </span>
                 )}
@@ -638,7 +638,7 @@ function PostDetailInner({
                 href={post.projectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1d9bf0] hover:underline"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2dd4bf] hover:underline"
               >
                 <span>{post.projectUrl.replace(/^https?:\/\//, "")}</span>
                 <ExternalLink size={12} />
@@ -692,7 +692,7 @@ function PostDetailInner({
                   type="button"
                   key={url}
                   onClick={() => setLightboxIndex(idx)}
-                  className={`relative group rounded-[12px] overflow-hidden bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] cursor-pointer ${
+                  className={`relative group rounded-[12px] overflow-hidden bg-slate-100 dark:bg-[#16181c] border border-slate-200/80 dark:border-[#2f3336] focus:outline-none focus:ring-2 focus:ring-[#2dd4bf] cursor-pointer ${
                     mediaList.length === 1
                       ? "aspect-video sm:aspect-auto sm:h-80"
                       : mediaList.length === 2
@@ -768,7 +768,7 @@ function PostDetailInner({
         <section className="bg-white dark:bg-[#000000] border border-slate-200/90 dark:border-[#2f3336] rounded-[16px] p-5 sm:p-6 shadow-xs space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#2f3336]">
             <h2 className="text-[15px] font-bold text-slate-900 dark:text-[#e7e9ea] flex items-center gap-2">
-              <MessageSquare size={16} className="text-[#1d9bf0]" />
+              <MessageSquare size={16} className="text-[#2dd4bf]" />
               <span>Muhokamalar va Fikrlar</span>
               <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-[#202327] text-slate-600 dark:text-[#8b98a5]">
                 {commentsCount}
@@ -791,7 +791,7 @@ function PostDetailInner({
                   value={newCommentText}
                   onChange={(e) => setNewCommentText(e.target.value)}
                   placeholder="Mavzu yuzasidan o'z fikringiz yoki tahlilingizni yozing..."
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-[14px] border border-slate-200 dark:border-[#2f3336] bg-slate-50/70 dark:bg-[#16181c] text-slate-900 dark:text-[#e7e9ea] placeholder:text-slate-400 dark:placeholder:text-[#71767b] focus:outline-none focus:border-[#1d9bf0] focus:ring-1 focus:ring-[#1d9bf0] transition-all resize-none"
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-[14px] border border-slate-200 dark:border-[#2f3336] bg-slate-50/70 dark:bg-[#16181c] text-slate-900 dark:text-[#e7e9ea] placeholder:text-slate-400 dark:placeholder:text-[#71767b] focus:outline-none focus:border-[#2dd4bf] focus:ring-1 focus:ring-[#2dd4bf] transition-all resize-none"
                 />
               </div>
             </div>
@@ -799,7 +799,7 @@ function PostDetailInner({
               <button
                 type="submit"
                 disabled={!newCommentText.trim() || isSubmittingComment}
-                className="h-[36px] px-4 rounded-[12px] bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="h-[36px] px-4 rounded-[12px] bg-[#2dd4bf] hover:bg-[#14b8a6] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Send size={13} />
                 <span>{isSubmittingComment ? "Yuborilmoqda..." : "Fikr qoldirish"}</span>
@@ -836,14 +836,14 @@ function PostDetailInner({
                         <div className="flex items-center gap-1.5">
                           <Link
                             href={localePath(`/dashboard/profile?handle=${encodeURIComponent(comment.author.handle?.replace(/^@+/, ""))}`)}
-                            className="text-xs font-bold text-slate-900 dark:text-[#e7e9ea] hover:text-[#1d9bf0] transition-colors"
+                            className="text-xs font-bold text-slate-900 dark:text-[#e7e9ea] hover:text-[#2dd4bf] transition-colors"
                           >
                             {comment.author.name}
                           </Link>
                           {comment.author.verified && (
                             <span
                               title="Tasdiqlangan muallif"
-                              className="bg-[#1d9bf0] rounded-[3px] size-[11px] flex items-center justify-center shrink-0"
+                              className="bg-[#2dd4bf] rounded-[3px] size-[11px] flex items-center justify-center shrink-0"
                             >
                               <Check size={8} className="text-white stroke-[2.5]" />
                             </span>
@@ -902,13 +902,13 @@ function PostDetailInner({
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder={`@${comment.author.handle?.replace(/^@+/, "")} ga javob yozish...`}
-                        className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-[#2f3336] bg-white dark:bg-[#000000] text-slate-900 dark:text-white focus:outline-none focus:border-[#1d9bf0]"
+                        className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-[#2f3336] bg-white dark:bg-[#000000] text-slate-900 dark:text-white focus:outline-none focus:border-[#2dd4bf]"
                       />
                       <button
                         type="button"
                         onClick={() => handleAddReply(comment.id)}
                         disabled={!replyText.trim() || isSubmittingReply}
-                        className="px-3 py-1.5 rounded-xl bg-[#1d9bf0] text-white text-xs font-bold hover:bg-[#1a8cd8] disabled:opacity-50 cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-[#2dd4bf] text-white text-xs font-bold hover:bg-[#14b8a6] disabled:opacity-50 cursor-pointer"
                       >
                         Yuborish
                       </button>
@@ -924,7 +924,7 @@ function PostDetailInner({
                             <CornerDownRight size={12} className="text-slate-400 shrink-0" />
                             <Link
                               href={localePath(`/dashboard/profile?handle=${encodeURIComponent(reply.author.handle?.replace(/^@+/, ""))}`)}
-                              className="text-xs font-bold text-slate-900 dark:text-[#e7e9ea] hover:text-[#1d9bf0] transition-colors"
+                              className="text-xs font-bold text-slate-900 dark:text-[#e7e9ea] hover:text-[#2dd4bf] transition-colors"
                             >
                               {reply.author.name}
                             </Link>
@@ -968,12 +968,12 @@ function PostDetailInner({
                 <div className="flex items-center gap-1.5 truncate">
                   <Link
                     href={localePath(`/dashboard/profile?handle=${encodeURIComponent(post.author.handle?.replace(/^@+/, ""))}`)}
-                    className="font-bold text-sm text-slate-900 dark:text-[#e7e9ea] hover:text-[#1d9bf0] truncate"
+                    className="font-bold text-sm text-slate-900 dark:text-[#e7e9ea] hover:text-[#2dd4bf] truncate"
                   >
                     {post.author.name}
                   </Link>
                   {post.author.verified && (
-                    <span className="bg-[#1d9bf0] rounded-[3px] size-[12px] flex items-center justify-center shrink-0">
+                    <span className="bg-[#2dd4bf] rounded-[3px] size-[12px] flex items-center justify-center shrink-0">
                       <Check size={8} className="text-white stroke-[2.5]" />
                     </span>
                   )}

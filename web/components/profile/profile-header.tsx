@@ -225,7 +225,7 @@ export function ProfileHeader({
                 className="absolute bottom-0 right-0 p-0.5 rounded-full bg-white dark:bg-[#000000] shadow-sm"
                 title={t("common.verifiedAuthor")}
               >
-                <div className="bg-[#1d9bf0] rounded-[5px] size-[18px] flex items-center justify-center">
+                <div className="bg-[#2dd4bf] rounded-[5px] size-[18px] flex items-center justify-center">
                   <Check size={12} className="text-white stroke-[2.5]" />
                 </div>
               </span>
@@ -282,7 +282,7 @@ export function ProfileHeader({
                   className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
                     isFollowing
                       ? "border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-[#202327] text-slate-700 dark:text-[#cfd9de] hover:bg-slate-200"
-                      : "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white shadow-xs"
+                      : "bg-[#2dd4bf] hover:bg-[#14b8a6] text-white shadow-xs"
                   }`}
                 >
                   {isFollowing ? (

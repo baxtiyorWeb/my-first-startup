@@ -18,14 +18,14 @@
   --border: #cfd9de;
   --card: #ffffff;
   --card-foreground: #0f1419;
-  --primary: #1d9bf0;
-  --primary-hover: #1a8cd8;
-  --primary-active: #1577b8;
-  --primary-foreground: #0f1419;
+  --primary: #14b8a6;
+  --primary-hover: #0d9488;
+  --primary-active: #0f766e;
+  --primary-foreground: #0a0d14;
   --secondary: #0f1419;
   --secondary-foreground: #ffffff;
-  --accent: #1d9bf0;
-  --accent-foreground: #0f1419;
+  --accent: #14b8a6;
+  --accent-foreground: #0a0d14;
   --text-primary: #0f1419;
   --text-secondary: #536471;
   --text-muted: #8b98a5;
@@ -33,7 +33,7 @@
   --status-warning: #ffd400;
   --status-error: #f4212e;
   --status-error-surface: #c4170f;
-  --status-info: #1d9bf0;
+  --status-info: #14b8a6;
   /* Markaziy kontent kengligi — bir joydan butun ilova bo'ylab o'lchamni boshqarish */
   --content-max-width: 1320px;
   --surface-0: #ffffff;
@@ -76,14 +76,14 @@
   --border: #2f3336;
   --card: #000000;
   --card-foreground: #e7e9ea;
-  --primary: #1d9bf0;
-  --primary-hover: #1a8cd8;
-  --primary-active: #1577b8;
-  --primary-foreground: #0f1419;
+  --primary: #2dd4bf;
+  --primary-hover: #14b8a6;
+  --primary-active: #0d9488;
+  --primary-foreground: #0a0d14;
   --secondary: #e7e9ea;
-  --secondary-foreground: #0f1419;
-  --accent: #1d9bf0;
-  --accent-foreground: #0f1419;
+  --secondary-foreground: #0a0d14;
+  --accent: #2dd4bf;
+  --accent-foreground: #0a0d14;
   --text-primary: #e7e9ea;
   --text-secondary: #cfd9de;
   --text-muted: #71767b;
@@ -133,41 +133,41 @@
  * resolve to X's real palette instead of Tailwind's defaults.
  */
 @theme {
-  --color-blue-50: #e8f5fd;
-  --color-blue-100: #d1ecfb;
-  --color-blue-200: #a3d9f7;
-  --color-blue-300: #70c5f2;
-  --color-blue-400: #4db5f0;
-  --color-blue-500: #1d9bf0;
-  --color-blue-600: #1d9bf0;
-  --color-blue-700: #1a8cd8;
-  --color-blue-800: #1577b8;
-  --color-blue-900: #0f5c8f;
-  --color-blue-950: #0a3d5f;
+  --color-blue-50: #e6faf7;
+  --color-blue-100: #ccf5ef;
+  --color-blue-200: #99ebe0;
+  --color-blue-300: #5eead4;
+  --color-blue-400: #2dd4bf;
+  --color-blue-500: #2dd4bf;
+  --color-blue-600: #14b8a6;
+  --color-blue-700: #0d9488;
+  --color-blue-800: #0f766e;
+  --color-blue-900: #115e59;
+  --color-blue-950: #0c272c;
 
-  --color-indigo-50: #e8f5fd;
-  --color-indigo-100: #d1ecfb;
-  --color-indigo-200: #a3d9f7;
-  --color-indigo-300: #70c5f2;
-  --color-indigo-400: #4db5f0;
-  --color-indigo-500: #1d9bf0;
-  --color-indigo-600: #1d9bf0;
-  --color-indigo-700: #1a8cd8;
-  --color-indigo-800: #1577b8;
-  --color-indigo-900: #0f5c8f;
-  --color-indigo-950: #0a3d5f;
+  --color-indigo-50: #e6faf7;
+  --color-indigo-100: #ccf5ef;
+  --color-indigo-200: #99ebe0;
+  --color-indigo-300: #5eead4;
+  --color-indigo-400: #2dd4bf;
+  --color-indigo-500: #2dd4bf;
+  --color-indigo-600: #14b8a6;
+  --color-indigo-700: #0d9488;
+  --color-indigo-800: #0f766e;
+  --color-indigo-900: #115e59;
+  --color-indigo-950: #0c272c;
 
-  --color-sky-50: #e8f5fd;
-  --color-sky-100: #d1ecfb;
-  --color-sky-200: #a3d9f7;
-  --color-sky-300: #70c5f2;
-  --color-sky-400: #4db5f0;
-  --color-sky-500: #1d9bf0;
-  --color-sky-600: #1d9bf0;
-  --color-sky-700: #1a8cd8;
-  --color-sky-800: #1577b8;
-  --color-sky-900: #0f5c8f;
-  --color-sky-950: #0a3d5f;
+  --color-sky-50: #e6faf7;
+  --color-sky-100: #ccf5ef;
+  --color-sky-200: #99ebe0;
+  --color-sky-300: #5eead4;
+  --color-sky-400: #2dd4bf;
+  --color-sky-500: #2dd4bf;
+  --color-sky-600: #14b8a6;
+  --color-sky-700: #0d9488;
+  --color-sky-800: #0f766e;
+  --color-sky-900: #115e59;
+  --color-sky-950: #0c272c;
 
   --color-violet-50: #f1edff;
   --color-violet-100: #e3dbff;
@@ -280,7 +280,7 @@
 
 /*
  * X button pairing: filled blue surfaces use near-black text.
- * White text on #1d9bf0 only reaches ~3:1 contrast, so primary CTAs get
+ * White text on #2dd4bf only reaches ~3:1 contrast, so primary CTAs get
  * #0f1419 labels (≈7:1) like X's blue controls.
  */
 .bg-blue-500,
@@ -290,8 +290,9 @@
 .bg-indigo-600,
 .bg-sky-500,
 .bg-sky-600,
-.bg-\[\#1d9bf0\] {
-  color: #0f1419;
+.bg-\[\#2dd4bf\],
+.bg-\[\#14b8a6\] {
+  color: #0a0d14;
 }
 
 /*
@@ -522,14 +523,14 @@ body {
 }
 
 .gogetters-rich-editor a {
-  color: #1d9bf0;
+  color: #2dd4bf;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 @media (prefers-color-scheme: dark) {
   .gogetters-rich-editor a {
-    color: #4db5f0;
+    color: #5eead4;
   }
 }
 

@@ -45,7 +45,7 @@ class _TrendingTopicsBarState extends State<TrendingTopicsBar> {
     final palette = [
       isDark ? AppColors.primaryLight : AppColors.primary,
       isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-      isDark ? const Color(0xFF4DB5F0) : const Color(0xFF1D9BF0),
+      isDark ? AppColors.primaryLight : AppColors.primaryActive,
       AppColors.success,
       AppColors.info,
     ];

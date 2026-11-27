@@ -24,7 +24,7 @@ class MainBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = isDark ? AppColors.textPrimaryDark : AppColors.slateAccent;
+    final activeColor = isDark ? AppColors.primary : AppColors.primaryActive;
     final inactiveColor = isDark ? AppColors.textMutedDark : AppColors.textMutedLight;
 
     return Container(
@@ -62,12 +62,13 @@ class MainBottomNav extends StatelessWidget {
           Expanded(
             child: Center(
               child: Material(
-                color: isDark ? AppColors.primary : AppColors.slateAccent,
+                color: isDark ? AppColors.primary : AppColors.primaryActive,
                 shape: const CircleBorder(),
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: onCreateTap,
                   customBorder: const CircleBorder(),
+                  splashColor: AppColors.primaryLight.withAlpha(72),
                   child: SizedBox(
                     width: 44,
                     height: 44,

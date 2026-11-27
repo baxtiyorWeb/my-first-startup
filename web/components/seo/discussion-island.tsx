@@ -212,9 +212,9 @@ export function DiscussionIsland({
 
           <a
             href="#comments"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/40 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#2dd4bf]/40 transition-colors"
           >
-            <MessageSquare className="w-4 h-4 text-[#1d9bf0]" />
+            <MessageSquare className="w-4 h-4 text-[#2dd4bf]" />
             <span>{commentsCount}</span>
           </a>
 
@@ -229,8 +229,8 @@ export function DiscussionIsland({
             onClick={handleToggleBookmark}
             className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
               isSaved
-                ? "bg-[#1d9bf0]/10 border-[#1d9bf0]/30 text-[#1d9bf0]"
-                : "bg-slate-50 dark:bg-[#16181c] border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/40"
+                ? "bg-[#2dd4bf]/10 border-[#2dd4bf]/30 text-[#2dd4bf]"
+                : "bg-slate-50 dark:bg-[#16181c] border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#2dd4bf]/40"
             }`}
           >
             <Bookmark className={`w-4 h-4 ${isSaved ? "fill-current" : ""}`} />
@@ -241,7 +241,7 @@ export function DiscussionIsland({
             href={telegramShareUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#1d9bf0]/10 text-[#1d9bf0] border border-[#1d9bf0]/25 hover:bg-[#1d9bf0]/20 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#2dd4bf]/10 text-[#2dd4bf] border border-[#2dd4bf]/25 hover:bg-[#2dd4bf]/20 transition-colors"
           >
             <Share2 className="w-4 h-4" />
             <span>Telegram</span>
@@ -250,7 +250,7 @@ export function DiscussionIsland({
           <button
             type="button"
             onClick={handleCopyShare}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#1d9bf0]/40 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] text-slate-700 dark:text-slate-300 hover:border-[#2dd4bf]/40 transition-colors cursor-pointer"
             title="Havolani nusxalash"
           >
             <Copy className="w-4 h-4" />
@@ -265,7 +265,7 @@ export function DiscussionIsland({
       >
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-950 dark:text-white flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-[#1d9bf0]" />
+            <MessageSquare className="w-4 h-4 text-[#2dd4bf]" />
             <span>Muhokama va savollar ({commentsCount})</span>
           </h2>
         </div>
@@ -284,13 +284,13 @@ export function DiscussionIsland({
                 onChange={(e) => setNewComment(e.target.value)}
                 rows={2}
                 placeholder="Fikringiz yoki savolingizni yozing..."
-                className="w-full rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] p-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] resize-none"
+                className="w-full rounded-xl bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] p-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2dd4bf] resize-none"
               />
               <div className="flex justify-end">
                 <button
                   type="submit"
                   disabled={isSubmitting || !newComment.trim()}
-                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold disabled:opacity-50 cursor-pointer transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#2dd4bf] hover:bg-blue-600 text-white text-xs font-bold disabled:opacity-50 cursor-pointer transition-colors"
                 >
                   {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                   <span>Yuborish</span>
@@ -305,7 +305,7 @@ export function DiscussionIsland({
             </p>
             <Link
               href={localePath("/auth/login")}
-              className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold shrink-0 transition-colors"
+              className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#2dd4bf] hover:bg-blue-600 text-white text-xs font-bold shrink-0 transition-colors"
             >
               Kirish
             </Link>
@@ -315,7 +315,7 @@ export function DiscussionIsland({
         {/* Comments List */}
         {isLoadingComments ? (
           <div className="py-6 flex justify-center">
-            <Loader2 className="w-5 h-5 animate-spin text-[#1d9bf0]" />
+            <Loader2 className="w-5 h-5 animate-spin text-[#2dd4bf]" />
           </div>
         ) : comments.length === 0 ? (
           <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-4">
@@ -337,7 +337,7 @@ export function DiscussionIsland({
                         {comment.author.name}
                       </span>
                       {comment.author.verified && (
-                        <span className="size-3.5 rounded-full bg-[#1d9bf0] text-white flex items-center justify-center">
+                        <span className="size-3.5 rounded-full bg-[#2dd4bf] text-white flex items-center justify-center">
                           <Check size={8} strokeWidth={3} />
                         </span>
                       )}
@@ -365,7 +365,7 @@ export function DiscussionIsland({
                       onClick={() =>
                         setReplyTargetId(replyTargetId === comment.id ? null : comment.id)
                       }
-                      className="inline-flex items-center gap-1 cursor-pointer hover:text-[#1d9bf0]"
+                      className="inline-flex items-center gap-1 cursor-pointer hover:text-[#2dd4bf]"
                     >
                       <CornerDownRight className="w-3 h-3" />
                       <span>Javob berish</span>
@@ -382,12 +382,12 @@ export function DiscussionIsland({
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder="Javobingizni yozing..."
-                        className="flex-1 rounded-lg bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                        className="flex-1 rounded-lg bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2dd4bf]"
                       />
                       <button
                         type="submit"
                         disabled={isSubmitting || !replyText.trim()}
-                        className="px-3 py-1.5 rounded-lg bg-[#1d9bf0] text-white text-xs font-bold cursor-pointer disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-lg bg-[#2dd4bf] text-white text-xs font-bold cursor-pointer disabled:opacity-50"
                       >
                         Yuborish
                       </button>

@@ -304,7 +304,7 @@ export default function MessagesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Suhbat yoki foydalanuvchini qidiring..."
-              className="w-full h-9 pl-8.5 pr-3 text-xs rounded-xl bg-white dark:bg-[#000000] border border-[#cfd9de] dark:border-[#2f3336] focus:outline-none focus:ring-1 focus:ring-[#1d9bf0] focus:border-[#1d9bf0] placeholder:text-[#8b98a5] dark:placeholder:text-[#71767b] transition-all"
+              className="w-full h-9 pl-8.5 pr-3 text-xs rounded-xl bg-white dark:bg-[#000000] border border-[#cfd9de] dark:border-[#2f3336] focus:outline-none focus:ring-1 focus:ring-[#2dd4bf] focus:border-[#2dd4bf] placeholder:text-[#8b98a5] dark:placeholder:text-[#71767b] transition-all"
             />
             {searchQuery && (
               <button

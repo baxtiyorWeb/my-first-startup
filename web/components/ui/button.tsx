@@ -16,7 +16,7 @@ interface AppButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES: Record<AppButtonVariant, string> = {
   primary:
-    "bg-[#1d9bf0] hover:bg-[#1a8cd8] active:bg-[#1577b8] text-[#0f1419] border border-transparent",
+    "bg-[#2dd4bf] hover:bg-[#14b8a6] active:bg-[#0d9488] text-[#0f1419] border border-transparent",
   secondary:
     "bg-[#f7f9f9] dark:bg-[#16181c] hover:bg-[#eff3f4] dark:hover:bg-[#202327] text-[#0f1419] dark:text-[#e7e9ea] border border-[#cfd9de] dark:border-[#2f3336]",
   outline:

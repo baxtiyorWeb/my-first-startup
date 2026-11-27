@@ -11,7 +11,7 @@ interface VerifiedBadgeProps {
 
 /**
  * Unified Geters Verified Badge (matches mobile `VerifiedBadge`).
- * Circular #1A8CD8 badge with crisp white checkmark.
+ * Circular #14b8a6 badge with crisp white checkmark.
  */
 export function VerifiedBadge({
   size = 16,
@@ -24,7 +24,7 @@ export function VerifiedBadge({
       title={title}
       aria-label={title}
       style={{ width: size, height: size }}
-      className={`inline-flex items-center justify-center rounded-full bg-[#1a8cd8] text-white shrink-0 ${className}`}
+      className={`inline-flex items-center justify-center rounded-full bg-[#14b8a6] text-white shrink-0 ${className}`}
     >
       <Check size={iconSize} strokeWidth={3} />
     </span>

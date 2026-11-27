@@ -531,7 +531,7 @@ function StudioEditorWorkspace() {
   const toolBtn = (active: boolean) =>
     `p-1.5 rounded-lg transition-colors cursor-pointer ${
       active
-        ? "bg-[#1d9bf0] text-white font-bold"
+        ? "bg-[#2dd4bf] text-white font-bold"
         : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"
     }`;
 
@@ -574,10 +574,10 @@ function StudioEditorWorkspace() {
           <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("italic"); }} className={toolBtn(activeFormats.italic)}>
             <Italic className="w-3.5 h-3.5" />
           </button>
-          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h2 ? "bg-[#1d9bf0] text-white" : "text-slate-200 hover:bg-[#202327]"}`}>
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h2 ? "bg-[#2dd4bf] text-white" : "text-slate-200 hover:bg-[#202327]"}`}>
             H2
           </button>
-          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h3 ? "bg-[#1d9bf0] text-white" : "text-slate-200 hover:bg-[#202327]"}`}>
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} className={`px-1.5 py-1 text-[11px] rounded-lg cursor-pointer ${activeFormats.h3 ? "bg-[#2dd4bf] text-white" : "text-slate-200 hover:bg-[#202327]"}`}>
             H3
           </button>
           <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("highlight"); }} className={toolBtn(activeFormats.highlight)}>
@@ -598,7 +598,7 @@ function StudioEditorWorkspace() {
           <div className="w-full max-w-sm bg-white dark:bg-[#000000] border border-slate-200 dark:border-[#2f3336] rounded-2xl shadow-xl p-4 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#202327]">
               <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                <Link2 className="w-3.5 h-3.5 text-[#1d9bf0]" />
+                <Link2 className="w-3.5 h-3.5 text-[#2dd4bf]" />
                 Havola qo‘shish (Ichki / Tashqi SEO)
               </h3>
               <button type="button" onClick={() => setIsLinkModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
@@ -637,7 +637,7 @@ function StudioEditorWorkspace() {
                 <button type="button" onClick={() => setIsLinkModalOpen(false)} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#2f3336] text-xs cursor-pointer">
                   Bekor qilish
                 </button>
-                <button type="submit" className="px-3.5 py-1.5 rounded-lg bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs font-bold cursor-pointer">
+                <button type="submit" className="px-3.5 py-1.5 rounded-lg bg-[#2dd4bf] hover:bg-blue-600 text-white text-xs font-bold cursor-pointer">
                   Saqlash
                 </button>
               </div>
@@ -648,7 +648,7 @@ function StudioEditorWorkspace() {
 
       {isLoadingEdit ? (
         <div className="py-16 flex justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-[#1d9bf0]" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#2dd4bf]" />
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -662,7 +662,7 @@ function StudioEditorWorkspace() {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as "draft" | "published")}
-                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2dd4bf]"
                 >
                   <option value="published">Nashr qilish</option>
                   <option value="draft">Qoralama</option>
@@ -675,7 +675,7 @@ function StudioEditorWorkspace() {
                 <select
                   value={contentLocale}
                   onChange={(e) => setContentLocale(e.target.value as "uz" | "ru" | "en")}
-                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2dd4bf]"
                 >
                   <option value="uz">O‘zbekcha</option>
                   <option value="ru">Русский</option>
@@ -692,7 +692,7 @@ function StudioEditorWorkspace() {
                   onChange={(e) => setCategory(e.target.value)}
                   list="category-suggestions"
                   placeholder="Sohangizni yozing (masalan: marketing)"
-                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1d9bf0]"
+                  className="w-full rounded-lg bg-slate-50 dark:bg-[#16181c] border border-slate-200 dark:border-[#2f3336] px-2.5 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2dd4bf]"
                 />
                 <datalist id="category-suggestions">
                   {CONTENT_CATEGORIES.map((c) => (
@@ -731,10 +731,10 @@ function StudioEditorWorkspace() {
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("italic"); }} title="Kursiv" className={toolBtn(activeFormats.italic)}>
                   <Italic className="w-3.5 h-3.5" />
                 </button>
-                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} title="H2 Sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h2 ? "bg-[#1d9bf0] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"}`}>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h2>"); }} title="H2 Sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h2 ? "bg-[#2dd4bf] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"}`}>
                   <Heading2 className="w-3.5 h-3.5" /> H2
                 </button>
-                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} title="H3 Kichik sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h3 ? "bg-[#1d9bf0] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"}`}>
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<h3>"); }} title="H3 Kichik sarlavha" className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 cursor-pointer ${activeFormats.h3 ? "bg-[#2dd4bf] text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327]"}`}>
                   <Heading3 className="w-3.5 h-3.5" /> H3
                 </button>
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("formatBlock", "<blockquote>"); }} title="Iqtibos" className={toolBtn(activeFormats.quote)}>
@@ -753,10 +753,10 @@ function StudioEditorWorkspace() {
                   <Code className="w-3.5 h-3.5" />
                 </button>
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("codeblock"); }} title="Ko'p qatorli kod bloki (<pre>)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#202327] cursor-pointer">
-                  <FileCode2 className="w-3.5 h-3.5 text-[#1d9bf0]" />
+                  <FileCode2 className="w-3.5 h-3.5 text-[#2dd4bf]" />
                   <span>Kod bloki</span>
                 </button>
-                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("link"); }} title="Havola (Ctrl+K)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 cursor-pointer">
+                <button type="button" onMouseDown={(e) => { e.preventDefault(); executeCommand("link"); }} title="Havola (Ctrl+K)" className="px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 text-[#2dd4bf] hover:bg-[#2dd4bf]/10 cursor-pointer">
                   <Link2 className="w-3.5 h-3.5" />
                   <span>Havola</span>
                 </button>
@@ -794,7 +794,7 @@ function StudioEditorWorkspace() {
             <div className="p-4 bg-white dark:bg-[#000000] rounded-[16px] border border-slate-200/90 dark:border-[#2f3336] space-y-3 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-[#1d9bf0]" />
+                  <ImageIcon className="w-4 h-4 text-[#2dd4bf]" />
                   <span className="text-xs font-bold text-slate-800 dark:text-white">
                     Muqova &amp; Illyustratsiyalar (Birinchi rasm — OG muqova bo‘ladi)
                   </span>
@@ -825,10 +825,10 @@ function StudioEditorWorkspace() {
                     type="button"
                     disabled={isUploadingImage}
                     onClick={() => imageInputRef.current?.click()}
-                    className="aspect-video rounded-xl border border-dashed border-slate-300 dark:border-[#3e4144] hover:border-[#1d9bf0] bg-slate-50 dark:bg-[#16181c] flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-[#1d9bf0] transition-colors cursor-pointer disabled:opacity-50"
+                    className="aspect-video rounded-xl border border-dashed border-slate-300 dark:border-[#3e4144] hover:border-[#2dd4bf] bg-slate-50 dark:bg-[#16181c] flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-[#2dd4bf] transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {isUploadingImage ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-[#1d9bf0]" />
+                      <Loader2 className="w-5 h-5 animate-spin text-[#2dd4bf]" />
                     ) : (
                       <>
                         <Paperclip className="w-4 h-4" />
@@ -860,7 +860,7 @@ function StudioEditorWorkspace() {
               <button
                 type="submit"
                 disabled={isSubmitting || wordCount === 0}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1d9bf0] hover:bg-blue-600 text-white text-xs sm:text-sm font-bold shadow-sm disabled:opacity-40 cursor-pointer transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#2dd4bf] hover:bg-blue-600 text-white text-xs sm:text-sm font-bold shadow-sm disabled:opacity-40 cursor-pointer transition-colors"
               >
                 {isSubmitting ? (
                   <>
@@ -893,7 +893,7 @@ export default function CreatePostPage() {
     <Suspense
       fallback={
         <div className="py-16 flex justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-[#1d9bf0]" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#2dd4bf]" />
         </div>
       }
     >

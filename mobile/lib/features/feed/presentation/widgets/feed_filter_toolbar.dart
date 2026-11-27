@@ -35,7 +35,7 @@ class FeedFilterToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activePillColor = isDark ? AppColors.primary : AppColors.slateAccent;
+    final activePillColor = isDark ? AppColors.primary : AppColors.primaryActive;
 
     const tabs = [
       {'id': 'all', 'label': 'Barchasi', 'icon': Icons.grid_view_rounded},
@@ -328,14 +328,17 @@ class _ViewModeIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeBorder = isDark ? AppColors.primary : AppColors.slateAccent;
+    final activeBorder = isDark ? AppColors.primary : AppColors.primaryActive;
     final activeBg =
-        isDark ? AppColors.primary.withAlpha(38) : AppColors.surfaceLight;
+        isDark ? AppColors.primary.withAlpha(38) : AppColors.primarySurface;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        splashColor: AppColors.primary.withAlpha(48),
+        highlightColor:
+            isDark ? AppColors.primarySurfaceDark : AppColors.primarySurface,
         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 140),
@@ -351,7 +354,7 @@ class _ViewModeIcon extends StatelessWidget {
             icon,
             size: 15,
             color: isActive
-                ? (isDark ? AppColors.primaryLight : AppColors.slateAccent)
+                ? (isDark ? AppColors.primaryLight : AppColors.primaryActive)
                 : (isDark ? AppColors.textMutedDark : AppColors.textMutedLight),
           ),
         ),
