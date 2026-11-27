@@ -233,12 +233,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             },
                             onReportTap: (item) => ReportBottomSheet.show(
                               context,
+                              targetId: item.id,
                               targetType: 'comment',
                               authorName: item.author.name,
                               snippet: ContentUtils.excerpt(
                                 item.content,
                                 maxLength: 80,
                               ),
+                              apiClient: widget.authController.apiClient,
                             ),
                           ),
                         ),

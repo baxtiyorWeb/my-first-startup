@@ -33,6 +33,7 @@ void main() {
             body: Align(
               alignment: Alignment.bottomCenter,
               child: ReportBottomSheet(
+                targetId: 'post_1',
                 targetType: 'post',
                 authorName: 'Sardor Dev',
                 snippet: 'Test post snippet',
