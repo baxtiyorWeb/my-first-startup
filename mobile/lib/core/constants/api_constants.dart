@@ -40,11 +40,25 @@ abstract class ApiConstants {
   static const String notificationsEndpoint = '/notifications';
   static const String usersEndpoint = '/users';
   static const String currentUserEndpoint = '/users/me';
+
+  /// Huquqiy sahifalar (Play Store talablari). Sayt domeni API bazasidan
+  /// olinadi: `.../api` qismini olib tashlaymiz.
+  static String get webBaseUrl {
+    final base = baseUrl;
+    return base.endsWith('/api') ? base.substring(0, base.length - 4) : base;
+  }
+
+  static String get privacyPolicyUrl => '$webBaseUrl/uz/privacy';
+  static String get termsUrl => '$webBaseUrl/uz/terms';
+  static String get childSafetyUrl => '$webBaseUrl/uz/child-safety';
+  static String get accountDeleteUrl => '$webBaseUrl/uz/account/delete';
   static const String pricingEndpoint = '/pricing';
   static const String subscriptionCheckoutEndpoint = '/subscriptions/checkout';
   static const String subscriptionCancelEndpoint = '/subscriptions/cancel';
   static const String subscriptionGooglePlaySyncEndpoint =
       '/subscriptions/google-play/sync';
+  static const String reportsEndpoint = '/reports';
+  static const String accountEndpoint = '/settings/account';
   static const String tagsEndpoint = '/tags';
   static const String tagsSuggestEndpoint = '/tags/suggest';
   static const String tagsTrendingEndpoint = '/tags/trending';

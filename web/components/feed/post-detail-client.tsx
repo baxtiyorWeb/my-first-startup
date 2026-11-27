@@ -144,6 +144,7 @@ function PostDetailInner({
   // Modals & Menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isAuthorReportOpen, setIsAuthorReportOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
@@ -583,17 +584,30 @@ function PostDetailInner({
                         </button>
                       </>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          setIsReportOpen(true);
-                        }}
-                        className="w-full px-3.5 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 transition-colors cursor-pointer"
-                      >
-                        <Flag size={14} />
-                        <span>Shikoyat qilish</span>
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsReportOpen(true);
+                          }}
+                          className="w-full px-3.5 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <Flag size={14} />
+                          <span>Postga shikoyat qilish</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsAuthorReportOpen(true);
+                          }}
+                          className="w-full px-3.5 py-2 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 transition-colors cursor-pointer"
+                        >
+                          <Flag size={14} />
+                          <span>Muallifni shikoyat qilish</span>
+                        </button>
+                      </>
                     )}
                   </div>
                 )}
@@ -998,6 +1012,16 @@ function PostDetailInner({
         targetType="post"
         authorName={post.author.name}
         snippet={post.title || post.content.slice(0, 100)}
+      />
+
+      {/* Author Report Modal */}
+      <ReportModal
+        isOpen={isAuthorReportOpen}
+        onClose={() => setIsAuthorReportOpen(false)}
+        targetId={post.author.id}
+        targetType="user"
+        authorName={post.author.name}
+        snippet={post.author.handle}
       />
 
       {/* Confirm Delete Dialog */}

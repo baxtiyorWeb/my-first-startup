@@ -17,6 +17,8 @@ import {
   ExternalLink,
   Image as ImageIcon,
   ShieldAlert,
+  UserMinus,
+  CreditCard,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
 import { useI18n } from "@/lib/i18n/context";
@@ -60,6 +62,21 @@ export function AdminSidebar({
       title: locale === "uz" ? "Shikoyatlar" : locale === "ru" ? "Жалобы" : "Reports",
       href: "/dashboard/admin/reports",
       icon: ShieldAlert,
+    },
+    {
+      title:
+        locale === "uz"
+          ? "Hisob o'chirish so'rovlari"
+          : locale === "ru"
+          ? "Удаление аккаунтов"
+          : "Account Deletions",
+      href: "/dashboard/admin/account-deletions",
+      icon: UserMinus,
+    },
+    {
+      title: locale === "uz" ? "To'lovlar" : locale === "ru" ? "Платежи" : "Payments",
+      href: "/dashboard/admin/payments",
+      icon: CreditCard,
     },
     {
       title: locale === "uz" ? "AI Bot Dvigateli" : locale === "ru" ? "AI Bot Движок" : "AI Bot Engine",

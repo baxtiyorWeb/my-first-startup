@@ -145,9 +145,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               IconButton(
                 onPressed: () => ReportBottomSheet.show(
                   context,
+                  targetId: post.id,
                   targetType: 'post',
                   authorName: post.author.name,
                   snippet: ContentUtils.excerpt(post.content, maxLength: 90),
+                  apiClient: widget.authController.apiClient,
                 ),
                 icon: const Icon(Icons.flag_outlined, size: 20),
               ),

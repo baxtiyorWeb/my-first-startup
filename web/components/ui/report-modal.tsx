@@ -37,6 +37,12 @@ const REPORT_REASONS: { id: ReportReasonType; label: string; description: string
     description: "Platforma qoidalariga va axloqiy me’yorlarga zid bo‘lgan materiallar",
   },
   {
+    id: "child_safety",
+    label: "Bolalar xavfsizligi",
+    description:
+      "Bolaga nisbatan zo‘ravonlik, ekspluatatsiya yoki uni xavf ostiga qo‘yuvchi kontent (ustuvor ko‘rib chiqiladi)",
+  },
+  {
     id: "other",
     label: "Boshqa sabab",
     description: "Yuqoridagi toifalarga kirmaydigan boshqa qoidabuzarlik",

@@ -1,16 +1,12 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useI18n } from "@/lib/i18n/context";
+import { notFound } from "next/navigation";
 
 export default function ReelsRedirectPage() {
-  const router = useRouter();
-  const { localePath } = useI18n();
+  const isProduction = process.env.NODE_ENV === "production";
+  const isShortsEnabled = process.env.NEXT_PUBLIC_ENABLE_SHORTS === "true";
 
-  useEffect(() => {
-    router.replace(localePath("/dashboard/shorts"));
-  }, [router, localePath]);
+  if (isProduction || !isShortsEnabled) {
+    notFound();
+  }
 
   return null;
 }

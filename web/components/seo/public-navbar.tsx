@@ -49,7 +49,7 @@ export function PublicNavbar() {
               Geters
             </span>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-semibold">
-              IT Media &amp; SEO Hub
+              IT Media
             </span>
           </div>
         </Link>

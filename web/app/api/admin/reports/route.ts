@@ -69,6 +69,20 @@ export async function GET(req: NextRequest) {
             targetSnippet = commRow.content.slice(0, 120);
             targetAuthor = commRow.authorName;
           }
+        } else if (rep.targetType === "user") {
+          const [userRow] = await db
+            .select({
+              name: users.name,
+              handle: users.handle,
+              role: users.role,
+            })
+            .from(users)
+            .where(eq(users.id, rep.targetId));
+
+          if (userRow) {
+            targetSnippet = `@${userRow.handle} — ${userRow.name} (${userRow.role})`;
+            targetAuthor = userRow.name;
+          }
         }
 
         return {
@@ -134,6 +148,12 @@ export async function DELETE(req: NextRequest) {
           .delete(comments)
           .where(eq(comments.id, existingReport.targetId));
       }
+    } else if (action === "suspend_user") {
+      // Shikoyat qilingan foydalanuvchini bloklash (Play UGC talabi).
+      await db
+        .update(users)
+        .set({ isDeactivated: true, updatedAt: new Date() })
+        .where(eq(users.id, existingReport.targetId));
     }
 
     // Remove the report
@@ -144,6 +164,8 @@ export async function DELETE(req: NextRequest) {
       message:
         action === "delete_content"
           ? "Kontent va shikoyat muvaffaqiyatli o'chirildi"
+          : action === "suspend_user"
+          ? "Foydalanuvchi bloklandi va shikoyat yopildi"
           : "Shikoyat ko'rib chiqildi va yopildi",
     });
   } catch (error) {

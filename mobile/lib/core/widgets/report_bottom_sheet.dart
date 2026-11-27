@@ -1,35 +1,45 @@
 import 'package:material_ui/material_ui.dart';
+import '../constants/api_constants.dart';
+import '../network/api_client.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'app_button.dart';
 import 'keyboard_inset_padding.dart';
 
 class ReportBottomSheet extends StatefulWidget {
+  final ApiClient? apiClient;
+  final String targetId;
   final String targetType;
   final String authorName;
   final String snippet;
 
   const ReportBottomSheet({
     super.key,
+    required this.targetId,
     required this.targetType,
     required this.authorName,
     required this.snippet,
+    this.apiClient,
   });
 
   static Future<void> show(
     BuildContext context, {
+    required String targetId,
     required String targetType,
     required String authorName,
     required String snippet,
+    ApiClient? apiClient,
   }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => ReportBottomSheet(
+        targetId: targetId,
         targetType: targetType,
         authorName: authorName,
         snippet: snippet,
+        apiClient: apiClient,
       ),
     );
   }
@@ -41,12 +51,15 @@ class ReportBottomSheet extends StatefulWidget {
 class _ReportBottomSheetState extends State<ReportBottomSheet> {
   String _selectedReason = 'spam';
   final TextEditingController _noteController = TextEditingController();
+  bool _isSubmitting = false;
+  String? _errorMessage;
 
   static const List<Map<String, String>> _reasons = [
     {'id': 'spam', 'label': 'Spam yoki reklama'},
     {'id': 'harassment', 'label': 'Haqorat yoki tajovuz'},
     {'id': 'misinformation', 'label': 'Yolg\'on ma\'lumot'},
     {'id': 'inappropriate', 'label': 'Nomaqbul kontent'},
+    {'id': 'child_safety', 'label': 'Bolaga nisbatan zo\'ravonlik'},
     {'id': 'other', 'label': 'Boshqa sabab'},
   ];
 
@@ -56,18 +69,58 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
     super.dispose();
   }
 
-  void _submitReport() {
+  Future<void> _submitReport() async {
+    if (_isSubmitting) return;
     FocusScope.of(context).unfocus();
+
+    final apiClient = widget.apiClient;
+    if (apiClient == null) {
+      setState(() {
+        _errorMessage =
+            'Serverga ulanish mavjud emas. Iltimos, qaytadan kiring.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+
     final messenger = ScaffoldMessenger.of(context);
-    Navigator.of(context).pop();
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Shikoyatingiz moderatorlarga yuborildi. Rahmat!'),
-          behavior: SnackBarBehavior.floating,
-        ),
+    final navigator = Navigator.of(context);
+
+    try {
+      await apiClient.post(
+        ApiConstants.reportsEndpoint,
+        body: {
+          'targetId': widget.targetId,
+          'targetType': widget.targetType,
+          'reason': _selectedReason,
+          if (_noteController.text.trim().isNotEmpty)
+            'context': _noteController.text.trim(),
+        },
       );
+
+      if (!mounted) return;
+      navigator.pop();
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Shikoyatingiz moderatorlarga yuborildi. Rahmat!'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+        _errorMessage = e is ApiException
+            ? e.message
+            : 'Shikoyatni yuborishda xatolik yuz berdi. Keyinroq qayta urinib ko\'ring.';
+      });
+    }
   }
 
   @override
@@ -124,7 +177,9 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
                         ),
                       ),
                       IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: _isSubmitting
+                            ? null
+                            : () => Navigator.of(context).pop(),
                         icon: const Icon(Icons.close_rounded, size: 19),
                         visualDensity: VisualDensity.compact,
                       ),
@@ -157,7 +212,9 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
                   ..._reasons.map((r) {
                     final isSelected = _selectedReason == r['id'];
                     return InkWell(
-                      onTap: () => setState(() => _selectedReason = r['id']!),
+                      onTap: _isSubmitting
+                          ? null
+                          : () => setState(() => _selectedReason = r['id']!),
                       borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -202,6 +259,7 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
                     controller: _noteController,
                     maxLines: 2,
                     minLines: 1,
+                    enabled: !_isSubmitting,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _submitReport(),
                     decoration: const InputDecoration(
@@ -209,12 +267,35 @@ class _ReportBottomSheetState extends State<ReportBottomSheet> {
                       isDense: true,
                     ),
                   ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.danger,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 14),
                   AppButton(
-                    text: 'Shikoyatni yuborish',
+                    text: _isSubmitting
+                        ? 'Yuborilmoqda...'
+                        : 'Shikoyatni yuborish',
                     variant: ButtonVariant.danger,
                     isFullWidth: true,
-                    onPressed: _submitReport,
+                    onPressed: _isSubmitting ? null : _submitReport,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Shikoyatlar 24 soat ichida ko\'rib chiqiladi. Bolalar xavfsizligiga oid shikoyatlar ustuvor.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
+                    ),
                   ),
                 ],
               ),

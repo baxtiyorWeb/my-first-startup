@@ -192,6 +192,7 @@ class _PostCardState extends State<PostCard> {
                   post: resolved,
                   feedController: widget.feedController,
                   currentAuthor: widget.authController.currentAuthor,
+                  apiClient: widget.authController.apiClient,
                 ),
               ),
             ),

@@ -19,6 +19,8 @@ export function PublicFooter({ locale }: { locale: Locale }) {
       privacy: "Maxfiylik siyosati",
       terms: "Foydalanish shartlari",
       guidelines: "Jamiyat qoidalari",
+      childSafety: "Bolalar xavfsizligi",
+      deleteAccount: "Hisobni o'chirish",
       help: "Yordam markazi",
       allRights: "Barcha huquqlar himoyalangan.",
     },
@@ -37,6 +39,8 @@ export function PublicFooter({ locale }: { locale: Locale }) {
       privacy: "Политика конфиденциальности",
       terms: "Условия использования",
       guidelines: "Правила сообщества",
+      childSafety: "Безопасность детей",
+      deleteAccount: "Удаление аккаунта",
       help: "Центр помощи",
       allRights: "Все права защищены.",
     },
@@ -55,6 +59,8 @@ export function PublicFooter({ locale }: { locale: Locale }) {
       privacy: "Privacy Policy",
       terms: "Terms of Service",
       guidelines: "Community Guidelines",
+      childSafety: "Child Safety",
+      deleteAccount: "Delete account",
       help: "Help Center",
       allRights: "All rights reserved.",
     },
@@ -192,6 +198,22 @@ export function PublicFooter({ locale }: { locale: Locale }) {
                   className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
                 >
                   {dictionary.guidelines}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/child-safety`}
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                >
+                  {dictionary.childSafety}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/account/delete`}
+                  className="text-slate-600 dark:text-slate-400 hover:text-[#1d9bf0] transition-colors"
+                >
+                  {dictionary.deleteAccount}
                 </Link>
               </li>
               <li>

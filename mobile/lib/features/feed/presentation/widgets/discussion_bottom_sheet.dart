@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
@@ -16,12 +17,14 @@ class DiscussionBottomSheet extends StatefulWidget {
   final Post post;
   final FeedController feedController;
   final Author currentAuthor;
+  final ApiClient? apiClient;
 
   const DiscussionBottomSheet({
     super.key,
     required this.post,
     required this.feedController,
     required this.currentAuthor,
+    this.apiClient,
   });
 
   static Future<void> show(
@@ -29,6 +32,7 @@ class DiscussionBottomSheet extends StatefulWidget {
     required Post post,
     required FeedController feedController,
     required Author currentAuthor,
+    ApiClient? apiClient,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -38,6 +42,7 @@ class DiscussionBottomSheet extends StatefulWidget {
         post: post,
         feedController: feedController,
         currentAuthor: currentAuthor,
+        apiClient: apiClient,
       ),
     );
   }
@@ -244,9 +249,11 @@ class _DiscussionBottomSheetState extends State<DiscussionBottomSheet> {
                           onLikeTap: _handleCommentLike,
                           onReportTap: (c) => ReportBottomSheet.show(
                             context,
+                            targetId: c.id,
                             targetType: 'comment',
                             authorName: c.author.name,
                             snippet: ContentUtils.excerpt(c.content, maxLength: 80),
+                            apiClient: widget.apiClient,
                           ),
                         ),
                       ),

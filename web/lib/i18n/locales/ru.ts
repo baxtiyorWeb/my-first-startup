@@ -530,6 +530,8 @@ export const ru: typeof uz = {
     privacy: "Конфиденциальность",
     terms: "Условия использования",
     guidelines: "Правила",
+    childSafety: "Безопасность детей",
+    deleteAccount: "Удаление аккаунта",
     help: "Помощь",
     allRightsReserved: "Все права защищены",
   },

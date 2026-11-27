@@ -4,8 +4,6 @@ import React, { useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   PenSquare,
-  FileText,
-  Newspaper,
   Image as ImageIcon,
   X,
   Loader2,
@@ -57,15 +55,6 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
     }, 50);
   };
 
-  const handleStudioNavigate = (kind: "article" | "video" | "news") => {
-    const target = `/dashboard/create?kind=${kind}`;
-    if (!session.isAuthenticated) {
-      toast.info(t("auth.loginRequired") || "Kontent yaratish uchun tizimga kiring");
-      router.push(localePath(`/auth/login?redirect=${encodeURIComponent(target)}`));
-      return;
-    }
-    router.push(localePath(target));
-  };
 
   const handleImageButtonClick = () => {
     if (!session.isAuthenticated) {
@@ -274,26 +263,6 @@ export function CreatePostComposer({ onPostCreated }: CreatePostComposerProps) {
           >
             <PenSquare size={16} className="text-slate-500 dark:text-[#8b98a5]" />
             <span>Post</span>
-          </button>
-
-          {/* Maqola option */}
-          <button
-            type="button"
-            onClick={() => handleStudioNavigate("article")}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
-          >
-            <FileText size={16} className="text-[#1d9bf0]" />
-            <span>Maqola</span>
-          </button>
-
-          {/* Yangilik option */}
-          <button
-            type="button"
-            onClick={() => handleStudioNavigate("news")}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-slate-600 dark:text-[#e7e9ea] hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors cursor-pointer text-[12px] font-medium shrink-0"
-          >
-            <Newspaper size={16} className="text-amber-500" />
-            <span>Yangilik</span>
           </button>
 
           {/* Rasm option */}

@@ -386,3 +386,18 @@ CREATE INDEX IF NOT EXISTS "idx_media_uploaded_by" ON "media"("uploaded_by");
 CREATE INDEX IF NOT EXISTS "idx_media_collection" ON "media"("collection_name");
 
 
+
+-- 20. Account Deletion Requests (Google Play "account deletion" talabi)
+CREATE TABLE IF NOT EXISTS "account_deletion_requests" (
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "identifier" VARCHAR(255) NOT NULL,
+    "reason" TEXT,
+    "status" VARCHAR(20) NOT NULL DEFAULT 'pending',
+    "matched_user_id" UUID REFERENCES "users"("id") ON DELETE SET NULL,
+    "request_ip" VARCHAR(64),
+    "admin_note" TEXT,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+    "resolved_at" TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS "idx_account_deletion_status" ON "account_deletion_requests"("status");
+CREATE INDEX IF NOT EXISTS "idx_account_deletion_created" ON "account_deletion_requests"("created_at");

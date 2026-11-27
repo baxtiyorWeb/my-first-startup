@@ -528,6 +528,8 @@ export const uz = {
     privacy: "Maxfiylik",
     terms: "Foydalanish shartlari",
     guidelines: "Qoidalar",
+    childSafety: "Bolalar xavfsizligi",
+    deleteAccount: "Hisobni o'chirish",
     help: "Yordam",
     allRightsReserved: "Barcha huquqlar himoyalangan",
   },

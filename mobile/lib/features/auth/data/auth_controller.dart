@@ -270,6 +270,14 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  /// Hisobni butunlay o'chiradi (Play Store "Account deletion" talabi).
+  /// Muvaffaqiyatli bo'lsa sessiya tozalanadi va foydalanuvchi mehmon holatiga
+  /// qaytadi. Xatolik yuz bersa, xabar `ApiException` sifatida qaytadi.
+  Future<void> deleteAccount() async {
+    await _apiClient.delete(ApiConstants.accountEndpoint);
+    await logout();
+  }
+
   Future<void> logout() async {
     final prevUserId = _currentUser.id;
     try {

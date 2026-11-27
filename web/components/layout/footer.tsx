@@ -43,6 +43,18 @@ export function Footer() {
             {t("footer.guidelines")}
           </Link>
           <Link
+            href={localePath("/child-safety")}
+            className="hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer transition-colors"
+          >
+            {t("footer.childSafety")}
+          </Link>
+          <Link
+            href={localePath("/account/delete")}
+            className="hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer transition-colors"
+          >
+            {t("footer.deleteAccount")}
+          </Link>
+          <Link
             href={localePath("/help")}
             className="hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer transition-colors"
           >

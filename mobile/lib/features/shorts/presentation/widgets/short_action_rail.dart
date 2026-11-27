@@ -122,6 +122,7 @@ class ShortActionRail extends StatelessWidget {
             post: resolved,
             feedController: feedController,
             currentAuthor: authController.currentAuthor,
+            apiClient: authController.apiClient,
           ),
         ),
         const SizedBox(height: 12),

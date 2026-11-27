@@ -1,10 +1,11 @@
 import crypto from "crypto";
-import { eq, and, or, desc, asc } from "drizzle-orm";
+import { eq, and, or, desc, asc, count, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import {
   subscriptionPlans,
   userSubscriptions,
   paymentTransactions,
+  users,
 } from "@/server/db/schema";
 import { AppError } from "@/server/common/errors";
 import {
@@ -19,7 +20,12 @@ import {
   type PricingOverviewDto,
   type SubscriptionStatusDto,
 } from "./pricing.defaults";
-import { createInpayPayment, isInpayConfigured } from "./inpay.client";
+import {
+  createInpayPayment,
+  fetchInpayPayment,
+  INPAY_MIN_AMOUNT_UZS,
+  isInpayConfigured,
+} from "./inpay.client";
 import {
   fetchRevenueCatEntitlement,
   isRevenueCatConfigured,
@@ -191,15 +197,25 @@ export async function initiateSubscriptionCheckout(params: {
       };
     }
 
-    const idemKey =
-      params.idempotencyKey?.trim() ||
-      `sub_${params.userId}_${plan.slug}_${params.billingCycle}_${crypto.randomUUID()}`;
+    // A client-supplied key is scoped to the user, so a reused or guessed key can
+    // never resolve to somebody else's transaction.
+    const requestedKey = params.idempotencyKey?.trim();
+    const idemKey = (
+      requestedKey
+        ? `sub_${params.userId}_${requestedKey}`
+        : `sub_${params.userId}_${plan.slug}_${params.billingCycle}_${crypto.randomUUID()}`
+    ).slice(0, 120);
 
     // Idempotency check: return existing pending/succeeded transaction if same key
     const [existingTx] = await db
       .select()
       .from(paymentTransactions)
-      .where(eq(paymentTransactions.idempotencyKey, idemKey))
+      .where(
+        and(
+          eq(paymentTransactions.idempotencyKey, idemKey),
+          eq(paymentTransactions.userId, params.userId)
+        )
+      )
       .limit(1);
 
     if (existingTx) {
@@ -224,11 +240,27 @@ export async function initiateSubscriptionCheckout(params: {
       };
     }
 
-    if (params.provider === "inpay" && !isInpayConfigured()) {
+    // Only inPAY is wired end-to-end; other providers would create a dangling
+    // pending transaction that no webhook can ever resolve.
+    if (params.provider !== "inpay") {
+      throw AppError.badRequest(
+        "Hozircha to'lov faqat inPAY orqali qabul qilinadi. Iltimos, inPAY'ni tanlang."
+      );
+    }
+
+    if (!isInpayConfigured()) {
       throw new AppError(
         "INTERNAL_ERROR",
         "To'lov tizimi hali sozlanmagan. Iltimos, keyinroq urinib ko'ring.",
         503
+      );
+    }
+
+    if (amount < INPAY_MIN_AMOUNT_UZS) {
+      throw AppError.badRequest(
+        `Tarif narxi inPAY minimal to'lovidan (${INPAY_MIN_AMOUNT_UZS.toLocaleString(
+          "uz-UZ"
+        )} so'm) kam. Administrator bilan bog'laning.`
       );
     }
 
@@ -249,40 +281,31 @@ export async function initiateSubscriptionCheckout(params: {
       })
       .returning();
 
-    if (params.provider !== "inpay") {
-      return {
-        transactionId: txRecord.id,
-        status: "pending",
-        requiresPayment: true,
-        amount,
-        currency: plan.currency,
-        provider: params.provider,
-        checkoutUrl: null,
-        message:
-          "To'lov tranzaksiyasi yaratildi. Premium kirish faqat to'lov provayderi webhook tasdiqlaganidan so'ng faollashadi.",
-      };
-    }
-
-    // Create the hosted checkout page on inPAY. The idempotency key is shared
-    // with the local transaction so retries never create a duplicate payment.
+    // Create the hosted checkout page on inPAY. The local row exists first so the
+    // return URL can carry our transaction id for server-side reconciliation.
     const description = `${plan.name} — ${params.billingCycle === "yearly" ? "yillik" : "oylik"} tarif (Geters)`;
+    const returnUrl = publicAppUrl()
+      ? `${publicAppUrl()}/dashboard/pricing?payment=${txRecord.id}`
+      : undefined;
+
     let payment: Awaited<ReturnType<typeof createInpayPayment>>;
     try {
       payment = await createInpayPayment({
         amount,
         description,
-        idempotencyKey: idemKey,
-        metadata: {
-          transaction_id: txRecord.id,
-          user_id: params.userId,
-          plan_slug: plan.slug,
-          billing_cycle: params.billingCycle,
-        },
+        returnUrl,
       });
     } catch (error) {
       await db
         .update(paymentTransactions)
-        .set({ status: "failed", updatedAt: new Date() })
+        .set({
+          status: "failed",
+          updatedAt: new Date(),
+          metadata: {
+            ...txRecord.metadata,
+            failureReason: error instanceof Error ? error.message : "unknown",
+          },
+        })
         .where(eq(paymentTransactions.id, txRecord.id));
       throw error;
     }
@@ -294,9 +317,9 @@ export async function initiateSubscriptionCheckout(params: {
         providerTransactionId: payment.id,
         metadata: {
           ...txRecord.metadata,
-          inpayPaymentId: payment.id,
+          inpayOrderId: payment.id,
           checkoutUrl,
-          livemode: payment.livemode,
+          returnUrl,
         },
         updatedAt: new Date(),
       })
@@ -354,6 +377,8 @@ export async function processPaymentWebhook(params: {
   providerTransactionId: string;
   status: "succeeded" | "failed" | "refunded";
   paidAmount?: number;
+  /** Raw provider status, kept in metadata for auditing. */
+  providerStatus?: string;
 }) {
   const result = await db.transaction(async (tx) => {
     const [txRow] = await tx
@@ -368,6 +393,23 @@ export async function processPaymentWebhook(params: {
 
     // Idempotent handling for duplicate callbacks
     if (txRow.status === params.status && txRow.providerTransactionId === params.providerTransactionId) {
+      return {
+        idempotent: true,
+        status: txRow.status,
+        subscriptionId: txRow.subscriptionId,
+        userId: txRow.userId,
+      };
+    }
+
+    // Transitions are monotonic: a late "failed" callback must not revoke an
+    // entitlement that "succeeded" already granted, while a refund may revoke it.
+    const allowedTransitions: Record<string, Array<"succeeded" | "failed" | "refunded">> = {
+      pending: ["succeeded", "failed", "refunded"],
+      failed: ["succeeded"],
+      succeeded: ["refunded"],
+      refunded: [],
+    };
+    if (!(allowedTransitions[txRow.status] ?? []).includes(params.status)) {
       return {
         idempotent: true,
         status: txRow.status,
@@ -395,6 +437,10 @@ export async function processPaymentWebhook(params: {
           status: params.status,
           providerTransactionId: params.providerTransactionId,
           updatedAt: new Date(),
+          metadata: {
+            ...txRow.metadata,
+            ...(params.providerStatus ? { providerStatus: params.providerStatus } : {}),
+          },
         })
         .where(eq(paymentTransactions.id, txRow.id));
 
@@ -424,6 +470,8 @@ export async function processPaymentWebhook(params: {
       .set({ status: "cancelled", autoRenew: false, updatedAt: now })
       .where(and(eq(userSubscriptions.userId, txRow.userId), eq(userSubscriptions.status, "active")));
 
+    // inPAY hosted checkout is a one-off payment: it cannot charge the card
+    // again, so advertising auto-renewal would be misleading.
     const [subscription] = await tx
       .insert(userSubscriptions)
       .values({
@@ -434,7 +482,7 @@ export async function processPaymentWebhook(params: {
         currentPeriodStart: now,
         currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: false,
-        autoRenew: true,
+        autoRenew: false,
       })
       .returning();
 
@@ -445,6 +493,11 @@ export async function processPaymentWebhook(params: {
         providerTransactionId: params.providerTransactionId,
         subscriptionId: subscription.id,
         updatedAt: now,
+        metadata: {
+          ...txRow.metadata,
+          ...(params.providerStatus ? { providerStatus: params.providerStatus } : {}),
+          paidAmount: params.paidAmount ?? txRow.amount,
+        },
       })
       .where(eq(paymentTransactions.id, txRow.id));
 
@@ -495,6 +548,282 @@ export async function cancelActiveSubscription(userId: string) {
     }
     throw error;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Payment status reconciliation (webhooks can be late or blocked locally)
+// ---------------------------------------------------------------------------
+
+function publicAppUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    ""
+  ).replace(/\/+$/, "");
+}
+
+export type PaymentStatus = "pending" | "succeeded" | "failed" | "refunded";
+
+export interface PaymentStatusDto {
+  transactionId: string;
+  status: PaymentStatus;
+  planSlug: string | null;
+  planName: string | null;
+  amount: number;
+  currency: string;
+  provider: string;
+  requiresPayment: boolean;
+  checkoutUrl: string | null;
+  checkedWithProvider: boolean;
+  message: string;
+}
+
+function paymentStatusMessage(status: string): string {
+  switch (status) {
+    case "succeeded":
+      return "To'lov tasdiqlandi va obuna faollashtirildi";
+    case "refunded":
+      return "To'lov qaytarildi, obuna bekor qilindi";
+    case "failed":
+      return "To'lov yakunlanmadi. Qaytadan urinib ko'rishingiz mumkin";
+    default:
+      return "To'lov provayder tasdiqlashini kutmoqda";
+  }
+}
+
+/**
+ * Pulls the authoritative status from inPAY and applies it locally. Used when a
+ * webhook is delayed, lost, or cannot reach a local development server.
+ */
+export async function reconcileInpayPayment(params: {
+  transactionId: string;
+  userId?: string;
+}) {
+  const [row] = await db
+    .select()
+    .from(paymentTransactions)
+    .where(eq(paymentTransactions.id, params.transactionId))
+    .limit(1);
+
+  if (!row) throw AppError.notFound("To'lov tranzaksiyasi topilmadi");
+  if (params.userId && row.userId !== params.userId) {
+    throw AppError.notFound("To'lov tranzaksiyasi topilmadi");
+  }
+  if (row.provider !== "inpay") {
+    throw AppError.badRequest("Bu tranzaksiya inPAY orqali yaratilmagan");
+  }
+  if (!row.providerTransactionId) {
+    throw AppError.badRequest("Tranzaksiyada inPAY buyurtma ID si yo'q");
+  }
+
+  if (row.status !== "pending") {
+    return {
+      transactionId: row.id,
+      status: row.status as PaymentStatus,
+      checkedWithProvider: false,
+      providerStatus: null as string | null,
+      subscriptionId: row.subscriptionId,
+    };
+  }
+
+  const remote = await fetchInpayPayment(row.providerTransactionId);
+
+  if (remote.status === "pending") {
+    return {
+      transactionId: row.id,
+      status: "pending" as PaymentStatus,
+      checkedWithProvider: true,
+      providerStatus: "pending",
+      subscriptionId: row.subscriptionId,
+    };
+  }
+
+  const result = await processPaymentWebhook({
+    transactionId: row.id,
+    providerTransactionId: remote.id.slice(0, 160),
+    status: remote.status,
+    paidAmount: remote.status === "succeeded" ? remote.paidAmount ?? row.amount : undefined,
+    providerStatus: remote.status,
+  });
+
+  return {
+    transactionId: row.id,
+    status: result.status as PaymentStatus,
+    checkedWithProvider: true,
+    providerStatus: remote.status,
+    subscriptionId: result.subscriptionId,
+  };
+}
+
+/** Returns one transaction for its owner, reconciling pending inPAY payments. */
+export async function getPaymentStatus(params: {
+  transactionId: string;
+  userId: string;
+}): Promise<PaymentStatusDto> {
+  const [row] = await db
+    .select({
+      id: paymentTransactions.id,
+      status: paymentTransactions.status,
+      amount: paymentTransactions.amount,
+      currency: paymentTransactions.currency,
+      provider: paymentTransactions.provider,
+      providerTransactionId: paymentTransactions.providerTransactionId,
+      metadata: paymentTransactions.metadata,
+      planSlug: subscriptionPlans.slug,
+      planName: subscriptionPlans.name,
+    })
+    .from(paymentTransactions)
+    .innerJoin(subscriptionPlans, eq(subscriptionPlans.id, paymentTransactions.planId))
+    .where(
+      and(
+        eq(paymentTransactions.id, params.transactionId),
+        eq(paymentTransactions.userId, params.userId)
+      )
+    )
+    .limit(1);
+
+  if (!row) throw AppError.notFound("To'lov tranzaksiyasi topilmadi");
+
+  let status = row.status as PaymentStatus;
+  let checkedWithProvider = false;
+
+  if (status === "pending" && row.provider === "inpay" && row.providerTransactionId) {
+    try {
+      const reconciled = await reconcileInpayPayment({
+        transactionId: row.id,
+        userId: params.userId,
+      });
+      status = reconciled.status;
+      checkedWithProvider = reconciled.checkedWithProvider;
+    } catch (error) {
+      // Provider outage must not hide the local state from the buyer.
+      console.error("[pricing] payment reconciliation failed", {
+        transactionId: row.id,
+        error,
+      });
+    }
+  }
+
+  const checkoutUrl =
+    status === "pending" && typeof row.metadata?.checkoutUrl === "string"
+      ? row.metadata.checkoutUrl
+      : null;
+
+  return {
+    transactionId: row.id,
+    status,
+    planSlug: row.planSlug,
+    planName: row.planName,
+    amount: row.amount,
+    currency: row.currency,
+    provider: row.provider,
+    requiresPayment: status === "pending",
+    checkoutUrl,
+    checkedWithProvider,
+    message: paymentStatusMessage(status),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Admin: payment transactions
+// ---------------------------------------------------------------------------
+
+export interface AdminPaymentTransactionDto {
+  id: string;
+  status: string;
+  provider: string;
+  amount: number;
+  currency: string;
+  providerTransactionId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  subscriptionId: string | null;
+  user: { id: string; name: string; handle: string; email: string | null };
+  plan: { slug: string; name: string };
+}
+
+export async function listPaymentTransactions(params: {
+  status?: string;
+  provider?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const limit = Math.min(Math.max(params.limit ?? 50, 1), 200);
+  const offset = Math.max(params.offset ?? 0, 0);
+
+  const filters = [];
+  if (params.status) filters.push(eq(paymentTransactions.status, params.status));
+  if (params.provider) filters.push(eq(paymentTransactions.provider, params.provider));
+  const where = filters.length > 0 ? and(...filters) : undefined;
+
+  const rows = await db
+    .select({
+      id: paymentTransactions.id,
+      status: paymentTransactions.status,
+      provider: paymentTransactions.provider,
+      amount: paymentTransactions.amount,
+      currency: paymentTransactions.currency,
+      providerTransactionId: paymentTransactions.providerTransactionId,
+      createdAt: paymentTransactions.createdAt,
+      updatedAt: paymentTransactions.updatedAt,
+      subscriptionId: paymentTransactions.subscriptionId,
+      userId: users.id,
+      userName: users.name,
+      userHandle: users.handle,
+      userEmail: users.email,
+      planSlug: subscriptionPlans.slug,
+      planName: subscriptionPlans.name,
+    })
+    .from(paymentTransactions)
+    .innerJoin(users, eq(users.id, paymentTransactions.userId))
+    .innerJoin(subscriptionPlans, eq(subscriptionPlans.id, paymentTransactions.planId))
+    .where(where)
+    .orderBy(desc(paymentTransactions.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const summaryRows = await db
+    .select({
+      status: paymentTransactions.status,
+      count: count(),
+      amount: sql<number>`coalesce(sum(${paymentTransactions.amount}), 0)::int`,
+    })
+    .from(paymentTransactions)
+    .groupBy(paymentTransactions.status);
+
+  const transactions: AdminPaymentTransactionDto[] = rows.map((row) => ({
+    id: row.id,
+    status: row.status,
+    provider: row.provider,
+    amount: row.amount,
+    currency: row.currency,
+    providerTransactionId: row.providerTransactionId,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    subscriptionId: row.subscriptionId,
+    user: {
+      id: row.userId,
+      name: row.userName,
+      handle: row.userHandle,
+      email: row.userEmail,
+    },
+    plan: { slug: row.planSlug, name: row.planName },
+  }));
+
+  const summary = summaryRows.reduce(
+    (acc, row) => {
+      acc.total += Number(row.count);
+      if (row.status === "succeeded") acc.succeeded += Number(row.count);
+      if (row.status === "pending") acc.pending += Number(row.count);
+      if (row.status === "failed") acc.failed += Number(row.count);
+      if (row.status === "refunded") acc.refunded += Number(row.count);
+      if (row.status === "succeeded") acc.revenueUzs += Number(row.amount) || 0;
+      return acc;
+    },
+    { total: 0, succeeded: 0, pending: 0, failed: 0, refunded: 0, revenueUzs: 0 }
+  );
+
+  return { transactions, summary, limit, offset };
 }
 
 // ---------------------------------------------------------------------------

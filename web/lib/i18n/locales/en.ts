@@ -530,6 +530,8 @@ export const en: typeof uz = {
     privacy: "Privacy",
     terms: "Terms of Service",
     guidelines: "Guidelines",
+    childSafety: "Child Safety",
+    deleteAccount: "Delete account",
     help: "Help Center",
     allRightsReserved: "All rights reserved",
   },

@@ -6,8 +6,6 @@ import {
   List as ListIcon,
   ChevronDown,
   FileText,
-  BookOpen,
-  Newspaper,
   Check,
 } from "lucide-react";
 
@@ -53,8 +51,6 @@ export function FeedFilterToolbar({
     icon: React.ComponentType<{ className?: string; size?: number }>;
   }[] = [
       { id: "all", label: "Barchasi", icon: LayoutGrid },
-      { id: "articles", label: "Maqolalar", icon: BookOpen },
-      { id: "news", label: "Yangiliklar", icon: Newspaper },
       { id: "posts", label: "Muhokamalar", icon: FileText },
     ];
 

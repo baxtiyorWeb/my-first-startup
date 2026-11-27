@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Local development talks to http://127.0.0.1 / LAN dev servers.
-         Cleartext is intentionally limited to debug builds only. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Faqat debug build uchun: lokal API (http://10.0.2.2:3000 yoki
+         127.0.0.1) bilan ishlash uchun cleartext ruxsat beriladi.
+         Release build barcha so'rovlarni HTTPS orqali yuboradi. -->
     <application android:usesCleartextTraffic="true" />
 </manifest>

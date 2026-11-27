@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_controller.dart';
@@ -86,6 +88,103 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
     }
+  }
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('Havolani ochib bo\'lmadi: $url'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Havolani ochib bo\'lmadi: $url'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      title: 'Hisobni butunlay o\'chirish',
+      message:
+          'Hisobingiz, postlaringiz, izohlaringiz, xabarlaringiz va profil ma\'lumotlaringiz butunlay o\'chiriladi. Bu amalni ortga qaytarib bo\'lmaydi.',
+      confirmLabel: 'O\'chirish',
+      isDanger: true,
+    );
+    if (!confirmed || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    try {
+      await widget.authController.deleteAccount();
+      navigator.popUntil((route) => route.isFirst);
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Hisobingiz butunlay o\'chirildi'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Hisobni o\'chirishda xatolik: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.dangerSurface,
+          ),
+        );
+    }
+  }
+
+  Widget _linkTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+    bool isDanger = false,
+  }) {
+    return ListTile(
+      dense: true,
+      onTap: onTap,
+      leading: Icon(
+        icon,
+        size: 19,
+        color: isDanger ? AppColors.danger : AppColors.primary,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w600,
+          color: isDanger ? AppColors.danger : null,
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(subtitle, style: const TextStyle(fontSize: 11.5))
+          : null,
+      trailing: const Icon(Icons.open_in_new_rounded, size: 15),
+    );
   }
 
   @override
@@ -188,7 +287,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (v) => _setPushPref(_kFollowsKey, v),
                 ),
               ]),
+              const SizedBox(height: 20),
+              _buildSectionTitle('Huquqiy va xavfsizlik', isDark),
+              const SizedBox(height: 8),
+              _buildDividedCard(isDark, [
+                _linkTile(
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Maxfiylik siyosati',
+                  onTap: () => _openUrl(ApiConstants.privacyPolicyUrl),
+                ),
+                _linkTile(
+                  icon: Icons.description_outlined,
+                  title: 'Foydalanish shartlari',
+                  onTap: () => _openUrl(ApiConstants.termsUrl),
+                ),
+                _linkTile(
+                  icon: Icons.child_care_outlined,
+                  title: 'Bolalar xavfsizligi',
+                  subtitle: 'CSAE bo\'yicha nol tolerantlik siyosati',
+                  onTap: () => _openUrl(ApiConstants.childSafetyUrl),
+                ),
+                _linkTile(
+                  icon: Icons.gavel_outlined,
+                  title: 'Shikoyat va qo\'llab-quvvatlash',
+                  subtitle: 'support@thegogetters.uz',
+                  onTap: () => _openUrl('mailto:support@thegogetters.uz'),
+                ),
+                _linkTile(
+                  icon: Icons.delete_forever_outlined,
+                  title: 'Hisobni o\'chirish (veb orqali)',
+                  onTap: () => _openUrl(ApiConstants.accountDeleteUrl),
+                  isDanger: true,
+                ),
+              ]),
               const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: _deleteAccount,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: const BorderSide(color: AppColors.danger),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  ),
+                ),
+                icon: const Icon(Icons.delete_forever_rounded, size: 18),
+                label: const Text(
+                  'Hisobni butunlay o\'chirish',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: () async {
                   final ok = await AppConfirmDialog.show(

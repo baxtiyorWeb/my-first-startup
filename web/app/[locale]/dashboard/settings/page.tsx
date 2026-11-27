@@ -80,7 +80,7 @@ type SettingsTab = "account" | "privacy" | "security" | "notifications" | "syste
 export default function SettingsPage() {
   const { session, isLoaded, updateCurrentUser, logout } = useAuth();
   const { theme: appTheme, setTheme: setAppTheme } = useTheme();
-  const { t, locale, switchLocale, alphabet, setAlphabet } = useI18n();
+  const { t, locale, localePath, switchLocale, alphabet, setAlphabet } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -1515,6 +1515,34 @@ export default function SettingsPage() {
                 >
                   {t("settings.tabs.security.deleteBtn")}
                 </button>
+                <a
+                  href={localePath("/account/delete")}
+                  className="text-[11px] text-slate-600 dark:text-slate-400 underline hover:text-slate-900 dark:hover:text-slate-100"
+                >
+                  {locale === "uz"
+                    ? "Ilovadan tashqarida o‘chirish (veb)"
+                    : locale === "ru"
+                    ? "Удаление вне приложения (веб)"
+                    : "Delete outside the app (web)"}
+                </a>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                {locale === "uz"
+                  ? "Maxfiylik siyosati, foydalanish shartlari va bolalar xavfsizligi hujjatlari bilan quyida tanishishingiz mumkin."
+                  : locale === "ru"
+                  ? "Ниже доступны политика конфиденциальности, условия использования и стандарты безопасности детей."
+                  : "Read our privacy policy, terms of service and child safety standards below."}
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px]">
+                <a href={localePath("/privacy")} className="text-slate-600 dark:text-slate-400 underline hover:text-slate-900 dark:hover:text-slate-100">
+                  {locale === "uz" ? "Maxfiylik siyosati" : locale === "ru" ? "Политика конфиденциальности" : "Privacy Policy"}
+                </a>
+                <a href={localePath("/terms")} className="text-slate-600 dark:text-slate-400 underline hover:text-slate-900 dark:hover:text-slate-100">
+                  {locale === "uz" ? "Foydalanish shartlari" : locale === "ru" ? "Условия использования" : "Terms of Service"}
+                </a>
+                <a href={localePath("/child-safety")} className="text-slate-600 dark:text-slate-400 underline hover:text-slate-900 dark:hover:text-slate-100">
+                  {locale === "uz" ? "Bolalar xavfsizligi" : locale === "ru" ? "Безопасность детей" : "Child Safety"}
+                </a>
               </div>
             </div>
           </div>

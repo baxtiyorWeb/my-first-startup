@@ -240,12 +240,14 @@ class ShortsOptionsSheet {
                                 Navigator.of(sheetCtx).pop();
                                 ReportBottomSheet.show(
                                   context,
+                                  targetId: post.id,
                                   targetType: 'post',
                                   authorName: post.author.name,
                                   snippet: ContentUtils.excerpt(
                                     ContentUtils.stripHtml(post.content),
                                     maxLength: 90,
                                   ),
+                                  apiClient: authController.apiClient,
                                 );
                               },
                             ),

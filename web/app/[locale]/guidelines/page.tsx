@@ -26,6 +26,14 @@ export default function GuidelinesPage() {
           title: "3. Spamsiz muhit",
           desc: "Keraksiz reklama havolalari yoki o‘zaro kelishilgan sun’iy layklar tarmog‘i bloklanadi.",
         },
+        {
+          title: "4. Shikoyat va bloklash",
+          desc: "Har qanday post, izoh yoki foydalanuvchi menyusidagi «Shikoyat qilish» orqali xabar bering. Shikoyatlar 24 soat ichida ko‘rib chiqiladi. Istalgan foydalanuvchini Sozlamalar → Maxfiylik → Bloklangan foydalanuvchilar orqali bloklashingiz mumkin.",
+        },
+        {
+          title: "5. Bolalar xavfsizligi",
+          desc: "Bolalarga nisbatan zo‘ravonlik va ekspluatatsiya (CSAE) nol tolerantlik bilan taqiqlanadi: bunday kontent darhol o‘chiriladi va vakolatli organlarga xabar qilinadi. Batafsil: geters.uz/uz/child-safety.",
+        },
       ],
     },
     ru: {
@@ -45,6 +53,14 @@ export default function GuidelinesPage() {
           title: "3. Пространство без спама",
           desc: "Рекламные ссылки, бессодержательные публикации и накрутка активности приводят к блокировке аккаунта.",
         },
+        {
+          title: "4. Жалобы и блокировка",
+          desc: "Сообщайте через «Пожаловаться» в меню любого поста, комментария или пользователя. Жалобы рассматриваются в течение 24 часов. Заблокировать пользователя можно в Настройки → Приватность → Заблокированные.",
+        },
+        {
+          title: "5. Безопасность детей",
+          desc: "Насилие и эксплуатация детей (CSAE) запрещены по принципу нулевой терпимости: контент удаляется немедленно, о случае сообщается в компетентные органы. Подробнее: geters.uz/ru/child-safety.",
+        },
       ],
     },
     en: {
@@ -63,6 +79,14 @@ export default function GuidelinesPage() {
         {
           title: "3. Spam-Free Environment",
           desc: "Unsolicited promotional links, automated content, and artificial engagement manipulation will result in permanent suspension.",
+        },
+        {
+          title: "4. Reporting and blocking",
+          desc: "Use “Report” in the menu of any post, comment or user. Reports are reviewed within 24 hours. You can block any user in Settings → Privacy → Blocked users.",
+        },
+        {
+          title: "5. Child safety",
+          desc: "Violence and exploitation of children (CSAE) are prohibited with zero tolerance: content is removed immediately and reported to the competent authorities. Details: geters.uz/en/child-safety.",
         },
       ],
     },

@@ -1,19 +1,30 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Check, Sparkles, ShieldCheck, Loader2, AlertCircle, Lock } from "lucide-react";
+import { Check, Sparkles, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 import { api } from "@/lib/api";
-import type { PricingOverviewResponse, PricingPlanDto } from "@/lib/api/pricing";
+import type {
+  PricingOverviewResponse,
+  PricingPlanDto,
+  PaymentStatusResponse,
+} from "@/lib/api/pricing";
 import { toast } from "@/components/ui/toast";
-
-// Pullik tariflar hozircha vaqtincha yopiq: rejalar hammaga ko'rinadi, lekin
-// sotib olish tugmalari faollashtirilmagan. Tariflar ishga tushganda `false`
-// qilib qo'yish kifoya.
-const PLANS_TEMPORARILY_PAUSED = true;
 
 function formatUzs(amount: number): string {
   if (amount <= 0) return "Bepul";
   return `${amount.toLocaleString("uz-UZ")} so'm`;
+}
+
+function planActionLabel(params: {
+  isCurrent: boolean;
+  price: number;
+  purchasesEnabled: boolean;
+  busy: boolean;
+}): string {
+  if (params.busy) return "To'lov sahifasi ochilmoqda...";
+  if (params.isCurrent) return "Joriy reja";
+  if (!params.purchasesEnabled) return params.price <= 0 ? "Bepul reja" : "Tez orada";
+  return params.price <= 0 ? "Bepul rejaga o'tish" : "Rejani tanlash";
 }
 
 export default function PricingPage() {
@@ -22,6 +33,7 @@ export default function PricingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingPayment, setPendingPayment] = useState<PaymentStatusResponse | null>(null);
 
   const loadPricing = useCallback(async () => {
     try {
@@ -40,6 +52,71 @@ export default function PricingPage() {
     loadPricing();
   }, [loadPricing]);
 
+  // After the inPAY checkout the user comes back with ?payment=<transactionId>.
+  // The status is verified server-side (provider lookup), not from URL params.
+  useEffect(() => {
+    const paymentId = new URLSearchParams(window.location.search).get("payment");
+    if (!paymentId) return;
+
+    let cancelled = false;
+
+    const verify = async (attempt: number) => {
+      try {
+        const res = await api.pricing.getPaymentStatus(paymentId);
+        if (cancelled) return;
+        setPendingPayment(res);
+
+        if (res.status === "succeeded") {
+          toast.success(res.message);
+          window.history.replaceState({}, "", window.location.pathname);
+          await loadPricing();
+          return;
+        }
+
+        if (res.status === "failed" || res.status === "refunded") {
+          toast.error(res.message);
+          window.history.replaceState({}, "", window.location.pathname);
+          return;
+        }
+
+        if (attempt < 4) {
+          window.setTimeout(() => void verify(attempt + 1), 3000);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "To'lov holatini tekshirishda xatolik"
+          );
+        }
+      }
+    };
+
+    void verify(0);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadPricing]);
+
+  const handleCheckPayment = async () => {
+    if (!pendingPayment) return;
+    try {
+      setBusySlug("check");
+      const res = await api.pricing.getPaymentStatus(pendingPayment.transactionId);
+      setPendingPayment(res);
+      if (res.status === "succeeded") {
+        toast.success(res.message);
+        await loadPricing();
+      } else if (res.status !== "pending") {
+        toast.error(res.message);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "To'lov holatini tekshirishda xatolik");
+    } finally {
+      setBusySlug(null);
+    }
+  };
+
   const handleSelectPlan = async (plan: PricingPlanDto) => {
     try {
       setBusySlug(plan.slug);
@@ -51,7 +128,7 @@ export default function PricingPage() {
 
       if (res.requiresPayment && res.checkoutUrl) {
         toast.success("To'lov sahifasiga o'tilmoqda...");
-        window.location.href = res.checkoutUrl;
+        window.location.assign(res.checkoutUrl);
         return;
       }
 
@@ -78,6 +155,9 @@ export default function PricingPage() {
   };
 
   const currentSub = data?.currentSubscription;
+  // Purchases stay disabled (and the buttons read "Tez orada") until the kassa
+  // keys are configured on the server, so nobody hits a 503 dead end.
+  const purchasesEnabled = Boolean(data?.providerConfigured);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -89,7 +169,7 @@ export default function PricingPage() {
           O&apos;sish sur&apos;atingizga mos rejani tanlang
         </h1>
         <p className="mx-auto mt-2 max-w-xl text-sm text-slate-600 dark:text-zinc-400">
-          Rejalar bilan bemalol tanishing. To&apos;lovlar hozircha vaqtincha to&apos;xtatilgan — barcha imkoniyatlar hamma uchun bepul.
+          To&apos;lov inPAY orqali xavfsiz amalga oshiriladi va obuna tasdiqlangach darhol faollashadi.
         </p>
 
         {/* Billing Cycle Toggle */}
@@ -134,7 +214,7 @@ export default function PricingPage() {
               </p>
             </div>
           </div>
-          {!currentSub.cancelAtPeriodEnd && currentSub.planSlug !== "free" && (
+          {!currentSub.cancelAtPeriodEnd && currentSub.autoRenew && currentSub.planSlug !== "free" && (
             <button
               type="button"
               disabled={busySlug === "cancel"}
@@ -144,6 +224,23 @@ export default function PricingPage() {
               {busySlug === "cancel" ? "Kutilmoqda..." : "Avto-uzaytirishni bekor qilish"}
             </button>
           )}
+        </div>
+      )}
+
+      {pendingPayment && pendingPayment.status === "pending" && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs dark:border-amber-500/30 dark:bg-amber-500/10">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+            <Loader2 className={`h-4 w-4 ${busySlug === "check" ? "animate-spin" : ""}`} />
+            <span>{pendingPayment.message}</span>
+          </div>
+          <button
+            type="button"
+            disabled={busySlug === "check"}
+            onClick={handleCheckPayment}
+            className="rounded-full bg-amber-600 px-3.5 py-1.5 font-semibold text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+          >
+            Holatni tekshirish
+          </button>
         </div>
       )}
 
@@ -157,118 +254,83 @@ export default function PricingPage() {
           <p>{error}</p>
         </div>
       ) : (
-        <div className="relative">
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {(data?.plans || []).map((plan) => {
-              const price =
-                billingCycle === "yearly" ? plan.priceYearlyUzs : plan.priceMonthlyUzs;
-              const isPro = plan.slug === "pro";
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          {(data?.plans || []).map((plan) => {
+            const price =
+              billingCycle === "yearly" ? plan.priceYearlyUzs : plan.priceMonthlyUzs;
+            const isPro = plan.slug === "pro";
 
-              return (
-                <div
-                  key={plan.id}
-                  className={`flex flex-col rounded-2xl p-6 transition-colors ${
-                    isPro
-                      ? "bg-slate-950 text-white dark:bg-zinc-900"
-                      : "bg-slate-50 text-slate-950 dark:bg-zinc-950 dark:text-white"
+            return (
+              <div
+                key={plan.id}
+                className={`flex flex-col rounded-2xl p-6 transition-colors ${
+                  isPro
+                    ? "bg-slate-950 text-white dark:bg-zinc-900"
+                    : "bg-slate-50 text-slate-950 dark:bg-zinc-950 dark:text-white"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold">{plan.name}</h2>
+                  {plan.isCurrent && (
+                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-500">
+                      Faol
+                    </span>
+                  )}
+                </div>
+                <p
+                  className={`mt-1.5 text-xs ${
+                    isPro ? "text-slate-300" : "text-slate-500 dark:text-zinc-400"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold">{plan.name}</h2>
-                    {plan.isCurrent && (
-                      <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-500">
-                        Faol
-                      </span>
-                    )}
-                  </div>
-                  <p
-                    className={`mt-1.5 text-xs ${
-                      isPro ? "text-slate-300" : "text-slate-500 dark:text-zinc-400"
-                    }`}
-                  >
-                    {plan.description}
-                  </p>
+                  {plan.description}
+                </p>
 
-                  <div className="mt-5 flex items-baseline gap-1.5">
-                    <span className="text-2xl font-extrabold">{formatUzs(price)}</span>
-                    {price > 0 && (
-                      <span
-                        className={`text-xs ${
-                          isPro ? "text-slate-400" : "text-slate-500 dark:text-zinc-400"
+                <div className="mt-5 flex items-baseline gap-1.5">
+                  <span className="text-2xl font-extrabold">{formatUzs(price)}</span>
+                  {price > 0 && (
+                    <span
+                      className={`text-xs ${
+                        isPro ? "text-slate-400" : "text-slate-500 dark:text-zinc-400"
+                      }`}
+                    >
+                      / {billingCycle === "yearly" ? "yil" : "oy"}
+                    </span>
+                  )}
+                </div>
+
+                <ul className="mt-5 flex-1 space-y-2.5 text-xs">
+                  {plan.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-2">
+                      <Check
+                        className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
+                          isPro ? "text-emerald-400" : "text-emerald-600"
                         }`}
-                      >
-                        / {billingCycle === "yearly" ? "yil" : "oy"}
-                      </span>
-                    )}
-                  </div>
+                      />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
 
-                  <ul className="mt-5 flex-1 space-y-2.5 text-xs">
-                    {plan.features.map((feat) => (
-                      <li key={feat} className="flex items-start gap-2">
-                        <Check
-                          className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
-                            isPro ? "text-emerald-400" : "text-emerald-600"
-                          }`}
-                        />
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    type="button"
-                    disabled={
-                      PLANS_TEMPORARILY_PAUSED || plan.isCurrent || busySlug === plan.slug
-                    }
-                    onClick={() => handleSelectPlan(plan)}
-                    className={`mt-6 w-full rounded-full py-2.5 text-xs font-bold transition-opacity disabled:opacity-50 ${
-                      isPro
-                        ? "bg-white text-slate-950 hover:opacity-90"
-                        : "bg-slate-950 text-white hover:opacity-90 dark:bg-white dark:text-black"
-                    }`}
-                  >
-                    {busySlug === plan.slug
-                      ? "To'lov sahifasi ochilmoqda..."
-                      : plan.isCurrent
-                      ? "Joriy reja"
-                      : PLANS_TEMPORARILY_PAUSED
-                      ? price <= 0
-                        ? "Bepul reja"
-                        : "Tez orada ishga tushadi"
-                      : price <= 0
-                      ? "Bepul rejaga o'tish"
-                      : "Rejani tanlash"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {PLANS_TEMPORARILY_PAUSED && (
-            <div className="mt-6 rounded-2xl border border-blue-200/70 bg-blue-50/70 p-5 dark:border-blue-500/25 dark:bg-blue-500/10">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
-                  <Lock className="h-5 w-5" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-slate-950 dark:text-white">
-                    Tariflar hozircha vaqtincha yopiq
-                  </h2>
-                  <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-zinc-300">
-                    Rejalar bilan bemalol tanishing, lekin sotib olish hozircha
-                    vaqtincha o&apos;chirilgan. Bu davrda Geters&apos;ning barcha asosiy
-                    imkoniyatlari hamma uchun bepul ishlaydi — hech qanday
-                    to&apos;lov olinmaydi va kartangizdan pul yechilmaydi.
-                  </p>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-zinc-300">
-                    Tariflar ishga tushganda shu sahifada va bildirishnomalar
-                    orqali xabar beramiz. Savolingiz bo&apos;lsa, qo&apos;llab-quvvatlash
-                    jamoasiga yozishingiz mumkin.
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  disabled={!purchasesEnabled || plan.isCurrent || busySlug === plan.slug}
+                  onClick={() => handleSelectPlan(plan)}
+                  className={`mt-6 w-full rounded-full py-2.5 text-xs font-bold transition-opacity disabled:opacity-50 ${
+                    isPro
+                      ? "bg-white text-slate-950 hover:opacity-90"
+                      : "bg-slate-950 text-white hover:opacity-90 dark:bg-white dark:text-black"
+                  }`}
+                >
+                  {planActionLabel({
+                    isCurrent: plan.isCurrent,
+                    price,
+                    purchasesEnabled,
+                    busy: busySlug === plan.slug,
+                  })}
+                </button>
               </div>
-            </div>
-          )}
+            );
+          })}
         </div>
       )}
     </div>

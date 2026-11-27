@@ -115,9 +115,20 @@ class PostAuthorHeader extends StatelessWidget {
     } else if (val == 'report') {
       ReportBottomSheet.show(
         context,
+        targetId: post.id,
         targetType: 'post',
         authorName: post.author.name,
         snippet: ContentUtils.excerpt(cleanContent, maxLength: 90),
+        apiClient: authController.apiClient,
+      );
+    } else if (val == 'report_user') {
+      ReportBottomSheet.show(
+        context,
+        targetId: post.author.id,
+        targetType: 'user',
+        authorName: post.author.name,
+        snippet: post.author.formattedHandle,
+        apiClient: authController.apiClient,
       );
     }
   }
@@ -235,12 +246,19 @@ class PostAuthorHeader extends StatelessWidget {
                   icon: Icons.delete_outline,
                   color: AppColors.danger,
                 ),
-              ] else
+              ] else ...[
                 const LiquidGlassMenuOption(
                   value: 'report',
-                  label: 'Shikoyat qilish',
+                  label: 'Postga shikoyat qilish',
                   icon: Icons.flag_outlined,
                 ),
+                const LiquidGlassMenuOption(
+                  value: 'report_user',
+                  label: 'Muallifni shikoyat qilish',
+                  icon: Icons.person_off_outlined,
+                  color: AppColors.danger,
+                ),
+              ],
             ],
             child: Padding(
               padding: const EdgeInsets.all(6),

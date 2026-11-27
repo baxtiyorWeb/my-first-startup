@@ -195,7 +195,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                   <SearchIcon size={16} />
                 </div>
                 <span className="hidden sm:inline text-[13px] text-slate-500 dark:text-[#cfd9de] truncate font-normal">
-                  Qidirish... (mavzu, muallif, video, darslik...)
+                  Qidirish... (mavzu, muallif, post...)
                 </span>
                 <span className="inline sm:hidden text-[11px] text-slate-500 dark:text-[#cfd9de] truncate font-normal">
                   {t("search.headerPlaceholderShort") || "Qidirish..."}
@@ -217,7 +217,7 @@ export function Header({ title, subtitle }: HeaderProps) {
               <Link
                 href={localePath("/dashboard/create")}
                 className="hidden md:inline-flex items-center gap-1.5 h-[40px] px-3.5 sm:px-4 rounded-[11px] bg-[#1d9bf0] hover:bg-[#1a8cd8] active:scale-95 text-white text-[13px] font-semibold cursor-pointer transition-all shadow-xs"
-                title="SEO Studio'da kontent yozish"
+                title="Kontent yozish"
               >
                 <PlusIcon
                   size={15}

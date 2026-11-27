@@ -188,6 +188,7 @@ export type ReportReasonType =
   | "harassment" 
   | "misinformation" 
   | "inappropriate" 
+  | "child_safety"
   | "other";
 
 export interface ReportSubmission {

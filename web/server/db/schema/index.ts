@@ -729,4 +729,31 @@ export const postTagsRelations = relations(postTags, ({ one }) => ({
   }),
 }));
 
+// 20. Account Deletion Requests Table
+// Google Play talabiga ko'ra foydalanuvchi ilovadan tashqarida (veb orqali ham)
+// hisobini va ma'lumotlarini o'chirishni so'rashi mumkin. Har bir so'rov shu
+// jadvalga tushadi va admin panelda ko'rib chiqiladi.
+export const accountDeletionRequests = pgTable(
+  "account_deletion_requests",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    // Email, telefon raqam yoki @handle — foydalanuvchi o'zi kiritadi
+    identifier: varchar("identifier", { length: 255 }).notNull(),
+    reason: text("reason"),
+    // pending | completed | rejected
+    status: varchar("status", { length: 20 }).default("pending").notNull(),
+    matchedUserId: uuid("matched_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    requestIp: varchar("request_ip", { length: 64 }),
+    adminNote: text("admin_note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("idx_account_deletion_status").on(table.status),
+    index("idx_account_deletion_created").on(table.createdAt),
+  ]
+);
+
 

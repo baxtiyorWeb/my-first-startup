@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Loader2,
   XCircle,
+  UserX,
 } from "lucide-react";
 import { useAdmin } from "@/components/admin/admin-shell";
 import { AdminHeader } from "@/components/admin/admin-header";
@@ -72,10 +73,19 @@ export default function AdminReportsPage() {
     fetchReports();
   }, [fetchReports]);
 
-  const handleAction = async (reportId: string, action: "dismiss" | "delete_content") => {
+  const handleAction = async (
+    reportId: string,
+    action: "dismiss" | "delete_content" | "suspend_user"
+  ) => {
     if (
       action === "delete_content" &&
       !confirm("Haqiqatan ham ushbu qoidabuzar kontentni butunlay o'chirmoqchimisiz?")
+    ) {
+      return;
+    }
+    if (
+      action === "suspend_user" &&
+      !confirm("Foydalanuvchi hisobi bloklanadi. Davom etasizmi?")
     ) {
       return;
     }
@@ -127,6 +137,7 @@ export default function AdminReportsPage() {
               { id: "all", label: "Barchasi" },
               { id: "post", label: "Postlar" },
               { id: "comment", label: "Sharhlar" },
+              { id: "user", label: "Foydalanuvchilar" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -194,6 +205,7 @@ export default function AdminReportsPage() {
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-[#8b98a5] text-[11px] font-semibold border border-slate-200/60 dark:border-[#2f3336]">
                       {report.targetType === "post" && <FileText className="w-3 h-3 text-[#1d9bf0]" />}
                       {report.targetType === "comment" && <MessageSquare className="w-3 h-3 text-emerald-500" />}
+                      {report.targetType === "user" && <UserIcon className="w-3 h-3 text-amber-500" />}
                       <span className="capitalize">{report.targetType}</span>
                     </span>
 
@@ -269,6 +281,18 @@ export default function AdminReportsPage() {
                     )}
                     <span>Kontentni o'chirish</span>
                   </button>
+
+                  {report.targetType === "user" && (
+                    <button
+                      type="button"
+                      disabled={actionLoadingId === report.id}
+                      onClick={() => handleAction(report.id, "suspend_user")}
+                      className="h-8 px-3.5 rounded-[9px] bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold cursor-pointer transition-colors inline-flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                    >
+                      <UserX className="w-3.5 h-3.5" />
+                      <span>Hisobni bloklash</span>
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

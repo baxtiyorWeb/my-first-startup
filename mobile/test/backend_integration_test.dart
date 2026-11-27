@@ -227,10 +227,12 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -400));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tariflar hozircha vaqtincha yopiq'), findsOneWidget);
+    // Google Play to'lovlari sozlanmagan — webdagidek tugma "Tez orada"
+    // ko'rinadi, alohida "vaqtincha yopiq" bloki yo'q.
+    expect(find.text('Tariflar hozircha vaqtincha yopiq'), findsNothing);
     final purchaseButton = tester
         .widgetList<AppButton>(find.byType(AppButton))
-        .firstWhere((button) => button.text == 'Tez orada ishga tushadi');
+        .firstWhere((button) => button.text == 'Tez orada');
     expect(purchaseButton.onPressed, isNull);
   });
 

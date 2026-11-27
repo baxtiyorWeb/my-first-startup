@@ -52,6 +52,20 @@ export interface CheckoutResponse {
   message: string;
 }
 
+export interface PaymentStatusResponse {
+  transactionId: string;
+  status: "pending" | "succeeded" | "failed" | "refunded";
+  planSlug: string | null;
+  planName: string | null;
+  amount: number;
+  currency: string;
+  provider: string;
+  requiresPayment: boolean;
+  checkoutUrl: string | null;
+  checkedWithProvider: boolean;
+  message: string;
+}
+
 export const pricingApi = {
   async getOverview(): Promise<PricingOverviewResponse> {
     const res = await apiClient<PricingOverviewResponse>("/api/pricing");
@@ -68,6 +82,13 @@ export const pricingApi = {
       method: "POST",
       body: JSON.stringify(payload),
     });
+    return res.data;
+  },
+
+  async getPaymentStatus(transactionId: string): Promise<PaymentStatusResponse> {
+    const res = await apiClient<PaymentStatusResponse>(
+      `/api/subscriptions/payments/${encodeURIComponent(transactionId)}`
+    );
     return res.data;
   },
 

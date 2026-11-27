@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
@@ -6,11 +5,6 @@ import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/app_button.dart';
 import '../data/pricing_repository.dart';
 import '../data/revenuecat_service.dart';
-
-/// Pullik tariflar hozircha vaqtincha yopiq: rejalar hammaga ko'rinadi, lekin
-/// sotib olish tugmalari faollashtirilmagan. Tariflar ishga tushganda `true`
-/// qilib qo'yish kifoya.
-const bool kPlansPurchasable = false;
 
 /// Backend ma'lumoti kelmaguncha ko'rsatiladigan namunaviy rejalar.
 const List<PricingPlan> kPreviewPlans = [
@@ -101,20 +95,27 @@ class _PricingScreenState extends State<PricingScreen> {
     }
   }
 
-  bool get _purchasesEnabled => kPlansPurchasable;
+  /// Google Play siyosati: raqamli obunalar faqat Play Billing orqali sotiladi.
+  /// Shuning uchun mobil xaridlar serverdagi RevenueCat kalitlari hamda
+  /// ilovadagi Google SDK kaliti tayyor bo'lgandagina ochiladi.
+  bool get _purchasesEnabled =>
+      _revenueCat.isConfigured && (_overview?.googlePlayConfigured ?? false);
 
-  bool get _usesGooglePlay =>
-      _purchasesEnabled &&
-      widget.userId != null &&
-      _revenueCat.isConfigured &&
-      (_overview?.googlePlayConfigured ?? false);
+  bool get _usesGooglePlay => _purchasesEnabled && widget.userId != null;
 
   Future<void> _selectPlan(PricingPlan plan) async {
     if (!_purchasesEnabled) return;
 
     final price =
         _billingCycle == 'yearly' ? plan.priceYearlyUzs : plan.priceMonthlyUzs;
-    if (price > 0 && _usesGooglePlay) {
+    if (price > 0) {
+      if (!_usesGooglePlay) {
+        _showMessage(
+          "Xaridni yakunlash uchun hisobingizga kiring.",
+          isError: true,
+        );
+        return;
+      }
       await _purchaseWithGooglePlay(plan);
       return;
     }
@@ -126,12 +127,6 @@ class _PricingScreenState extends State<PricingScreen> {
         billingCycle: _billingCycle,
       );
       if (!mounted) return;
-
-      final checkoutUrl = result.checkoutUrl;
-      if (result.requiresPayment && checkoutUrl != null && checkoutUrl.isNotEmpty) {
-        await _showPaymentLink(checkoutUrl);
-        return;
-      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result.message), behavior: SnackBarBehavior.floating),
@@ -145,50 +140,6 @@ class _PricingScreenState extends State<PricingScreen> {
     } finally {
       if (mounted) setState(() => _busySlug = null);
     }
-  }
-
-  Future<void> _showPaymentLink(String url) async {
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('To\'lov sahifasi'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('To\'lovni yakunlash uchun havolani brauzerda oching:'),
-            const SizedBox(height: 10),
-            SelectableText(url, style: const TextStyle(fontSize: 12.5)),
-            const SizedBox(height: 10),
-            const Text(
-              'To\'lov tasdiqlangach obuna avtomatik faollashadi.',
-              style: TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: url));
-              if (!dialogContext.mounted) return;
-              Navigator.of(dialogContext).pop();
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Havola nusxalandi'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Nusxalash'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Yopish'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _purchaseWithGooglePlay(PricingPlan plan) async {
@@ -336,7 +287,6 @@ class _PricingScreenState extends State<PricingScreen> {
               onCancel: _cancelSub,
             ),
           ...plans.map((plan) => _buildPlanCard(plan, isDark)),
-          if (!_purchasesEnabled) _buildPausedNotice(isDark),
           if (_usesGooglePlay)
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 24),
@@ -375,63 +325,6 @@ class _PricingScreenState extends State<PricingScreen> {
     );
   }
 
-  Widget _buildPausedNotice(bool isDark) {
-    final muted = isDark ? AppColors.textMutedDark : AppColors.textMutedLight;
-
-    return Container(
-      margin: const EdgeInsets.only(top: 2, bottom: 24),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDarkElevated : AppColors.surfaceLightElevated,
-        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
-        border: Border.all(color: AppColors.primary.withAlpha(70)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(28),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Tariflar hozircha vaqtincha yopiq',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Rejalar bilan bemalol tanishing, lekin sotib olish hozircha vaqtincha '
-            'o\'chirilgan. Bu davrda Geters\'ning barcha asosiy imkoniyatlari hamma '
-            'uchun bepul ishlaydi — hech qanday to\'lov olinmaydi va hisobingizdan '
-            'pul yechilmaydi.',
-            style: TextStyle(fontSize: 12.5, height: 1.5, color: muted),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tariflar ishga tushganda shu sahifada xabar beramiz. Savolingiz bo\'lsa, '
-            'qo\'llab-quvvatlash jamoasiga yozishingiz mumkin.',
-            style: TextStyle(fontSize: 12.5, height: 1.5, color: muted),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPlanCard(PricingPlan plan, bool isDark) {
     final price = _billingCycle == 'yearly' ? plan.priceYearlyUzs : plan.priceMonthlyUzs;
     final isPro = plan.slug == 'pro';
@@ -439,7 +332,7 @@ class _PricingScreenState extends State<PricingScreen> {
     if (plan.isCurrent) {
       actionLabel = 'Joriy reja';
     } else if (!_purchasesEnabled) {
-      actionLabel = price <= 0 ? 'Bepul reja' : 'Tez orada ishga tushadi';
+      actionLabel = price <= 0 ? 'Bepul reja' : 'Tez orada';
     } else {
       actionLabel = price <= 0 ? 'Bepul rejaga o\'tish' : 'Rejani tanlash';
     }

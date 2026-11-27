@@ -146,10 +146,10 @@ function ShellLayoutInner({
         >
           <div className="flex flex-col min-w-0">
             <span className="text-xs sm:text-sm font-bold tracking-tight truncate">
-              Geters IT Media va Hamjamiyatiga xush kelibsiz!
+              Geters Hamjamiyatiga xush kelibsiz!
             </span>
             <span className="text-[11px] opacity-75 truncate">
-              Maqola yozish, video darsliklarni saqlash va muhokamada qatnashish uchun kiring.
+              Fikr bildirish va muhokamalarda qatnashish uchun kiring.
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">

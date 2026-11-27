@@ -322,7 +322,6 @@ export function DashboardRightSidebar() {
     <aside className="w-full space-y-4">
       <TrendingTopicsWidget />
       <SuggestedAuthorsWidget />
-      <CreatorMonetizationWidget />
     </aside>
   );
 }

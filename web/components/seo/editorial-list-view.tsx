@@ -223,7 +223,7 @@ export function EditorialListView({
               Hozircha bu bo‘limda nashr qilingan kontent topilmadi
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-              Birinchi materialni SEO Studio orqali joylab Google va Yandex indeksiga chiqaring.
+              Birinchi materialni joylab Google va Yandex indeksiga chiqaring.
             </p>
             <div className="pt-2">
               <Link
