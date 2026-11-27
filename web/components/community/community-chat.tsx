@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Search,
   Users,
@@ -26,6 +27,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
+import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { useShell } from "@/components/layout/shell-context";
@@ -71,6 +73,7 @@ function dateLabel(iso: string): string {
 
 export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
   const community = useCommunity(viewer);
+  const { localePath } = useI18n();
   const { toggleSidebar, toggleMobileNav } = useShell();
   const [replyTo, setReplyTo] = useState<CommunityMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
@@ -578,25 +581,51 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                     {group.items.map((message) => {
                       const isHighlighted = highlightId === message.id;
                       const isEditing = editing?.id === message.id;
+                      const cleanHandle = message.sender.handle.replace(/^@+/, "");
+                      const profileHref = localePath(
+                        `/dashboard/profile?user=${encodeURIComponent(cleanHandle)}`
+                      );
 
                       return (
                         <div
                           key={message.id}
                           id={`msg-${message.id}`}
-                          className={`group flex items-start gap-3 rounded-2xl transition-colors ${isHighlighted ? "bg-[#0d9488]/10 dark:bg-[#2dd4bf]/10 p-1.5 ring-1 ring-[#0d9488]/35 dark:ring-[#2dd4bf]/35" : ""
-                            }`}
+                          className={`group flex items-start gap-2.5 sm:gap-3 rounded-2xl transition-colors ${
+                            message.isMine ? "flex-row-reverse" : "flex-row"
+                          } ${
+                            isHighlighted
+                              ? "bg-[#0d9488]/10 dark:bg-[#2dd4bf]/10 p-1.5 ring-1 ring-[#0d9488]/35 dark:ring-[#2dd4bf]/35"
+                              : ""
+                          }`}
                         >
-                          <UserAvatar
-                            name={message.sender.name}
-                            avatarUrl={message.sender.avatarUrl}
-                            size="md"
-                          />
+                          <Link
+                            href={profileHref}
+                            title={`${message.sender.name} profili`}
+                            className="shrink-0 hover:opacity-90 transition-opacity"
+                          >
+                            <UserAvatar
+                              name={message.sender.name}
+                              avatarUrl={message.sender.avatarUrl}
+                              size="md"
+                            />
+                          </Link>
 
-                          <div className="min-w-0 flex-1 max-w-[680px]">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="text-[13px] font-bold text-[#0f1419] dark:text-white">
+                          <div
+                            className={`min-w-0 flex flex-col max-w-[82%] sm:max-w-[580px] ${
+                              message.isMine ? "items-end" : "items-start"
+                            }`}
+                          >
+                            <div
+                              className={`flex flex-wrap items-center gap-1.5 ${
+                                message.isMine ? "justify-end" : "justify-start"
+                              }`}
+                            >
+                              <Link
+                                href={profileHref}
+                                className="text-[13px] font-bold text-[#0f1419] dark:text-white hover:text-[#0d9488] dark:hover:text-[#2dd4bf] hover:underline transition-colors"
+                              >
                                 {message.sender.name}
-                              </span>
+                              </Link>
                               {message.sender.verified && <VerifiedBadge size={14} />}
                               <span className="text-[11px] text-[#536471] dark:text-zinc-500">
                                 {formatTime(message.createdAt)}
@@ -627,10 +656,11 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                             </div>
 
                             <div
-                              className={`mt-1.5 rounded-2xl rounded-tl-md border px-3.5 py-2.5 ${message.isMine
-                                  ? "border-[#14b8a6]/40 dark:border-[#14b8a6]/35 bg-[#e6faf7] dark:bg-[#0b2326]"
-                                  : "border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-[#151a22]"
-                                }`}
+                              className={`mt-1.5 w-fit max-w-full rounded-2xl border px-3.5 py-2.5 ${
+                                message.isMine
+                                  ? "rounded-tr-md border-[#14b8a6]/40 dark:border-[#14b8a6]/35 bg-[#e6faf7] dark:bg-[#0b2326]"
+                                  : "rounded-tl-md border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-[#151a22]"
+                              }`}
                             >
                               {message.replyTo && (
                                 <button
@@ -770,7 +800,11 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                             </div>
 
                             {/* Reactions + actions */}
-                            <div className="mt-1 flex flex-wrap items-center gap-1">
+                            <div
+                              className={`mt-1 flex flex-wrap items-center gap-1 ${
+                                message.isMine ? "justify-end" : "justify-start"
+                              }`}
+                            >
                               {message.reactions.map((reaction) => (
                                 <button
                                   key={reaction.emoji}

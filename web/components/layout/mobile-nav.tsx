@@ -12,7 +12,7 @@ import {
   CloseIcon,
   PlusIcon,
 } from "@/components/icons";
-import { LogOut, Bookmark, Bell, Plus } from "lucide-react";
+import { LogOut, Bookmark, Users, Plus } from "lucide-react";
 import { useShell } from "./shell-context";
 import { useAuth } from "@/components/auth/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -31,13 +31,13 @@ export function MobileBottomNav() {
 
   const isHome = normalizedPath === "/dashboard" || normalizedPath === "/";
   const isSearch = normalizedPath.startsWith("/dashboard/search");
-  const isNotifications = normalizedPath.startsWith("/dashboard/notifications");
+  const isCommunity = normalizedPath.startsWith("/dashboard/community");
   const isProfile = normalizedPath.startsWith("/dashboard/profile");
 
   const tabCls = (active: boolean) =>
     `relative flex flex-col items-center justify-center gap-0.5 py-2 px-1 min-w-0 flex-1 cursor-pointer transition-colors ${
       active
-        ? "text-slate-950 dark:text-white font-bold"
+        ? "text-[#0d9488] dark:text-[#2dd4bf] font-bold"
         : "text-slate-500 dark:text-zinc-500 font-medium"
     }`;
 
@@ -87,27 +87,27 @@ export function MobileBottomNav() {
         <Link
           href={localePath("/dashboard/create")}
           aria-label={t("nav.createThought")}
-          className="flex items-center justify-center w-11 h-11 rounded-full bg-slate-950 dark:bg-white text-white dark:text-black shadow-md shadow-black/20 dark:shadow-white/10 active:scale-95 transition-transform"
+          className="flex items-center justify-center w-11 h-11 rounded-full bg-[#0d9488] dark:bg-[#2dd4bf] text-white dark:text-[#0a0d14] shadow-md active:scale-95 transition-transform"
         >
           <PlusIcon size={20} className="stroke-[2.5]" />
         </Link>
       </div>
 
-      {/* 4. Notifications */}
+      {/* 4. Community (Guruh) */}
       <Link
-        href={localePath("/dashboard/notifications")}
-        aria-label={t("nav.notifications")}
-        aria-current={isNotifications ? "page" : undefined}
-        className={tabCls(isNotifications)}
+        href={localePath("/dashboard/community")}
+        aria-label="Guruh"
+        aria-current={isCommunity ? "page" : undefined}
+        className={tabCls(isCommunity)}
       >
-        <span className={`transition-transform ${isNotifications ? "scale-110" : ""}`}>
-          <Bell size={21} />
+        <span className={`transition-transform ${isCommunity ? "scale-110" : ""}`}>
+          <Users size={21} />
         </span>
         <span className="text-[9px] font-semibold tracking-tight leading-none truncate">
-          {t("nav.notifications")}
+          Guruh
         </span>
-        {isNotifications && (
-          <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-slate-950 dark:bg-white" />
+        {isCommunity && (
+          <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-[#0d9488] dark:bg-[#2dd4bf]" />
         )}
       </Link>
 
@@ -163,6 +163,7 @@ export function MobileDrawer() {
 
   const navLinks = [
     { label: t("nav.home"), rawHref: "/dashboard", icon: HomeIcon },
+    { label: "Guruh", rawHref: "/dashboard/community", icon: Users },
     { label: t("nav.search"), rawHref: "/dashboard/search", icon: SearchIcon },
     { label: t("nav.createThought"), rawHref: "/dashboard/create", icon: Plus },
     { label: t("nav.bookmarks"), rawHref: "/dashboard/bookmarks", icon: Bookmark },
