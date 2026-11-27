@@ -263,36 +263,28 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.id}
-                className={`flex flex-col rounded-2xl p-6 transition-colors ${
+                className={`flex flex-col rounded-2xl p-6 border transition-colors ${
                   isPro
-                    ? "bg-slate-950 text-white dark:bg-zinc-900"
-                    : "bg-slate-50 text-slate-950 dark:bg-zinc-950 dark:text-white"
+                    ? "bg-[#f7f9f9] dark:bg-[#16181c] border-[#1d9bf0] text-[#0f1419] dark:text-[#e7e9ea]"
+                    : "bg-white dark:bg-[#000000] border-[#cfd9de] dark:border-[#2f3336] text-[#0f1419] dark:text-[#e7e9ea]"
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold">{plan.name}</h2>
                   {plan.isCurrent && (
-                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-500">
+                    <span className="rounded-full bg-[#00ba7c]/15 px-2.5 py-0.5 text-[11px] font-semibold text-[#00ba7c]">
                       Faol
                     </span>
                   )}
                 </div>
-                <p
-                  className={`mt-1.5 text-xs ${
-                    isPro ? "text-slate-300" : "text-slate-500 dark:text-zinc-400"
-                  }`}
-                >
+                <p className="mt-1.5 text-xs text-[#536471] dark:text-[#71767b]">
                   {plan.description}
                 </p>
 
                 <div className="mt-5 flex items-baseline gap-1.5">
                   <span className="text-2xl font-extrabold">{formatUzs(price)}</span>
                   {price > 0 && (
-                    <span
-                      className={`text-xs ${
-                        isPro ? "text-slate-400" : "text-slate-500 dark:text-zinc-400"
-                      }`}
-                    >
+                    <span className="text-xs text-[#536471] dark:text-[#71767b]">
                       / {billingCycle === "yearly" ? "yil" : "oy"}
                     </span>
                   )}
@@ -301,11 +293,7 @@ export default function PricingPage() {
                 <ul className="mt-5 flex-1 space-y-2.5 text-xs">
                   {plan.features.map((feat) => (
                     <li key={feat} className="flex items-start gap-2">
-                      <Check
-                        className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
-                          isPro ? "text-emerald-400" : "text-emerald-600"
-                        }`}
-                      />
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#00ba7c]" />
                       <span>{feat}</span>
                     </li>
                   ))}
@@ -315,10 +303,10 @@ export default function PricingPage() {
                   type="button"
                   disabled={!purchasesEnabled || plan.isCurrent || busySlug === plan.slug}
                   onClick={() => handleSelectPlan(plan)}
-                  className={`mt-6 w-full rounded-full py-2.5 text-xs font-bold transition-opacity disabled:opacity-50 ${
+                  className={`mt-6 w-full rounded-full py-2.5 text-xs font-bold transition-all active:scale-[0.98] disabled:opacity-45 cursor-pointer ${
                     isPro
-                      ? "bg-white text-slate-950 hover:opacity-90"
-                      : "bg-slate-950 text-white hover:opacity-90 dark:bg-white dark:text-black"
+                      ? "bg-[#1d9bf0] hover:bg-[#1a8cd8] text-[#0f1419]"
+                      : "bg-[#0f1419] hover:bg-[#272c30] text-white dark:bg-[#e7e9ea] dark:text-[#0f1419]"
                   }`}
                 >
                   {planActionLabel({

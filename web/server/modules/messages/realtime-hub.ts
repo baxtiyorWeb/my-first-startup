@@ -11,7 +11,14 @@ export interface RealtimeMessageEvent {
     | "message:read"
     | "typing:update"
     | "presence:update"
-    | "conversation:update";
+    | "conversation:update"
+    | "message:updated"
+    | "message:deleted"
+    | "message:reaction"
+    | "typing:start"
+    | "typing:stop"
+    | "member:joined"
+    | "member:left";
   data: any;
 }
 
@@ -158,6 +165,34 @@ class RealtimeHubService {
     for (const userId of userIds) {
       this.emitToUser(userId, event);
     }
+  }
+
+  /**
+   * Broadcast an event to every connected client (community channel).
+   * Used by the single official Geters Community chat.
+   */
+  public broadcast(event: RealtimeMessageEvent): void {
+    for (const [userId, userClients] of this.clients.entries()) {
+      const deadConnections: string[] = [];
+      for (const [connId, client] of userClients.entries()) {
+        const ok = this.sendToController(userId, connId, client.controller, event);
+        if (!ok) deadConnections.push(connId);
+      }
+      for (const connId of deadConnections) {
+        this.unregisterClient(userId, connId);
+      }
+    }
+  }
+
+  /**
+   * Number of users with at least one live connection
+   */
+  public getOnlineCount(): number {
+    let total = 0;
+    for (const userId of this.clients.keys()) {
+      if (this.isUserOnline(userId)) total += 1;
+    }
+    return total;
   }
 
   /**

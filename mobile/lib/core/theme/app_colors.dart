@@ -5,8 +5,10 @@ import 'package:material_ui/material_ui.dart';
 /// One blue accent (#1D9BF0), neutral gray hierarchy, pure black dark canvas
 /// and hairline borders — the same visual language X uses.
 abstract class AppColors {
-  // Brand & Interactive Accents
-  static const Color primary = Color(0xFF1D9BF0); // X blue
+  // Brand & Interactive Accents (mirrors web/lib/design-tokens.ts)
+  static const Color primary = Color(0xFF1D9BF0); // Geters primary blue
+  static const Color primaryHover = Color(0xFF1A8CD8);
+  static const Color primaryActive = Color(0xFF1577B8);
   static const Color primaryLight = Color(0xFF4DB5F0);
   static const Color primaryDark = Color(0xFF1A8CD8);
   static const Color slateAccent = Color(0xFF0F1419); // X black CTA in light mode

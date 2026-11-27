@@ -1,14 +1,18 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'app_colors.dart';
+import 'app_tokens.dart';
+
+export 'app_tokens.dart';
 
 abstract class AppTheme {
-  static const double radiusSm = 8.0;
-  static const double radiusMd = 12.0;
-  static const double radiusCard = 18.0;
-  static const double radiusLg = 18.0;
-  static const double radiusXl = 24.0;
-  static const double radiusFull = 999.0;
+  static const double radiusXs = AppRadius.xs;
+  static const double radiusSm = AppRadius.sm;
+  static const double radiusMd = AppRadius.md;
+  static const double radiusCard = AppRadius.card;
+  static const double radiusLg = AppRadius.lg;
+  static const double radiusXl = AppRadius.xl;
+  static const double radiusFull = AppRadius.full;
 
   static const PageTransitionsTheme _transitionsTheme = PageTransitionsTheme(
     builders: {

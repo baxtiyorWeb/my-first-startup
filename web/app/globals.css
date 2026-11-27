@@ -10,7 +10,7 @@
 }
 
 :root {
-  /* X (Twitter) light palette */
+  /* Geters Unified Design System — Light Tokens */
   --background: #ffffff;
   --foreground: #0f1419;
   --muted: #f7f9f9;
@@ -19,23 +19,56 @@
   --card: #ffffff;
   --card-foreground: #0f1419;
   --primary: #1d9bf0;
+  --primary-hover: #1a8cd8;
+  --primary-active: #1577b8;
   --primary-foreground: #0f1419;
+  --secondary: #0f1419;
+  --secondary-foreground: #ffffff;
   --accent: #1d9bf0;
   --accent-foreground: #0f1419;
+  --text-primary: #0f1419;
+  --text-secondary: #536471;
+  --text-muted: #8b98a5;
+  --status-success: #00ba7c;
+  --status-warning: #ffd400;
+  --status-error: #f4212e;
+  --status-error-surface: #c4170f;
+  --status-info: #1d9bf0;
   /* Markaziy kontent kengligi — bir joydan butun ilova bo'ylab o'lchamni boshqarish */
   --content-max-width: 1320px;
   --surface-0: #ffffff;
   --surface-1: #ffffff;
   --surface-2: #f7f9f9;
+  --surface-elevated: #f7f9f9;
   --surface-subtle: #eff3f4;
   --border-subtle: #e1e8ed;
   --border-default: #cfd9de;
   --border-strong: #8b98a5;
+
+  /* Unified Spacing Scale (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Unified Border Radius Scale (Web ↔ Mobile 1:1) */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-card: 16px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 }
 
 .dark,
 :root[class~="dark"] {
-  /* X (Twitter) dark palette — pure black canvas */
+  /* Geters Unified Design System — Dark Tokens (Reference Theme) */
   --background: #000000;
   --foreground: #e7e9ea;
   --muted: #16181c;
@@ -44,15 +77,23 @@
   --card: #000000;
   --card-foreground: #e7e9ea;
   --primary: #1d9bf0;
+  --primary-hover: #1a8cd8;
+  --primary-active: #1577b8;
   --primary-foreground: #0f1419;
+  --secondary: #e7e9ea;
+  --secondary-foreground: #0f1419;
   --accent: #1d9bf0;
   --accent-foreground: #0f1419;
+  --text-primary: #e7e9ea;
+  --text-secondary: #cfd9de;
+  --text-muted: #71767b;
   --surface-0: #000000;
   --surface-1: #000000;
   --surface-2: #16181c;
+  --surface-elevated: #16181c;
   --surface-subtle: #202327;
   --border-subtle: #2f3336;
-  --border-default: #333639;
+  --border-default: #2f3336;
   --border-strong: #3e4144;
 
   /* Map Tailwind slate palette to X dark neutrals */

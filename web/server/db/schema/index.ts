@@ -12,6 +12,7 @@ import {
   index,
   uniqueIndex,
   check,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
@@ -728,6 +729,107 @@ export const postTagsRelations = relations(postTags, ({ one }) => ({
     references: [tags.id],
   }),
 }));
+
+// 26. Community Chat (single official public community)
+// Geters has exactly one official public community. Group creation is not part
+// of the product, so this table is seeded with a single verified row.
+export interface CommunityAttachment {
+  url: string;
+  kind: "image" | "video" | "file";
+  name: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export const communities = pgTable(
+  "communities",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    slug: varchar("slug", { length: 80 }).notNull(),
+    name: varchar("name", { length: 120 }).notNull(),
+    description: text("description").default("").notNull(),
+    isOfficial: boolean("is_official").default(true).notNull(),
+    verified: boolean("verified").default(true).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex("idx_communities_slug").on(table.slug)]
+);
+
+// 27. Community Members Table (read markers, mute preference; membership is
+// implicit for every registered account, rows are created lazily)
+export const communityMembers = pgTable(
+  "community_members",
+  {
+    communityId: uuid("community_id")
+      .notNull()
+      .references(() => communities.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    lastReadMessageId: uuid("last_read_message_id"),
+    lastReadAt: timestamp("last_read_at", { withTimezone: true }),
+    isMuted: boolean("is_muted").default(false).notNull(),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.communityId, table.userId] }),
+    index("idx_community_members_user").on(table.userId),
+  ]
+);
+
+// 28. Community Messages Table (text, media, files, replies, soft delete)
+export const communityMessages = pgTable(
+  "community_messages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    communityId: uuid("community_id")
+      .notNull()
+      .references(() => communities.id, { onDelete: "cascade" }),
+    senderId: uuid("sender_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    content: text("content").default("").notNull(),
+    messageType: varchar("message_type", { length: 20 }).default("text").notNull(),
+    attachments: jsonb("attachments")
+      .$type<CommunityAttachment[]>()
+      .default([])
+      .notNull(),
+    clientMessageId: varchar("client_message_id", { length: 64 }),
+    replyToId: uuid("reply_to_id").references((): AnyPgColumn => communityMessages.id, {
+      onDelete: "set null",
+    }),
+    editedAt: timestamp("edited_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("idx_community_messages_created").on(table.communityId, table.createdAt),
+    index("idx_community_messages_sender").on(table.senderId, table.createdAt),
+    index("idx_community_messages_reply").on(table.replyToId),
+    uniqueIndex("idx_community_messages_client").on(table.senderId, table.clientMessageId),
+  ]
+);
+
+// 29. Community Reactions Table (one row per user + message + emoji)
+export const communityReactions = pgTable(
+  "community_reactions",
+  {
+    messageId: uuid("message_id")
+      .notNull()
+      .references(() => communityMessages.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    emoji: varchar("emoji", { length: 16 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.messageId, table.userId, table.emoji] }),
+    index("idx_community_reactions_message").on(table.messageId),
+  ]
+);
 
 // 20. Account Deletion Requests Table
 // Google Play talabiga ko'ra foydalanuvchi ilovadan tashqarida (veb orqali ham)

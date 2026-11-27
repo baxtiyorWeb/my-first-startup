@@ -141,14 +141,14 @@ export function NotificationBell({ triggerClassName }: NotificationBellProps = {
         onClick={() => setIsOpen((prev) => !prev)}
         className={
           triggerClassName ||
-          "relative size-[38px] sm:size-[40px] rounded-[13px] bg-slate-100 dark:bg-[#000000] border border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200 dark:hover:bg-[#202327] text-slate-600 dark:text-[#cfd9de] hover:text-slate-900 dark:hover:text-white transition-colors active:scale-95 flex items-center justify-center cursor-pointer"
+          "relative size-[38px] sm:size-[40px] rounded-xl bg-[#f7f9f9] dark:bg-[#000000] border border-[#cfd9de] dark:border-[#2f3336] hover:bg-[#eff3f4] dark:hover:bg-[#16181c] text-[#536471] dark:text-[#cfd9de] hover:text-[#0f1419] dark:hover:text-[#e7e9ea] transition-colors active:scale-95 flex items-center justify-center cursor-pointer"
         }
         aria-label="Bildirishnomalar"
         aria-expanded={isOpen}
       >
         <BellIcon size={18} className="text-current stroke-current" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#1d9bf0] text-white text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000] shadow-2xs animate-in zoom-in-75">
+          <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#1d9bf0] text-[#0f1419] text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000]">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

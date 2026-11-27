@@ -304,7 +304,7 @@ export default function MessagesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Suhbat yoki foydalanuvchini qidiring..."
-              className="w-full h-8.5 pl-8.5 pr-3 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900 dark:focus:ring-slate-100 placeholder:text-slate-400 transition-all"
+              className="w-full h-9 pl-8.5 pr-3 text-xs rounded-xl bg-white dark:bg-[#000000] border border-[#cfd9de] dark:border-[#2f3336] focus:outline-none focus:ring-1 focus:ring-[#1d9bf0] focus:border-[#1d9bf0] placeholder:text-[#8b98a5] dark:placeholder:text-[#71767b] transition-all"
             />
             {searchQuery && (
               <button
@@ -391,16 +391,12 @@ export default function MessagesPage() {
                   }`}
                 >
                   {/* Peer Avatar with Presence dot */}
-                  <div className="relative shrink-0">
-                    <UserAvatar
-                      name={conv.peerUser.name}
-                      avatarUrl={conv.peerUser.avatarUrl}
-                      size="md"
-                    />
-                    {conv.peerUser.isOnline && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
-                    )}
-                  </div>
+                  <UserAvatar
+                    name={conv.peerUser.name}
+                    avatarUrl={conv.peerUser.avatarUrl}
+                    size="md"
+                    isOnline={conv.peerUser.isOnline}
+                  />
 
                   {/* Body */}
                   <div className="min-w-0 flex-1">

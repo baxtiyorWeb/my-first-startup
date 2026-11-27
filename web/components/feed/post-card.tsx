@@ -36,6 +36,7 @@ import { RichContent } from "./rich-content";
 import { HighlightText } from "@/lib/highlight";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { isSameUser } from "@/lib/user-utils";
 import { useContentFormat } from "@/components/format";
 
@@ -353,10 +354,10 @@ export function PostCard({
     <>
       <article
         aria-label={`${post.author.name} posti`}
-        className={`relative w-full rounded-[17px] border transition-all duration-200 p-4 sm:p-[19px] mb-4 ${
+        className={`relative w-full rounded-2xl border transition-all duration-200 p-4 sm:p-5 mb-4 ${
           highlightActive
-            ? "animate-highlight-pulse bg-slate-100/70 dark:bg-[#16181c] border-blue-500/50"
-            : "bg-white dark:bg-[#000000] border-slate-200/90 dark:border-[#2f3336] hover:border-slate-300 dark:hover:border-[#3e4144] shadow-xs"
+            ? "animate-highlight-pulse bg-[#f7f9f9] dark:bg-[#16181c] border-[#1d9bf0]/50"
+            : "bg-white dark:bg-[#000000] border-[#cfd9de] dark:border-[#2f3336] hover:border-[#8b98a5] dark:hover:border-[#3e4144]"
         }`}
       >
         {/* 1. Header: Author Identity & Metadata */}
@@ -368,39 +369,28 @@ export function PostCard({
               className="shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
               title={`${post.author.name} profili`}
             >
-              {post.author.avatarUrl ? (
-                <UserAvatar
-                  name={post.author.name}
-                  avatarUrl={post.author.avatarUrl}
-                  size="md"
-                  className="size-[38px] rounded-full border border-slate-200 dark:border-[#2f3336]"
-                />
-              ) : (
-                <div className="size-[38px] rounded-full flex items-center justify-center bg-gradient-to-b from-slate-700 to-slate-900 dark:from-[#2f3336] dark:to-[#16181c] text-white border border-slate-300 dark:border-[#3e4144] shadow-xs">
-                  <span className="font-semibold text-[14px] tracking-wide">
-                    {authorInitials}
-                  </span>
-                </div>
-              )}
+              <UserAvatar
+                name={post.author.name}
+                avatarUrl={post.author.avatarUrl}
+                size="md"
+              />
             </Link>
 
             {/* Author Name, Verified Badge & Metadata */}
             <div className="flex items-center gap-2 flex-wrap min-w-0">
               <Link
                 href={authorProfileHref}
-                className="font-semibold text-[13px] sm:text-[14px] text-slate-900 dark:text-[#e7e9ea] hover:underline truncate"
+                className="font-semibold text-[13px] sm:text-[14px] text-[#0f1419] dark:text-[#e7e9ea] hover:underline truncate"
               >
                 {post.author.name}
               </Link>
 
               {/* Verified Badge */}
               {post.author.verified && (
-                <div
-                  className="bg-[#1d9bf0] rounded-[6px] size-[16px] flex items-center justify-center shrink-0"
+                <VerifiedBadge
+                  size={16}
                   title={t("common.verifiedAuthor")}
-                >
-                  <Check size={11} className="text-white stroke-[2.5]" />
-                </div>
+                />
               )}
 
               {/* Metadata: @handle · time */}

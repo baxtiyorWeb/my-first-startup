@@ -218,12 +218,12 @@ export function Header({ title, subtitle }: HeaderProps) {
             {!normalizedPath.startsWith("/dashboard/create") && (
               <Link
                 href={localePath("/dashboard/create")}
-                className="hidden md:inline-flex items-center gap-1.5 h-[40px] px-3.5 sm:px-4 rounded-[11px] bg-[#1d9bf0] hover:bg-[#1a8cd8] active:scale-95 text-white text-[13px] font-semibold cursor-pointer transition-all shadow-xs"
+                className="hidden md:inline-flex items-center gap-1.5 h-[40px] px-4 rounded-full bg-[#1d9bf0] hover:bg-[#1a8cd8] active:scale-95 text-[#0f1419] text-[13px] font-bold cursor-pointer transition-all"
                 title="Kontent yozish"
               >
                 <PlusIcon
                   size={15}
-                  className="stroke-[2.5] stroke-white no-gradient"
+                  className="stroke-[2.5] stroke-current no-gradient"
                 />
                 <span>Kontent yozish</span>
               </Link>
@@ -240,15 +240,15 @@ export function Header({ title, subtitle }: HeaderProps) {
                     ? "page"
                     : undefined
                 }
-                className={`relative size-[38px] sm:size-[40px] rounded-[13px] border transition-colors active:scale-95 flex items-center justify-center shrink-0 cursor-pointer ${
+                className={`relative size-[38px] sm:size-[40px] rounded-xl border transition-colors active:scale-95 flex items-center justify-center shrink-0 cursor-pointer ${
                   normalizedPath.startsWith("/dashboard/messages")
-                    ? "bg-[#1d9bf0]/10 dark:bg-[#1d9bf0]/15 border-[#1d9bf0]/40 text-[#1d9bf0]"
-                    : "bg-slate-100 dark:bg-[#000000] border-slate-200/80 dark:border-[#2f3336] hover:bg-slate-200 dark:hover:bg-[#202327] text-slate-600 dark:text-[#cfd9de] hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-[#e8f5fd] dark:bg-[#10394f] border-[#1d9bf0]/40 text-[#1d9bf0]"
+                    : "bg-[#f7f9f9] dark:bg-[#000000] border-[#cfd9de] dark:border-[#2f3336] hover:bg-[#eff3f4] dark:hover:bg-[#16181c] text-[#536471] dark:text-[#cfd9de] hover:text-[#0f1419] dark:hover:text-[#e7e9ea]"
                 }`}
               >
                 <MessageCircle className="w-[18px] h-[18px]" />
                 {totalUnreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#1d9bf0] text-white text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000] shadow-2xs animate-in zoom-in-75">
+                  <span className="absolute -top-1 -right-1 z-10 min-w-4 h-4 px-1 rounded-full bg-[#1d9bf0] text-[#0f1419] text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-white dark:ring-[#000000]">
                     {totalUnreadCount > 9 ? "9+" : totalUnreadCount}
                   </span>
                 )}
