@@ -24,9 +24,12 @@ export interface RealtimeMessageEvent {
 
 export type SSEController = ReadableStreamDefaultController<Uint8Array>;
 
+export type RealtimeChannel = "dm" | "community";
+
 interface ActiveClient {
   id: string; // unique client connection ID (for tab/device)
   userId: string;
+  channel: RealtimeChannel;
   controller: SSEController;
   connectedAt: Date;
 }
@@ -50,7 +53,11 @@ class RealtimeHubService {
   /**
    * Register a new active client stream
    */
-  public registerClient(userId: string, controller: SSEController): string {
+  public registerClient(
+    userId: string,
+    controller: SSEController,
+    channel: RealtimeChannel = "dm"
+  ): string {
     const connectionId = `conn_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
     const wasOffline = !this.isUserOnline(userId);
@@ -63,6 +70,7 @@ class RealtimeHubService {
     userClients.set(connectionId, {
       id: connectionId,
       userId,
+      channel,
       controller,
       connectedAt: new Date(),
     });
@@ -138,7 +146,7 @@ class RealtimeHubService {
   }
 
   /**
-   * Send a real-time event to all active devices of a specific user
+   * Send a real-time event to all active DM devices of a specific user
    */
   public emitToUser(userId: string, event: RealtimeMessageEvent): void {
     const userClients = this.clients.get(userId);
@@ -147,6 +155,7 @@ class RealtimeHubService {
     const deadConnections: string[] = [];
 
     for (const [connId, client] of userClients.entries()) {
+      if (client.channel !== "dm") continue;
       const ok = this.sendToController(userId, connId, client.controller, event);
       if (!ok) {
         deadConnections.push(connId);
@@ -168,13 +177,14 @@ class RealtimeHubService {
   }
 
   /**
-   * Broadcast an event to every connected client (community channel).
+   * Broadcast an event to every connected Community client.
    * Used by the single official Geters Community chat.
    */
   public broadcast(event: RealtimeMessageEvent): void {
     for (const [userId, userClients] of this.clients.entries()) {
       const deadConnections: string[] = [];
       for (const [connId, client] of userClients.entries()) {
+        if (client.channel !== "community") continue;
         const ok = this.sendToController(userId, connId, client.controller, event);
         if (!ok) deadConnections.push(connId);
       }
@@ -282,10 +292,18 @@ class RealtimeHubService {
   }
 }
 
-// Global singleton instance
-const globalRealtimeHub = (globalThis as any).__gogetters_realtime_hub || new RealtimeHubService();
-if (process.env.NODE_ENV !== "production") {
-  (globalThis as any).__gogetters_realtime_hub = globalRealtimeHub;
-}
+// Global singleton instance shared across all Next.js App Router route bundles
+// (both development HMR and production `next start` chunks).
+const GLOBAL_HUB_KEY = "__gogetters_realtime_hub_v2";
+const existingRealtimeHub = (globalThis as Record<string, unknown>)[GLOBAL_HUB_KEY] as
+  | RealtimeHubService
+  | undefined;
+const globalRealtimeHub: RealtimeHubService =
+  existingRealtimeHub &&
+  typeof existingRealtimeHub.broadcast === "function" &&
+  typeof existingRealtimeHub.getOnlineCount === "function"
+    ? existingRealtimeHub
+    : new RealtimeHubService();
+(globalThis as Record<string, unknown>)[GLOBAL_HUB_KEY] = globalRealtimeHub;
 
 export const realtimeHub: RealtimeHubService = globalRealtimeHub;

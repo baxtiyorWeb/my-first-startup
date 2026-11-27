@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
-      connectionId = realtimeHub.registerClient(userId, controller);
+      connectionId = realtimeHub.registerClient(userId, controller, "dm");
 
       // Heartbeat comment every 20 seconds to prevent proxy / NAT timeouts
       heartbeatInterval = setInterval(() => {
@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
     headers: {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache, no-transform, no-store",
+      "Content-Encoding": "none",
       Connection: "keep-alive",
       "X-Accel-Buffering": "no", // Disable buffering in Nginx
     },

@@ -59,6 +59,9 @@ abstract class ApiConstants {
       '/subscriptions/google-play/sync';
   static const String reportsEndpoint = '/reports';
   static const String accountEndpoint = '/settings/account';
+  static const String communityEndpoint = '/community';
+  static const String communityMessagesEndpoint = '/community/messages';
+  static const String communityStreamEndpoint = '/community/stream';
   static const String tagsEndpoint = '/tags';
   static const String tagsSuggestEndpoint = '/tags/suggest';
   static const String tagsTrendingEndpoint = '/tags/trending';

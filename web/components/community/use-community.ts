@@ -338,13 +338,24 @@ export function useCommunity(viewer: CommunityViewer | null) {
     source.onopen = () => setIsConnected(true);
     source.onerror = () => setIsConnected(false);
 
+    const normalizeIncoming = (msg: CommunityMessage): CommunityMessage => {
+      const isMine = Boolean(viewer?.id && msg.sender?.id === viewer.id);
+      return {
+        ...msg,
+        isMine,
+        canEdit: isMine,
+        canDelete: isMine || Boolean(overview?.canModerate),
+      };
+    };
+
     const handleNew = (event: MessageEvent) => {
       try {
         const payload = JSON.parse(event.data) as { message: CommunityMessage };
         if (payload?.message) {
-          setMessages((prev) => mergeMessage(prev, payload.message));
+          const normalized = normalizeIncoming(payload.message);
+          setMessages((prev) => mergeMessage(prev, normalized));
           setSearchResults((prev) =>
-            prev ? mergeMessage(prev, payload.message) : prev
+            prev ? mergeMessage(prev, normalized) : prev
           );
         }
       } catch {
@@ -356,9 +367,10 @@ export function useCommunity(viewer: CommunityViewer | null) {
       try {
         const payload = JSON.parse(event.data) as { message: CommunityMessage };
         if (payload?.message) {
-          setMessages((prev) => mergeMessage(prev, payload.message));
+          const normalized = normalizeIncoming(payload.message);
+          setMessages((prev) => mergeMessage(prev, normalized));
           setSearchResults((prev) =>
-            prev ? mergeMessage(prev, payload.message) : prev
+            prev ? mergeMessage(prev, normalized) : prev
           );
         }
       } catch {
