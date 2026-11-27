@@ -270,9 +270,11 @@ export function CommunityComposer({
       <div className="relative flex items-end gap-1.5 rounded-2xl border border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-[#0f141b] px-2.5 py-2 focus-within:border-[#0d9488] dark:focus-within:border-[#2dd4bf]/45 transition-colors">
         <button
           type="button"
-          onClick={() => toast.info("Fayl yuklash tez kunda ishga tushadi")}
+          onClick={() =>
+            toast.info("Fayl yuklash (Word, Excel, PDF, APK va boshqalar) tez kunda ishga tushadi")
+          }
           aria-label="Fayl biriktirish (Tez kunda)"
-          title="Tez kunda"
+          title="Fayl yuklash — Tez kunda"
           className="mb-1 rounded-lg p-1.5 text-[#8b98a5] dark:text-zinc-600 opacity-60 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.04] cursor-not-allowed"
         >
           <Paperclip size={18} />
@@ -332,20 +334,20 @@ export function CommunityComposer({
 
         <button
           type="button"
-          onClick={() => toast.info("Rasm yuklash tez kunda ishga tushadi")}
-          aria-label="Rasm yuklash (Tez kunda)"
-          title="Tez kunda"
-          className="mb-1 rounded-lg p-1.5 text-[#8b98a5] dark:text-zinc-600 opacity-60 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.04] cursor-not-allowed"
+          onClick={() => imageInputRef.current?.click()}
+          aria-label="Rasm yuklash"
+          title="Rasm yuklash"
+          className="mb-1 rounded-lg p-1.5 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-[#0d9488] dark:hover:text-[#2dd4bf] cursor-pointer"
         >
           <ImagePlus size={18} />
         </button>
 
         <button
           type="button"
-          onClick={() => toast.info("Video yuklash tez kunda ishga tushadi")}
-          aria-label="Video yuklash (Tez kunda)"
-          title="Tez kunda"
-          className="mb-1 rounded-lg p-1.5 text-[#8b98a5] dark:text-zinc-600 opacity-60 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.04] cursor-not-allowed"
+          onClick={() => videoInputRef.current?.click()}
+          aria-label="Video yuklash"
+          title="Video yuklash"
+          className="mb-1 rounded-lg p-1.5 text-[#536471] dark:text-zinc-400 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-[#0d9488] dark:hover:text-[#2dd4bf] cursor-pointer"
         >
           <Video size={18} />
         </button>
