@@ -327,7 +327,7 @@ export default function TermsPage() {
     },
   };
 
-  const current = content[locale] || content.uz;
+  const current = content[locale] || content.en;
 
   return (
     <LegalDocument

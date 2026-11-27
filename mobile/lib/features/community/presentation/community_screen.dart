@@ -10,6 +10,7 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/confirm_dialog.dart';
+import '../../../core/widgets/report_bottom_sheet.dart';
 import '../data/community_repository.dart';
 
 const List<String> kCommunityReactionOptions = [
@@ -598,6 +599,53 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   _deleteMessage(message);
                 },
               ),
+            if (!message.isMine && !message.pending && !message.failed) ...[
+              ListTile(
+                leading: const Icon(Icons.flag_outlined, color: AppColors.danger),
+                title: const Text(
+                  'Xabar ustidan shikoyat qilish',
+                  style: TextStyle(color: AppColors.danger),
+                ),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  final snippet = message.content.trim().isNotEmpty
+                      ? message.content.trim()
+                      : (message.attachments.isNotEmpty
+                          ? '[${message.attachments.length} ta media]'
+                          : 'Guruh xabari');
+                  ReportBottomSheet.show(
+                    context,
+                    targetId: message.id,
+                    targetType: 'community_message',
+                    authorName: message.sender.name,
+                    snippet: snippet,
+                    apiClient: widget.repository.apiClient,
+                  );
+                },
+              ),
+              if (message.sender.id.isNotEmpty)
+                ListTile(
+                  leading: const Icon(
+                    Icons.person_off_outlined,
+                    color: AppColors.danger,
+                  ),
+                  title: const Text(
+                    'Foydalanuvchi ustidan shikoyat qilish',
+                    style: TextStyle(color: AppColors.danger),
+                  ),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    ReportBottomSheet.show(
+                      context,
+                      targetId: message.sender.id,
+                      targetType: 'user',
+                      authorName: message.sender.name,
+                      snippet: '@${message.sender.handle}',
+                      apiClient: widget.repository.apiClient,
+                    );
+                  },
+                ),
+            ],
             const SizedBox(height: 6),
           ],
         ),

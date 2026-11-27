@@ -444,6 +444,9 @@ class CommunityRepository {
   CommunityRepository({ApiClient? apiClient})
       : _apiClient = apiClient ?? ApiClient();
 
+  /// Shared authenticated API client (used for reporting, etc.).
+  ApiClient get apiClient => _apiClient;
+
   /// Bearer token used by the SSE stream and multipart uploads.
   String? get apiToken => _apiClient.authToken;
 
@@ -484,8 +487,8 @@ class CommunityRepository {
       body: {
         'content': content,
         'attachments': attachments.map((a) => a.toJson()).toList(),
-        if (replyToId != null) 'replyToId': replyToId,
-        if (clientMessageId != null) 'clientMessageId': clientMessageId,
+        'replyToId': ?replyToId,
+        'clientMessageId': ?clientMessageId,
       },
     );
     final data = decoded['data'] as Map<String, dynamic>? ?? const {};
@@ -532,7 +535,7 @@ class CommunityRepository {
   Future<void> markRead({String? messageId}) async {
     await _apiClient.post(
       '/community/read',
-      body: {if (messageId != null) 'messageId': messageId},
+      body: {'messageId': ?messageId},
     );
   }
 

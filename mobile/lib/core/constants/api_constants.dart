@@ -48,10 +48,10 @@ abstract class ApiConstants {
     return base.endsWith('/api') ? base.substring(0, base.length - 4) : base;
   }
 
-  static String get privacyPolicyUrl => '$webBaseUrl/uz/privacy';
-  static String get termsUrl => '$webBaseUrl/uz/terms';
-  static String get childSafetyUrl => '$webBaseUrl/uz/child-safety';
-  static String get accountDeleteUrl => '$webBaseUrl/uz/account/delete';
+  static String get privacyPolicyUrl => '$webBaseUrl/en/privacy';
+  static String get termsUrl => '$webBaseUrl/en/terms';
+  static String get childSafetyUrl => '$webBaseUrl/en/child-safety';
+  static String get accountDeleteUrl => '$webBaseUrl/en/account/delete';
   static const String pricingEndpoint = '/pricing';
   static const String subscriptionCheckoutEndpoint = '/subscriptions/checkout';
   static const String subscriptionCancelEndpoint = '/subscriptions/cancel';

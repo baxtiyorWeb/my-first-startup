@@ -25,8 +25,10 @@ import {
   Menu,
   Pin,
   ChevronRight,
+  Flag,
 } from "lucide-react";
 import { toast } from "@/components/ui/toast";
+import { ReportModal } from "@/components/ui/report-modal";
 import { useI18n } from "@/lib/i18n/context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
@@ -84,6 +86,11 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [newCount, setNewCount] = useState(0);
+  const [reportTarget, setReportTarget] = useState<{
+    targetId: string;
+    authorName: string;
+    snippet?: string;
+  } | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -888,9 +895,30 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                                     onClick={() => handleDelete(message.id)}
                                     aria-label="O'chirish"
                                     title="O'chirish"
-                                    className="rounded-md p-1 text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400"
+                                    className="rounded-md p-1 text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
                                   >
                                     <Trash2 size={13} />
+                                  </button>
+                                )}
+                                {!message.isMine && !message.pending && !message.failed && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setReportTarget({
+                                        targetId: message.id,
+                                        authorName: message.sender.name,
+                                        snippet:
+                                          message.content.trim() ||
+                                          (message.attachments.length > 0
+                                            ? `[${message.attachments.length} ta media]`
+                                            : "Guruh xabari"),
+                                      })
+                                    }
+                                    aria-label="Shikoyat qilish"
+                                    title="Shikoyat qilish"
+                                    className="rounded-md p-1 text-zinc-500 hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
+                                  >
+                                    <Flag size={13} />
                                   </button>
                                 )}
                               </div>
@@ -968,6 +996,17 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
             <CommunityInfo overview={overview} onClose={() => setInfoOpen(false)} />
           </div>
         </div>
+      )}
+
+      {reportTarget && (
+        <ReportModal
+          isOpen={true}
+          onClose={() => setReportTarget(null)}
+          targetType="community_message"
+          targetId={reportTarget.targetId}
+          authorName={reportTarget.authorName}
+          snippet={reportTarget.snippet}
+        />
       )}
     </div>
   );

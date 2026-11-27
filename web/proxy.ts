@@ -118,12 +118,25 @@ export function proxy(request: NextRequest) {
   }
 
   // 2. Resolve preferred locale for requests without locale prefix
-  let targetLocale = DEFAULT_LOCALE;
+  const isLegalPath =
+    pathname === "/privacy" ||
+    pathname.startsWith("/privacy/") ||
+    pathname === "/terms" ||
+    pathname.startsWith("/terms/") ||
+    pathname === "/account/delete" ||
+    pathname.startsWith("/account/delete/") ||
+    pathname === "/child-safety" ||
+    pathname.startsWith("/child-safety/") ||
+    pathname === "/guidelines" ||
+    pathname.startsWith("/guidelines/");
+
+  // Legal & policy pages default to English for Play Store, App Store & compliance
+  let targetLocale = isLegalPath ? "en" : DEFAULT_LOCALE;
 
   const cookieLocale = request.cookies.get("gogetters_locale")?.value;
-  if (cookieLocale && isValidLocale(cookieLocale)) {
+  if (!isLegalPath && cookieLocale && isValidLocale(cookieLocale)) {
     targetLocale = cookieLocale;
-  } else {
+  } else if (!isLegalPath) {
     // Check accept-language header
     const acceptLang = request.headers.get("accept-language");
     if (acceptLang) {

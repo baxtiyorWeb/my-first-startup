@@ -219,7 +219,7 @@ export default function ChildSafetyPage() {
     },
   };
 
-  const current = content[locale] || content.uz;
+  const current = content[locale] || content.en;
 
   return (
     <LegalDocument

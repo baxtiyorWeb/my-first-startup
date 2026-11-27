@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/report_bottom_sheet.dart';
 import '../../../core/widgets/verified_badge.dart';
 import '../models/conversation.dart';
 import '../data/messages_controller.dart';
@@ -206,6 +207,42 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
             return _buildHeader(conversation, isDark);
           },
         ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, size: 20),
+            tooltip: 'Boshqa amallar',
+            onSelected: (value) {
+              if (value == 'report_user') {
+                final conversation = widget.controller
+                        .conversationById(widget.conversation.id) ??
+                    widget.conversation;
+                ReportBottomSheet.show(
+                  context,
+                  targetId: conversation.peer.id,
+                  targetType: 'user',
+                  authorName: conversation.peer.name,
+                  snippet: conversation.peer.formattedHandle,
+                  apiClient: widget.controller.repository?.apiClient,
+                );
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem<String>(
+                value: 'report_user',
+                child: Row(
+                  children: [
+                    Icon(Icons.flag_outlined, size: 18, color: AppColors.danger),
+                    SizedBox(width: 8),
+                    Text(
+                      'Foydalanuvchi ustidan shikoyat',
+                      style: TextStyle(color: AppColors.danger, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -546,6 +583,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen>
                     widget.conversation.id,
                     msg.id,
                   )
+              : null,
+          onLongPress: (!isMe && !msg.isPending && !msg.isFailed)
+              ? () {
+                  final conversation = widget.controller
+                          .conversationById(widget.conversation.id) ??
+                      widget.conversation;
+                  ReportBottomSheet.show(
+                    context,
+                    targetId: msg.id,
+                    targetType: 'message',
+                    authorName: conversation.peer.name,
+                    snippet: msg.text,
+                    apiClient: widget.controller.repository?.apiClient,
+                  );
+                }
               : null,
           child: Container(
             constraints: BoxConstraints(maxWidth: maxWidth),

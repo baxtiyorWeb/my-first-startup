@@ -27,7 +27,7 @@ import { toast } from "@/components/ui/toast";
 interface AdminReport {
   id: string;
   targetId: string;
-  targetType: "post" | "comment" | "user";
+  targetType: "post" | "comment" | "user" | "message" | "community_message";
   reason: string;
   context: string | null;
   createdAt: string;
@@ -137,6 +137,8 @@ export default function AdminReportsPage() {
               { id: "all", label: "Barchasi" },
               { id: "post", label: "Postlar" },
               { id: "comment", label: "Sharhlar" },
+              { id: "message", label: "Xabarlar" },
+              { id: "community_message", label: "Guruh" },
               { id: "user", label: "Foydalanuvchilar" },
             ].map((tab) => (
               <button
@@ -204,9 +206,19 @@ export default function AdminReportsPage() {
 
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] bg-slate-100 dark:bg-[#16181c] text-slate-600 dark:text-[#8b98a5] text-[11px] font-semibold border border-slate-200/60 dark:border-[#2f3336]">
                       {report.targetType === "post" && <FileText className="w-3 h-3 text-[#2dd4bf]" />}
-                      {report.targetType === "comment" && <MessageSquare className="w-3 h-3 text-emerald-500" />}
+                      {(report.targetType === "comment" ||
+                        report.targetType === "message" ||
+                        report.targetType === "community_message") && (
+                        <MessageSquare className="w-3 h-3 text-emerald-500" />
+                      )}
                       {report.targetType === "user" && <UserIcon className="w-3 h-3 text-amber-500" />}
-                      <span className="capitalize">{report.targetType}</span>
+                      <span className="capitalize">
+                        {report.targetType === "community_message"
+                          ? "Guruh xabari"
+                          : report.targetType === "message"
+                          ? "Shaxsiy xabar"
+                          : report.targetType}
+                      </span>
                     </span>
 
                     <span className="text-[11px] text-slate-400 dark:text-[#71767b] flex items-center gap-1">

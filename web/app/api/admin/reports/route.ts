@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/server/db";
-import { reports, users, posts, comments } from "@/server/db/schema";
+import { reports, users, posts, comments, messages, communityMessages } from "@/server/db/schema";
 import { enforceAdminGuard } from "@/server/common/admin-guard";
 
 export async function GET(req: NextRequest) {
@@ -83,6 +83,37 @@ export async function GET(req: NextRequest) {
             targetSnippet = `@${userRow.handle} — ${userRow.name} (${userRow.role})`;
             targetAuthor = userRow.name;
           }
+        } else if (rep.targetType === "message") {
+          const [msgRow] = await db
+            .select({
+              content: messages.content,
+              authorName: users.name,
+            })
+            .from(messages)
+            .leftJoin(users, eq(messages.senderId, users.id))
+            .where(eq(messages.id, rep.targetId));
+
+          if (msgRow) {
+            targetSnippet = msgRow.content.slice(0, 140);
+            targetAuthor = msgRow.authorName;
+          }
+        } else if (rep.targetType === "community_message") {
+          const [commMsgRow] = await db
+            .select({
+              content: communityMessages.content,
+              authorName: users.name,
+              deletedAt: communityMessages.deletedAt,
+            })
+            .from(communityMessages)
+            .leftJoin(users, eq(communityMessages.senderId, users.id))
+            .where(eq(communityMessages.id, rep.targetId));
+
+          if (commMsgRow && !commMsgRow.deletedAt) {
+            targetSnippet = commMsgRow.content.trim()
+              ? commMsgRow.content.slice(0, 140)
+              : "[Media/fayl xabari]";
+            targetAuthor = commMsgRow.authorName;
+          }
         }
 
         return {
@@ -147,6 +178,20 @@ export async function DELETE(req: NextRequest) {
         await db
           .delete(comments)
           .where(eq(comments.id, existingReport.targetId));
+      } else if (existingReport.targetType === "message") {
+        await db
+          .delete(messages)
+          .where(eq(messages.id, existingReport.targetId));
+      } else if (existingReport.targetType === "community_message") {
+        await db
+          .update(communityMessages)
+          .set({
+            content: "",
+            attachments: [],
+            deletedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(communityMessages.id, existingReport.targetId));
       }
     } else if (action === "suspend_user") {
       // Shikoyat qilingan foydalanuvchini bloklash (Play UGC talabi).

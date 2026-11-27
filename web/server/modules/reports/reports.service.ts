@@ -5,7 +5,7 @@ import { enforceRateLimit } from "@/server/common/rate-limiter";
 
 export interface CreateReportInput {
   targetId: string;
-  targetType: "post" | "comment" | "user";
+  targetType: "post" | "comment" | "user" | "message" | "community_message";
   reason: string;
   context?: string;
 }

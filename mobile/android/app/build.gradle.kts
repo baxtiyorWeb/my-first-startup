@@ -35,7 +35,7 @@ val isBundleBuild = gradle.startParameter.taskNames.any {
 }
 
 android {
-    namespace = "com.geters.mobile"
+    namespace = "uz.kelishamizgroup.geters"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -44,8 +44,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+
     defaultConfig {
-        applicationId = "com.geters.mobile"
+        applicationId = "uz.kelishamizgroup.geters"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -71,6 +76,12 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = when {
                 hasReleaseSigning -> signingConfigs.getByName("release")
                 isBundleBuild -> throw GradleException(

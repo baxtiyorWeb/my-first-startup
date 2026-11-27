@@ -1,4 +1,4 @@
-package com.geters.mobile
+package uz.kelishamizgroup.geters
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -140,7 +140,6 @@ class MainActivity : FlutterActivity() {
             null
         } finally {
             if (scaledBitmap != null && scaledBitmap !== bitmap) {
-                scaledBitmap?.recycle()
                 scaledBitmap.recycle()
             }
             bitmap?.recycle()

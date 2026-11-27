@@ -18,11 +18,13 @@ import {
   ExternalLink,
   ShieldAlert,
   User as UserIcon,
+  Flag,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
 import { useI18n } from "@/lib/i18n/context";
 import { useMessages, type ClientMessage, type ConversationItem } from "@/components/messages/messages-context";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { ReportModal } from "@/components/ui/report-modal";
 import { apiClient } from "@/lib/api/client";
 import { contentFormat } from "@/components/format";
 
@@ -63,6 +65,12 @@ export default function MessagesPage() {
   const [inputContent, setInputContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    targetType: "message" | "user";
+    targetId: string;
+    authorName: string;
+    snippet?: string;
+  } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -510,15 +518,34 @@ export default function MessagesPage() {
                 </div>
               </div>
 
-              {/* View Profile Action */}
-              <Link
-                href={localePath(`/dashboard/profile?user=${activeConversation.peerUser.handle}`)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                title="Profilni ko'rish"
-              >
-                <span className="hidden sm:inline">Profil</span>
-                <ExternalLink size={13} />
-              </Link>
+              {/* Header Actions: Report User + View Profile */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setReportTarget({
+                      targetType: "user",
+                      targetId: activeConversation.peerUser.id,
+                      authorName: activeConversation.peerUser.name,
+                      snippet: `@${activeConversation.peerUser.handle?.replace(/^@+/, "")}`,
+                    })
+                  }
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 px-2 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                  title="Foydalanuvchi ustidan shikoyat qilish"
+                  aria-label="Foydalanuvchi ustidan shikoyat qilish"
+                >
+                  <Flag size={13} />
+                  <span className="hidden sm:inline">Shikoyat</span>
+                </button>
+                <Link
+                  href={localePath(`/dashboard/profile?user=${activeConversation.peerUser.handle}`)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  title="Profilni ko'rish"
+                >
+                  <span className="hidden sm:inline">Profil</span>
+                  <ExternalLink size={13} />
+                </Link>
+              </div>
             </div>
 
             {/* Chat Messages Scroll Container */}
@@ -587,7 +614,7 @@ export default function MessagesPage() {
                     return (
                       <div
                         key={msg.clientMessageId || msg.id}
-                        className={`flex flex-col ${isFromMe ? "items-end" : "items-start"}`}
+                        className={`group flex items-end gap-1.5 ${isFromMe ? "justify-end" : "justify-start"}`}
                       >
                         <div
                           className={`max-w-[85%] sm:max-w-[70%] px-3.5 py-2 rounded-2xl text-xs leading-relaxed break-words shadow-2xs ${
@@ -631,6 +658,25 @@ export default function MessagesPage() {
                             )}
                           </div>
                         </div>
+
+                        {!isFromMe && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setReportTarget({
+                                targetType: "message",
+                                targetId: msg.id,
+                                authorName: activeConversation.peerUser.name,
+                                snippet: msg.content,
+                              })
+                            }
+                            aria-label="Xabar ustidan shikoyat qilish"
+                            title="Shikoyat qilish"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100 transition-all cursor-pointer shrink-0"
+                          >
+                            <Flag size={12} />
+                          </button>
+                        )}
                       </div>
                     );
                   })}
@@ -713,6 +759,17 @@ export default function MessagesPage() {
           </div>
         )}
       </main>
+
+      {reportTarget && (
+        <ReportModal
+          isOpen={true}
+          onClose={() => setReportTarget(null)}
+          targetType={reportTarget.targetType}
+          targetId={reportTarget.targetId}
+          authorName={reportTarget.authorName}
+          snippet={reportTarget.snippet}
+        />
+      )}
     </div>
   );
 }

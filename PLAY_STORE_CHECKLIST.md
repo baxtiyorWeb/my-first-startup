@@ -8,12 +8,12 @@ qadamlar ro'yxati. Har bir bandning holati belgilangan.
 
 | Talab | Holat | Qayerda |
 | --- | --- | --- |
-| Maxfiylik siyosati (to'liq, 3 tilda) | ✅ | `/uz/privacy`, `/ru/privacy`, `/en/privacy` |
-| Foydalanish shartlari (UGC qoidalari bilan) | ✅ | `/uz/terms` va boshqa tillar |
-| Hamjamiyat qoidalari + shikoyat/bloklash | ✅ | `/uz/guidelines` |
-| Bolalar xavfsizligi standartlari (CSAE) | ✅ | `/uz/child-safety` |
+| Maxfiylik siyosati (to'liq, 3 tilda, default: inglizcha) | ✅ | `/en/privacy`, `/ru/privacy`, `/uz/privacy` |
+| Foydalanish shartlari (UGC qoidalari bilan) | ✅ | `/en/terms` va boshqa tillar |
+| Hamjamiyat qoidalari + shikoyat/bloklash | ✅ | `/en/guidelines` |
+| Bolalar xavfsizligi standartlari (CSAE) | ✅ | `/en/child-safety` |
 | Hisobni o'chirish (ilova ichida) | ✅ | Sozlamalar → «Hisobni butunlay o'chirish» (`DELETE /api/settings/account`) |
-| Hisobni o'chirish (ilovadan tashqarida, login talab qilmaydi) | ✅ | `/uz/account/delete` → `POST /api/account/delete-request` |
+| Hisobni o'chirish (ilovadan tashqarida, login talab qilmaydi) | ✅ | `/en/account/delete` → `POST /api/account/delete-request` |
 | Shikoyat qilish (post, izoh, foydalanuvchi) | ✅ | Mobil: post/izoh/muallif menyusi; Veb: post/izoh `ReportModal` |
 | Shikoyatlarni moderatsiya qilish | ✅ | Admin → Shikoyatlar (`/api/admin/reports`) |
 | Foydalanuvchini bloklash | ✅ | Sozlamalar → Maxfiylik → Bloklanganlar |
@@ -28,8 +28,8 @@ qadamlar ro'yxati. Har bir bandning holati belgilangan.
 
 ### 2.1. Ilova ma'lumotlari (App content)
 
-1. **Privacy policy** — `https://www.geters.uz/uz/privacy`
-2. **Account deletion** — `https://www.geters.uz/uz/account/delete`
+1. **Privacy policy** — `https://www.geters.uz/en/privacy` (yoki `https://www.geters.uz/privacy` — avtomatik ingliz tiliga yo'naltiradi)
+2. **Account deletion** — `https://www.geters.uz/en/account/delete` (yoki `https://www.geters.uz/account/delete`)
    (Play talabi: login talab qilmaydigan veb-havola)
 3. **Data safety** — quyidagilarni deklaratsiya qilish:
    - Collected: name, email, phone, user IDs, photos, messages, other
@@ -46,7 +46,7 @@ qadamlar ro'yxati. Har bir bandning holati belgilangan.
    (login/parol) bering va moderatsiya qanday ishlashini qisqa izohda yozing.
 7. **Target audience** — 13+ (bolalar uchun emas). "Designed for Families"
    dasturiga kirmang.
-8. **Child safety standards** — `https://www.geters.uz/uz/child-safety`
+8. **Child safety standards** — `https://www.geters.uz/en/child-safety`
    (Play Console "Child safety standards" maydoni).
 9. **Government apps / Financial features / Health** — tegishli emas.
 
@@ -95,7 +95,7 @@ qadamlar ro'yxati. Har bir bandning holati belgilangan.
 
 - **Ilova ichida:** Profil → Sozlamalar → «Hisobni butunlay o'chirish»
   (darhol, `DELETE /api/settings/account`).
-- **Veb orqali (loginsiz):** `/uz/account/delete` → so'rov yuboriladi →
+- **Veb orqali (loginsiz):** `/en/account/delete` → so'rov yuboriladi →
   Admin → «Hisob o'chirish so'rovlari» → tasdiqlash → hisob va bog'liq
   ma'lumotlar o'chiriladi (30 kun ichida bajarilishi e'lon qilinadi).
 - O'chiriladigan ma'lumotlar: hisob, profil, postlar, izohlar, layklar,

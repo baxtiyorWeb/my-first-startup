@@ -1,8 +1,9 @@
+import type { ReportTargetType } from "@/types/social";
 import { apiClient } from "./client";
 
 export interface ReportPayload {
   targetId: string;
-  targetType: "post" | "comment" | "user";
+  targetType: ReportTargetType;
   reason: string;
   context?: string;
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/core/network/api_client.dart';
 import 'package:mobile/features/feed/models/author.dart';
 import 'package:mobile/features/messages/data/messages_controller.dart';
 import 'package:mobile/features/messages/data/messages_repository.dart';
@@ -44,6 +45,9 @@ class FakeStream implements MessagesStream {
 }
 
 class FakeMessagesRepository implements MessagesRepository {
+  @override
+  ApiClient? get apiClient => null;
+
   bool failSend = false;
   Completer<DirectMessage>? sendGate;
   int sendCount = 0;

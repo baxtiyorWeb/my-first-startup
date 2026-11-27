@@ -82,6 +82,10 @@ export function ReportModal({
         return "Izoh yuzasidan shikoyat";
       case "user":
         return "Foydalanuvchi profiliga shikoyat";
+      case "message":
+        return "Shaxsiy xabar yuzasidan shikoyat";
+      case "community_message":
+        return "Guruh xabari yuzasidan shikoyat";
     }
   };
 

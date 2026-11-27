@@ -173,7 +173,7 @@ export default function AccountDeletePage() {
     },
   };
 
-  const current = content[locale] || content.uz;
+  const current = content[locale] || content.en;
 
   const [identifier, setIdentifier] = useState("");
   const [reason, setReason] = useState("");

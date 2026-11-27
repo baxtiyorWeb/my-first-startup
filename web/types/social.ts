@@ -182,7 +182,7 @@ export interface CommentThreadItem extends Comment {
   replies?: CommentThreadItem[];
 }
 
-export type ReportTargetType = "post" | "comment" | "user";
+export type ReportTargetType = "post" | "comment" | "user" | "message" | "community_message";
 export type ReportReasonType = 
   | "spam" 
   | "harassment" 

@@ -66,69 +66,23 @@ class _LoginScreenState extends State<LoginScreen> {
           _errorText = widget.authController.errorMessage ?? 'Tizimga kirishda xatolik yuz berdi';
         });
       }
-    } catch (e) {
+    } on GoogleSignInException catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorText = 'Google bilan kirishda xatolik: ${e.toString()}';
+        _errorText = e.code == GoogleSignInExceptionCode.canceled
+            ? 'Google orqali kirish bekor qilindi.'
+            : 'Google orqali kirishda xatolik yuz berdi. Qayta urinib ko\'ring.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _errorText = 'Google orqali kirishda xatolik yuz berdi. Qayta urinib ko\'ring.';
       });
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  Future<void> _handleDevGoogleVerify() async {
-    final controller = TextEditingController(text: 'baxtiyor@thegogetters.uz');
-    String? email;
-    try {
-      email = await showDialog<String>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Dev Google Auth'),
-          content: TextField(
-            controller: controller,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
-            decoration: const InputDecoration(
-              labelText: 'Google Email',
-              hintText: 'user@gmail.com',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Bekor qilish'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-              child: const Text('Kirish'),
-            ),
-          ],
-        ),
-      );
-    } finally {
-      controller.dispose();
-    }
-    if (email == null || email.isEmpty || !mounted) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorText = null;
-    });
-
-    final ok = await widget.authController.loginWithGoogleIdToken(
-      'dev-mock-token:$email',
-      platform: defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android',
-    );
-    if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-      if (!ok) {
-        _errorText = widget.authController.errorMessage ?? 'Serverga ulanib bo\'lmadi';
-      }
-    });
   }
 
   @override
@@ -217,35 +171,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     isFullWidth: true,
                     size: ButtonSize.lg,
                     onPressed: _handleGoogleSignIn,
-                  ),
-
-                  if (kDebugMode) ...[
-                    const SizedBox(height: 10),
-                    AppButton(
-                      text: 'Dev Google Verify (Local)',
-                      variant: ButtonVariant.outline,
-                      isFullWidth: true,
-                      onPressed: _isLoading ? null : _handleDevGoogleVerify,
-                    ),
-                  ],
-
-                  const SizedBox(height: 18),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.verified_user_outlined, size: 14, color: AppColors.success),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          'Xavfsiz Google OAuth 2.0 & JWT sessiya',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),

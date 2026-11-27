@@ -8,7 +8,7 @@ import { enforceRateLimit } from "@/server/common/rate-limiter";
 
 const ReportSchema = z.object({
   targetId: z.string().min(1, "Obyekt ID si ko‘rsatilishi shart"),
-  targetType: z.enum(["post", "comment", "user"]),
+  targetType: z.enum(["post", "comment", "user", "message", "community_message"]),
   reason: z.string().min(1, "Shikoyat sababi ko‘rsatilishi shart"),
   context: z.string().optional(),
 });

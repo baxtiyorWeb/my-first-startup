@@ -11,6 +11,7 @@ class MessagesPage {
 /// Talks to the platform's real messaging API
 /// (`/api/messages/*`), which is the same surface the web client uses.
 abstract class MessagesRepository {
+  ApiClient? get apiClient => null;
   Future<List<Conversation>> getConversations();
   Future<Conversation> getOrCreateDirectConversation(String handle);
   Future<MessagesPage> getMessages(
@@ -36,6 +37,9 @@ class MessagesRepositoryImpl implements MessagesRepository {
 
   MessagesRepositoryImpl({ApiClient? apiClient})
       : _apiClient = apiClient ?? ApiClient();
+
+  @override
+  ApiClient? get apiClient => _apiClient;
 
   @override
   Future<List<Conversation>> getConversations() async {
