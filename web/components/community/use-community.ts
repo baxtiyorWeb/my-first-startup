@@ -330,12 +330,46 @@ export function useCommunity(viewer: CommunityViewer | null) {
     setSearchError(null);
   }, []);
 
-  // Realtime channel (authenticated via session cookie)
+  const canModerateRef = useRef(false);
+  useEffect(() => {
+    canModerateRef.current = Boolean(overview?.canModerate);
+  }, [overview?.canModerate]);
+
+  const syncLatest = useCallback(async () => {
+    try {
+      const history = await request<{
+        messages: CommunityMessage[];
+        hasMore: boolean;
+        nextCursor: string | null;
+      }>("/api/community/messages?limit=30");
+      if (!history?.messages) return;
+      setMessages((prev) => {
+        let next = prev;
+        for (const msg of history.messages) {
+          next = mergeMessage(next, msg);
+        }
+        return next;
+      });
+    } catch {
+      // Ignore transient background sync errors
+    }
+  }, []);
+
+  // Realtime channel (authenticated via session cookie) + auto-resync on reconnect
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const source = new EventSource("/api/community/stream");
+    let hasOpenedOnce = false;
+    const source = new EventSource("/api/community/stream", {
+      withCredentials: true,
+    });
 
-    source.onopen = () => setIsConnected(true);
+    source.onopen = () => {
+      setIsConnected(true);
+      if (hasOpenedOnce) {
+        void syncLatest();
+      }
+      hasOpenedOnce = true;
+    };
     source.onerror = () => setIsConnected(false);
 
     const normalizeIncoming = (msg: CommunityMessage): CommunityMessage => {
@@ -344,7 +378,7 @@ export function useCommunity(viewer: CommunityViewer | null) {
         ...msg,
         isMine,
         canEdit: isMine,
-        canDelete: isMine || Boolean(overview?.canModerate),
+        canDelete: isMine || canModerateRef.current,
       };
     };
 
@@ -477,7 +511,35 @@ export function useCommunity(viewer: CommunityViewer | null) {
       timers.forEach((timer) => clearTimeout(timer));
       timers.clear();
     };
-  }, [viewer?.id]);
+  }, [viewer?.id, syncLatest]);
+
+  // Safety-net background sync: guarantees zero missed messages even on stateless
+  // serverless / multi-instance deployments or when switching browser tabs.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        void syncLatest();
+      }
+    };
+
+    window.addEventListener("focus", onFocusOrVisible);
+    document.addEventListener("visibilitychange", onFocusOrVisible);
+
+    const intervalMs = isConnected ? 4000 : 2500;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void syncLatest();
+      }
+    }, intervalMs);
+
+    return () => {
+      window.removeEventListener("focus", onFocusOrVisible);
+      document.removeEventListener("visibilitychange", onFocusOrVisible);
+      window.clearInterval(timer);
+    };
+  }, [isConnected, syncLatest]);
 
   useEffect(() => {
     loadInitial();

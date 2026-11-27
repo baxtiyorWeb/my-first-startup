@@ -311,9 +311,8 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                     : "Yuklanmoqda..."}
                 </span>
                 <span
-                  className={`inline-block h-1.5 w-1.5 rounded-full ${
-                    community.isConnected ? "bg-[#0d9488] dark:bg-[#2dd4bf]" : "bg-amber-400"
-                  }`}
+                  className={`inline-block h-1.5 w-1.5 rounded-full ${community.isConnected ? "bg-[#0d9488] dark:bg-[#2dd4bf]" : "bg-amber-400"
+                    }`}
                   title={community.isConnected ? "Jonli ulangan" : "Ulanmoqda"}
                 />
               </p>
@@ -392,9 +391,8 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
               onClick={() => community.toggleMute()}
               aria-label={overview?.isMuted ? "Bildirishnomalarni yoqish" : "Bildirishnomalarni o'chirish"}
               title={overview?.isMuted ? "Bildirishnomalar o'chirilgan" : "Bildirishnomalar yoqilgan"}
-              className={`rounded-xl p-2 transition-colors hover:bg-[#eff3f4] dark:hover:bg-white/[0.06] cursor-pointer ${
-                overview?.isMuted ? "text-amber-500 dark:text-amber-400" : "text-[#536471] dark:text-zinc-400 hover:text-[#0f1419] dark:hover:text-white"
-              }`}
+              className={`rounded-xl p-2 transition-colors hover:bg-[#eff3f4] dark:hover:bg-white/[0.06] cursor-pointer ${overview?.isMuted ? "text-amber-500 dark:text-amber-400" : "text-[#536471] dark:text-zinc-400 hover:text-[#0f1419] dark:hover:text-white"
+                }`}
             >
               {overview?.isMuted ? <BellOff size={17} /> : <Bell size={17} />}
             </button>
@@ -452,32 +450,6 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
             </div>
           </div>
         </header>
-
-        {/* Pinned Official Announcement Banner */}
-        {overview && (
-          <div className="shrink-0 px-3 pt-3 sm:px-6">
-            <button
-              type="button"
-              onClick={() => setInfoOpen(true)}
-              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[#14b8a6]/35 bg-[#e6faf7] dark:bg-[#0c272c]/55 px-4 py-2.5 text-left transition-colors hover:border-[#0d9488]/50 dark:hover:border-[#2dd4bf]/45 hover:bg-[#ccf5ef]/70 dark:hover:bg-[#0c272c]/75 cursor-pointer"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0d9488]/15 dark:bg-[#2dd4bf]/15 text-[#0d9488] dark:text-[#2dd4bf]">
-                  <Pin size={14} />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[12px] font-bold text-[#0f1419] dark:text-white leading-tight">
-                    Rasmiy e&apos;lon
-                  </p>
-                  <p className="truncate text-[11.5px] text-[#536471] dark:text-zinc-300 mt-0.5">
-                    {overview.community.description}
-                  </p>
-                </div>
-              </div>
-              <ChevronRight size={15} className="shrink-0 text-[#536471] dark:text-zinc-400" />
-            </button>
-          </div>
-        )}
 
         {/* Search bar */}
         {searchOpen && (
@@ -611,9 +583,8 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                         <div
                           key={message.id}
                           id={`msg-${message.id}`}
-                          className={`group flex items-start gap-3 rounded-2xl transition-colors ${
-                            isHighlighted ? "bg-[#0d9488]/10 dark:bg-[#2dd4bf]/10 p-1.5 ring-1 ring-[#0d9488]/35 dark:ring-[#2dd4bf]/35" : ""
-                          }`}
+                          className={`group flex items-start gap-3 rounded-2xl transition-colors ${isHighlighted ? "bg-[#0d9488]/10 dark:bg-[#2dd4bf]/10 p-1.5 ring-1 ring-[#0d9488]/35 dark:ring-[#2dd4bf]/35" : ""
+                            }`}
                         >
                           <UserAvatar
                             name={message.sender.name}
@@ -656,11 +627,10 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                             </div>
 
                             <div
-                              className={`mt-1.5 rounded-2xl rounded-tl-md border px-3.5 py-2.5 ${
-                                message.isMine
+                              className={`mt-1.5 rounded-2xl rounded-tl-md border px-3.5 py-2.5 ${message.isMine
                                   ? "border-[#14b8a6]/40 dark:border-[#14b8a6]/35 bg-[#e6faf7] dark:bg-[#0b2326]"
                                   : "border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-[#151a22]"
-                              }`}
+                                }`}
                             >
                               {message.replyTo && (
                                 <button
@@ -680,11 +650,11 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                                       {message.replyTo.isDeleted
                                         ? "Xabar o'chirilgan"
                                         : message.replyTo.content ||
-                                          (message.replyTo.attachmentKind === "image"
-                                            ? "📷 Rasm"
-                                            : message.replyTo.attachmentKind === "video"
-                                              ? "🎬 Video"
-                                              : "📎 Fayl")}
+                                        (message.replyTo.attachmentKind === "image"
+                                          ? "📷 Rasm"
+                                          : message.replyTo.attachmentKind === "video"
+                                            ? "🎬 Video"
+                                            : "📎 Fayl")}
                                     </span>
                                   </span>
                                 </button>
@@ -730,12 +700,11 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                                 <div className="mt-2 space-y-2">
                                   {message.attachments.some((item) => item.kind === "image") && (
                                     <div
-                                      className={`grid gap-1.5 ${
-                                        message.attachments.filter((item) => item.kind === "image")
+                                      className={`grid gap-1.5 ${message.attachments.filter((item) => item.kind === "image")
                                           .length > 1
                                           ? "grid-cols-2"
                                           : "grid-cols-1"
-                                      }`}
+                                        }`}
                                     >
                                       {message.attachments
                                         .filter((item) => item.kind === "image")
@@ -808,11 +777,10 @@ export function CommunityChat({ viewer }: { viewer: CommunityViewer }) {
                                   type="button"
                                   onClick={() => handleReaction(message.id, reaction.emoji)}
                                   aria-label={`${reaction.emoji} reaksiyasi (${reaction.count})`}
-                                  className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors cursor-pointer ${
-                                    reaction.reacted
+                                  className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors cursor-pointer ${reaction.reacted
                                       ? "border-[#0d9488]/45 dark:border-[#2dd4bf]/45 bg-[#e6faf7] dark:bg-[#0c272c] text-[#0d9488] dark:text-[#2dd4bf]"
                                       : "border-[#cfd9de] dark:border-white/[0.08] bg-[#f7f9f9] dark:bg-white/[0.04] text-[#0f1419] dark:text-zinc-300 hover:border-[#8b98a5] dark:hover:border-white/20"
-                                  }`}
+                                    }`}
                                 >
                                   <span>{reaction.emoji}</span>
                                   <span>{reaction.count}</span>

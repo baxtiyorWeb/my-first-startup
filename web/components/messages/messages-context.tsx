@@ -185,7 +185,9 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const es = new EventSource("/api/messages/stream");
+      const es = new EventSource("/api/messages/stream", {
+        withCredentials: true,
+      });
       eventSourceRef.current = es;
 
       es.onopen = () => {
@@ -395,6 +397,56 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     connectSSERef.current = connectSSE;
   }, [connectSSE]);
+
+  // Safety-net resync for DM messages on tab focus/visibility and when SSE is degraded
+  useEffect(() => {
+    if (!currentUserId || typeof window === "undefined") return;
+
+    const syncMissed = () => {
+      if (document.visibilityState !== "visible") return;
+      const since = lastSyncTimestampRef.current;
+      if (!since) return;
+      apiClient<{ messages: ClientMessage[] }>(
+        `/api/messages/sync?since=${encodeURIComponent(since)}`
+      )
+        .then((res) => {
+          if (res.data?.messages && res.data.messages.length > 0) {
+            lastSyncTimestampRef.current = new Date().toISOString();
+            setMessagesMap((prev) => {
+              const updated = { ...prev };
+              for (const msg of res.data.messages) {
+                const convMsgs = updated[msg.conversationId] || [];
+                if (!convMsgs.some((m) => m.id === msg.id)) {
+                  updated[msg.conversationId] = [...convMsgs, { ...msg, status: "sent" }];
+                }
+              }
+              return updated;
+            });
+            refreshConversations();
+          }
+        })
+        .catch(() => {});
+    };
+
+    window.addEventListener("focus", syncMissed);
+    document.addEventListener("visibilitychange", syncMissed);
+
+    const intervalMs = isConnected ? 4000 : 2500;
+    const timer = window.setInterval(() => {
+      if (
+        document.visibilityState === "visible" &&
+        window.location.pathname.includes("/dashboard/messages")
+      ) {
+        syncMissed();
+      }
+    }, intervalMs);
+
+    return () => {
+      window.removeEventListener("focus", syncMissed);
+      document.removeEventListener("visibilitychange", syncMissed);
+      window.clearInterval(timer);
+    };
+  }, [currentUserId, isConnected, refreshConversations]);
 
   // Initial load and SSE setup
   useEffect(() => {
